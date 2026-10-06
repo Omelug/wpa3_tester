@@ -104,8 +104,6 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     		while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
     	}
 
-
-
 		if(next_beacon <= steady_clock::now()) {
             send_to_rogue(*beacon);
             RadioTap csa = CSA_attack::get_CSA_beacon(ap.get(SK::mac),

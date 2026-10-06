@@ -92,7 +92,19 @@ vector<uint8_t> MonitorSocket::build_inject_frame(
 	if(raw.size() < 4) return {};
 
 	const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
-	if(raw.size() < rt_len) return {};
+
+	// No valid RadioTap header (revision != 0, or length < 8) — wrap with minimal RT.
+	// No CHANNEL field: adding it breaks ORDER flag scheduling on some drivers (ath9k_htc)
+	if(raw[0] != 0 || rt_len < 8 || raw.size() < rt_len) {
+		RadioTap rt{};
+		rt.tx_flags(0x28); // NOSEQ|ORDER
+		rt.inner_pdu(RawPDU(raw.data(), raw.size()));
+		auto out = rt.serialize();
+		const uint16_t new_rt_len = out[2] | (static_cast<uint16_t>(out[3]) << 8);
+		if(detect_injected && out.size() > static_cast<size_t>(new_rt_len) + 1)
+			out[new_rt_len + 1] |= 0x20;
+		return out;
+	}
 
 	vector out(raw); // copy entire frame, RT header untouched
 

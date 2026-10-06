@@ -35,6 +35,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
         if(ht_ie->data_size() >= 1)
             const_cast<uint8_t *>(ht_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
     }
+    probe_resp = std::make_unique<Tins::Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
 
     // BPF: AP + client traffic only
 	const string bpf = "(wlan type data or mgt) and (wlan host " + ap.get(SK::permanent_mac) + " or wlan host " +

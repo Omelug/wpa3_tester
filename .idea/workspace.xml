@@ -141,7 +141,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: beacon send fix" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: prebe coreect confused ssdi">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -1221,7 +1225,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: dos schema" />
     <MESSAGE value="f: ath_htc compile fix part 2" />
     <MESSAGE value="f: disable_actor after manual disconnect&#10;fv: openwrt get last connection for AKM log" />
     <MESSAGE value="r: small changes (fix attacker adapters etc.)" />
@@ -1246,7 +1249,8 @@
     <MESSAGE value="f: rogu/real  channel set" />
     <MESSAGE value="r: handle_probe_real" />
     <MESSAGE value="r: beacon send fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: beacon send fix" />
+    <MESSAGE value="r: prebe coreect confused ssdi" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: prebe coreect confused ssdi" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

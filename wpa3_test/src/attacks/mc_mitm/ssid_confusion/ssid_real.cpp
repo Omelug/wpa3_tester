@@ -64,7 +64,7 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const s
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
 	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
-	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *dot11))
+	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *pdu))
 	SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))
 
 	#undef SOLVE_OR_CONTINUE

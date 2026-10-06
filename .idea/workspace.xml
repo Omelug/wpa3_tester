@@ -140,14 +140,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: Makefile simplify, delete historic doc, small changes">
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/config/SafeNet_WrongNet.conf" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/config/SafeNet_WrongNet.conf" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: small changes">
+      <change afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_real.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_attack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_cunfusion.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_real_channel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_real_channel.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_cunfusion.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/trace_cmd_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/trace_cmd_wrapper.cpp" afterDir="false" />
     </list>
@@ -178,6 +179,7 @@
     <setting file="file://$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/bl0ck.yaml" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wpa3_test/include/visual/scan/iface_info_filler.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///home/kali/ClionProjects/wpa3_tester/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.cpp" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -1223,7 +1225,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: Dlink sort" />
     <MESSAGE value="f: random bl0ck" />
     <MESSAGE value="r:UCI in one block, if possible" />
     <MESSAGE value="f: ath_masker on rapsberry (cross compile)" />
@@ -1248,7 +1249,8 @@
     <MESSAGE value="f: client_ocv_from_pcap (it was checking MFP )" />
     <MESSAGE value="r: RSN masks to header (no magic numbers)" />
     <MESSAGE value="r: Makefile simplify, delete historic doc, small changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="r: Makefile simplify, delete historic doc, small changes" />
+    <MESSAGE value="r: small changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: small changes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

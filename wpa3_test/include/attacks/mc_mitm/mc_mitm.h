@@ -12,7 +12,7 @@ namespace wpa3_tester {
 
 // return type for handle_* functions:
 // STOP = frame consumed, CONTINUE = pass to next handler
-enum PProcess { CONTINUE = 0, STOP = 1 };
+enum FrameProcess { CONTINUE = 0, STOP = 1 };
 
 class McMitm {
 	friend class McMitmHooks;
@@ -68,17 +68,17 @@ public:
 	//TODO protected + fixture
 	// for handle function: STOP = frame consumed, CONTINUE = pass to next handler
 	// PProcess handle_beacon_rogue(Tins::HWAddress<6> addr2, const Tins::Dot11 & dot11);
-	PProcess handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11);
-	PProcess handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
-	PProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
-	PProcess handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
-	PProcess handle_eapol_rogue(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu);
+	FrameProcess handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11);
+	FrameProcess handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
+	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
+	FrameProcess handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
+	FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu);
 
-	[[nodiscard]] PProcess handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
-	PProcess handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
-	PProcess handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, const std::vector<unsigned char> &raw,
+	[[nodiscard]] FrameProcess handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
+	FrameProcess handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
+	FrameProcess handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, const std::vector<unsigned char> &raw,
 		const Tins::Dot11 &dot11) const;
-	PProcess handle_eapol_real(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu) const;
+	FrameProcess handle_eapol_real(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu) const;
 	void handle_from_ap_real(
 		const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11, const Tins::HWAddress<6> &addr1);
 	void power_mgmt_response_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;

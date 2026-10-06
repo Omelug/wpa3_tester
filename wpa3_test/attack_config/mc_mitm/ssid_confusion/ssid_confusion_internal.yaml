@@ -11,7 +11,7 @@ actors:
     setup:
       program: hostapd
       program_config:
-        version: 2_10
+        version: 2_11
         other_options: "-d"
         hostapd_path: "./config/hostapd.conf"
     ip_addr: "172.16.100.1"
@@ -20,13 +20,13 @@ actors:
   client:
     source: internal
     selection:
-      #permanent_mac: "90:de:80:de:fd:b2"
+      permanent_mac: "90:de:80:de:fd:b2"
       condition: [ managed, 2_4GHz, netns_change ]
       channel: 11
     setup:
       program: wpa_supplicant
       program_config:
-        version: 2_10
+        version: 2_11
         other_options: "-d"
         # SafeNet has higher priority → client prefers SafeNet over WrongNet
         wpa_supplicant_path: "./config/SafeNet_WrongNet.conf"

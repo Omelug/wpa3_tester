@@ -49,6 +49,7 @@ void start_trace_cmd(RunStatus &rs, const string &actor_name, const vector<strin
 		ofstream ref(ref_path);
 		ref << wall.time_since_epoch().count() << " " << mono.time_since_epoch().count() << "\n";
 	}
+	set_public_perms(ref_path);
 
 	vector<string> command = {"trace-cmd", "record", "-o", dat_path.string()};
 	for(const auto &e: events){ command.emplace_back("-e"); command.push_back(e); }
@@ -68,7 +69,7 @@ void start_trace_cmd(RunStatus &rs, const string &actor_name, const vector<strin
 }
 
 // "action:N" field - skips "drv_ampdu_action: " (space after colon, not digit)
-static AmpduAction parse_action(const string &line){
+static AmpduAction parse_action(const string &line){ //FIXMe magic number 7
 	for(size_t p = 0; (p = line.find("action:", p)) != string::npos; p += 7){
 		if(p + 7 < line.size() && isdigit(static_cast<unsigned char>(line[p + 7]))){
 			try{
@@ -133,7 +134,7 @@ map<LogTimePoint, AmpduAction> get_bl0ck_logs(const RunStatus &rs,
 	return result;
 }
 
-//TODO real data test
+//TODO real data test, not finding anything
 described_bool addba_seen(const RunStatus &rs) {
 	described_bool result;
 	for (const string actor_name : {"ap", "client"}) {
@@ -148,7 +149,7 @@ described_bool addba_seen(const RunStatus &rs) {
 		for (string line; getline(f, line) && !found;) {
 			if (!line.contains("ampdu_action")) continue;
 			const auto a = parse_action(line);
-			found = (a == AmpduAction::RX_START || a == AmpduAction::TX_START);
+			found = a == AmpduAction::RX_START || a == AmpduAction::TX_START;
 		}
 		result += {found, "trace_cmd " + actor_name};
 	}

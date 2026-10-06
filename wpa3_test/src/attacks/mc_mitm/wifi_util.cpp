@@ -153,7 +153,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	// split beacon into head (before TIM) and tail (after TIM)
 
 	Dot11Beacon head;
-	const auto bssid = mac.has_value() ? HWAddress<6>(*mac) : beacon.addr2();
+	const auto bssid = mac.has_value() ? HWAddress(*mac) : beacon.addr2();
 	head.addr1(beacon.addr1());
 	head.addr2(bssid);
 	head.addr3(bssid);
@@ -259,7 +259,7 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 	{
 		ofstream f(conf);
 		f << "interface=" << ap_iface << "\n"
-		  << "ssid=injection_test\n"
+		  << "ssid=start_ap_hostapd\n"
 		  << "channel=" << static_cast<int>(channel.ch_num) << "\n"
 		  << "hw_mode=" << hw_mode << "\n";
 		if(mac) f << "bssid=" << mac->to_string() << "\n";

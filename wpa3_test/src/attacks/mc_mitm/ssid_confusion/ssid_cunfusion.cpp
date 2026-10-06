@@ -1,6 +1,6 @@
-#include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "attacks/mc_mitm/client_state.h"
 #include "attacks/mc_mitm/mc_mitm.h"
+#include "attacks/mc_mitm/ssid_confusion/ssid_cunfusion.h"
 #include "attacks/mc_mitm/wifi_util.h"
 namespace wpa3_tester {
 using namespace Tins;

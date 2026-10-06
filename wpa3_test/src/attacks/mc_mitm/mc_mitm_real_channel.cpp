@@ -19,7 +19,7 @@ void McMitm::send_to_real(const vector<uint8_t> &raw) const{
 	sock_real->send(raw, netconfig.real_channel);
 }
 
-PProcess McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
+FrameProcess McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
 	// TODO needed ?
 	/*if(dot11.find_pdu<Dot11ProbeRequest>()){
 		probe_resp->addr1(addr2);
@@ -39,7 +39,7 @@ PProcess McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11)
 //FIXME change bool to PProcess::continue; PProcess::stop (with change to bool for
 
 // not
-PProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 &dot11){
+FrameProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 &dot11){
 	if(addr1 != ap.get(SK::mac)) return CONTINUE;
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
 		const auto client_addr = auth->addr2();
@@ -59,7 +59,7 @@ PProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Do
 	return CONTINUE;
 }
 
-PProcess McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vector<unsigned char> &raw,
+FrameProcess McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vector<unsigned char> &raw,
 								const Dot11 &dot11
 ) const{
 	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return CONTINUE;
@@ -91,7 +91,7 @@ PProcess McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const v
 	return CONTINUE;
 }
 
-PProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const{
+FrameProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const{
 	// EAPOL AP -> STA on real channel
 	if(addr1 == sta.get(SK::mac) && addr2 == ap.get(SK::mac) && is_eapol(pdu)){
 		int eapol_msg = get_eapol_msg_num(pdu);

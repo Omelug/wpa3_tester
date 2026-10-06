@@ -16,7 +16,7 @@ void McMitm::send_to_rogue(PDU &pdu) const { sock_rogue->send(pdu, netconfig.rog
 
 void McMitm::send_to_rogue(const vector<uint8_t> &raw) const { sock_rogue->send(raw, netconfig.rogue_channel); }
 
-PProcess McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) {
+FrameProcess McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) {
 	if(dot11.find_pdu<Dot11ProbeRequest>()) {
 		const auto req_addr1 = dot11.addr1();
 		const bool directed = req_addr1 == HWAddress<6>(ap.get(SK::mac));
@@ -37,7 +37,7 @@ PProcess McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Do
 	return CONTINUE;
 }
 
-PProcess McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
+FrameProcess McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()) {
 		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1) {
 			// Open System Auth seq=1 ->  seq=2 success
@@ -58,7 +58,7 @@ PProcess McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 	return CONTINUE;
 }
 
-PProcess McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11) {
+FrameProcess McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11) {
 	if(hooks && hooks->on_assoc_request(*this, dot11, addr2)) return STOP;
 	const Dot11ManagementFrame::rates_type rates = {
 		static_cast<Dot11ManagementFrame::rates_type::value_type>(82),
@@ -95,7 +95,7 @@ PProcess McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11) {
 	return CONTINUE;
 }
 
-PProcess McMitm::handle_action_rogue(const HWAddress<6> addr2, PDU &pdu, const Dot11 &dot11) const {
+FrameProcess McMitm::handle_action_rogue(const HWAddress<6> addr2, PDU &pdu, const Dot11 &dot11) const {
 	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return CONTINUE;
 
 	const auto raw = const_cast<Dot11 &>(dot11).serialize();
@@ -109,7 +109,7 @@ PProcess McMitm::handle_action_rogue(const HWAddress<6> addr2, PDU &pdu, const D
 	return CONTINUE;
 }
 
-PProcess McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) {
+FrameProcess McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) {
 	// EAPOL STA -> AP
 	if(addr1 == ap.get(SK::mac) && addr2 == client_state.get_mac() && is_eapol(pdu)) {
 

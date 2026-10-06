@@ -74,6 +74,10 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const s
 		return; // don't relay real AP beacons
 	}
 
+	// Don't relay real AP auth/assoc responses — client already got our local replies
+	if(dot11->find_pdu<Dot11AssocResponse>() || dot11->find_pdu<Dot11ReAssocResponse>()
+	   || dot11->find_pdu<Dot11Authentication>()) return;
+
 	if(addr1 == sta.get(SK::mac) || addr2 == ap.get(SK::mac)) {
 		// This is traffic involving the real AP
 		display_traffic(*pdu, "Real channel", " -- MitM'ing");

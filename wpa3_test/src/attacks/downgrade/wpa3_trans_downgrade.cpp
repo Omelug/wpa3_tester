@@ -20,16 +20,15 @@ using nlohmann::json;
 void setup_attack(RunStatus &rs){
 	rs.start_observers(); // here, because I want check WPA3 diable bit before start
 	components::client_ap_setup_t(rs);
-	components::setup_rogue_ap(rs);
 }
 
 void run_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int wait_after_stop = att_cfg.value("wait_after_stop", 30);
 
-
 	log(LogLevel::INFO, "Stopping WPA3-Transition AP - watching if client downgrades to WPA2-PSK rogue AP");
 	components::stop_AP(rs, "ap");
+	components::setup_rogue_ap(rs); // start after real AP is gone to avoid MAC conflict on same-MAC adapters
 
 	const bool rogue_connected = rs.process_manager.wait_for("rogue_ap", "AP-STA-CONNECTED", seconds(wait_after_stop),
 															false);

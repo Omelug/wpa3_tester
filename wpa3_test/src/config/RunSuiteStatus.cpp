@@ -392,6 +392,8 @@ config_paths RunSuiteStatus::get_test_paths() {
 			continue;
 		}
 		if(type == "actor_filler") {
+			cleanup_all_namespaces();
+			reset_usb_ifaces();
 			defined_by_actor_filler(source_info, source_name, test_config_folder, test_map);
 			continue;
 		}
@@ -403,11 +405,6 @@ config_paths RunSuiteStatus::get_test_paths() {
 
 void RunSuiteStatus::execute() {
 	HwOptionCache hw_cache;
-
-	//TODO need for fillers in get_test_paths (before execute in RunStatus), but slow
-	//FIXME can be skipped for some test suites
-	cleanup_all_namespaces();
-	reset_usb_ifaces();
 
 	auto tests_paths = get_test_paths();
 
@@ -454,7 +451,7 @@ void RunSuiteStatus::execute(const string &test_name) {
 	if(it == tests_paths.end()) {
 		log(LogLevel::WARNING, "Test '{}' not found - run the full suite first to generate test configs", test_name);
 		for(const auto &[src, name, cfg_path]: tests_paths) log(LogLevel::WARNING, " available: {}/{}", src, name);
-		throw config_err("Test '" + test_name + "' not found in suite");
+		throw config_err("Test '{}' not found in suite", test_name);
 	}
 
 	const auto &[src_key, name, test_path] = *it;

@@ -65,7 +65,6 @@ void Actor_config::real_actor_setup_base_keys(const ActorPtr &real_actor) {
 				BK::w80211ac,
 				BK::w80211ax,
 				BK::beacon_prot,
-				BK::managed,
 				BK::PBAC,
 				BK::CSA,
 				BK::OCV,

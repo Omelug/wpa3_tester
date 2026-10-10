@@ -251,3 +251,60 @@ TEST_CASE("pbac_from_pcap_ap - beacon with no PBAC bit returns false") {
 	CHECK_EQ(result.last().value, optional(false));
 	CHECK_EQ(result.last().description, "client_pcap");
 }
+
+// ---- ap_trans_disable_from_beacon_pcap ----
+
+TEST_CASE("ap_trans_disable_from_beacon_pcap - missing pcap returns empty") {
+	CHECK_EQ(ap_trans_disable_from_beacon_pcap("/nonexistent/path.pcap"), "");
+}
+
+TEST_CASE("ap_trans_disable_from_beacon_pcap - beacon without transition disable element returns empty") {
+	if(!tshark_available()) {
+		MESSAGE("tshark not found, skipping");
+		return;
+	}
+	const path pcap = path(TEST_PCAP_DIR) / "beacon_test.pcapng";
+	REQUIRE(exists(pcap));
+	// beacon_test.pcapng has no Transition Disable element (IE 255 ext 35)
+	CHECK_EQ(ap_trans_disable_from_beacon_pcap(pcap, "24:ec:99:bf:b0:a1"), "");
+}
+
+TEST_CASE("ap_trans_disable_from_beacon_pcap - time window before frames returns empty") {
+	if(!tshark_available()) {
+		MESSAGE("tshark not found, skipping");
+		return;
+	}
+	const path pcap = path(TEST_PCAP_DIR) / "beacon_test.pcapng";
+	REQUIRE(exists(pcap));
+	// beacon_test.pcapng frame timestamp is ~2026-04-30; window ends before that
+	using namespace chrono;
+	const TimeWindow past{ LogTimePoint(seconds(1000000000)), LogTimePoint(seconds(1000000001)) };
+	CHECK_EQ(ap_trans_disable_from_beacon_pcap(pcap, {}, past), "");
+}
+
+// ---- ap_trans_disable_from_eapol_pcap ----
+
+TEST_CASE("ap_trans_disable_from_eapol_pcap - missing pcap returns empty") {
+	CHECK_EQ(ap_trans_disable_from_eapol_pcap("/nonexistent/path.pcap", "ssid", "pass"), "");
+}
+
+TEST_CASE("ap_trans_disable_from_eapol_pcap - empty password returns empty") {
+	const path pcap = path(TEST_PCAP_DIR) / "eapol1.pcapng";
+	CHECK_EQ(ap_trans_disable_from_eapol_pcap(pcap, "ssid", ""), "");
+}
+
+TEST_CASE("ap_trans_disable_from_eapol_pcap - empty ssid returns empty") {
+	const path pcap = path(TEST_PCAP_DIR) / "eapol1.pcapng";
+	CHECK_EQ(ap_trans_disable_from_eapol_pcap(pcap, "", "password"), "");
+}
+
+TEST_CASE("ap_trans_disable_from_eapol_pcap - eapol1 has only M1, no M3, returns empty") {
+	if(!tshark_available()) {
+		MESSAGE("tshark not found, skipping");
+		return;
+	}
+	const path pcap = path(TEST_PCAP_DIR) / "eapol1.pcapng";
+	REQUIRE(exists(pcap));
+	// eapol1.pcapng contains EAPOL Message 1 only — M3 (install=1 && key_ack=1) is absent
+	CHECK_EQ(ap_trans_disable_from_eapol_pcap(pcap, "test_ssid", "password123"), "");
+}

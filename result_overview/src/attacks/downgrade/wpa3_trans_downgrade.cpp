@@ -54,8 +54,8 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 	};
 
 	const path wpa3_down_dir = data_dir / DATA_SUITE / "downgrade"/  "wpa3_down";
-	emit_table("Internal filler", wpa3_down_dir /  "wpa3_downgrade_filler" , "wpa3_downgrade_filler");
-	//TODO emit_table("External filler", downgrade_dir / "wpa3_down" / "external" / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
+	emit_table("Internal filler", wpa3_down_dir / "wpa3_downgrade_filler", "wpa3_downgrade_filler");
+	emit_table("External client", wpa3_down_dir / "external" / "wpa3_down_ex_filler", "wpa3_down_ex_filler");
 
 	f << "</body></html>";
 }

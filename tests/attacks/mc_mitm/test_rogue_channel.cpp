@@ -27,13 +27,17 @@ unique_ptr<McMitmTestable> make_rogue_eapol_fixture(const char *pcap_path, HWAdd
 	auto sta = ActorPtr(make_shared<Actor_Config_internal>());
 	auto ap = ActorPtr(make_shared<Actor_Config_internal>());
 	r_sta->set(SK::iface, "wlan1");
+	r_sta->set(SK::channel, std::to_string(random_channel_2_4()));
+	r_sta->set(BK::GHz2_4, true);
 	r_ap->set(SK::iface, "wlan2");
+	r_ap->set(SK::channel, std::to_string(random_channel_2_4()));
+	r_ap->set(BK::GHz2_4, true);
 	sta->set(SK::mac, addrs.addr2.to_string()); // STA = src
 	ap->set(SK::mac, addrs.addr1.to_string());	// AP  = dst
 	ap->set(SK::ssid, string("test"));
 	return make_unique<McMitmTestable>(r_sta, r_ap, sta, ap);
 }
-} // namespace
+}
 
 TEST_SUITE("handle_probe") {
 

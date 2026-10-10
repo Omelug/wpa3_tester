@@ -1,4 +1,5 @@
 file(COPY test_tshark_minimal.pcapng beacon_test.pcapng DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ../test_data/eapol1.pcapng DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY iperf3_real DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_doctest_exe(run_observer_tests SOURCES test_tshark.cpp TEST_NAME ObserverTests)

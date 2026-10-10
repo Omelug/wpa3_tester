@@ -58,6 +58,18 @@ std::string client_scanning_from_pcap(
 // returns true if seen, false if pcap exists but none found, nullopt if pcap missing
 std::optional<bool> addba_seen_from_pcap(const std::filesystem::path &pcap_path);
 
+// Transition Disable element (IE 255, ext tag 35) in Beacon/Probe Response — no decryption needed
+// bit0=WPA3-Personal, bit1=SAE-PK, bit2=WPA3-Enterprise, bit3=Enhanced Open (802.11-2020 / WPA3 spec)
+// returns decimal bitmap string (e.g. "1"), empty if element absent or pcap missing
+std::string ap_trans_disable_from_beacon_pcap(const std::filesystem::path &pcap_path,
+    const std::string &ap_mac = {}, TimeWindow window = {});
+
+// Transition Disable KDE (OUI 50:6f:9a type 0x20) from EAPOL Message 3 key data
+// M3 is identified by keyinfo.install=1 && keyinfo.key_ack=1; key data is encrypted with PTK so password required
+// returns hex bitmap string (e.g. "0x01"), empty if not found or decryption fails
+std::string ap_trans_disable_from_eapol_pcap(const std::filesystem::path &pcap_path,
+    const std::string &ssid, const std::string &password, const std::string &ap_mac = {}, TimeWindow window = {});
+
 // ---- PBAC (Protected Block Ack Agreement Capable, RSN caps bit 12)
 // from AP Beacon / Probe Response
 described_bool pbac_from_pcap_ap(const std::filesystem::path &pcap_path, const std::string &ap_mac = {});

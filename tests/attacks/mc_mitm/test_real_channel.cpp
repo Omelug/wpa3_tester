@@ -27,7 +27,11 @@ unique_ptr<McMitmTestable> make_real_eapol_fixture(const char *pcap_path, HWAddr
 	auto sta = ActorPtr(make_shared<Actor_Config_internal>());
 	auto ap = ActorPtr(make_shared<Actor_Config_internal>());
 	rsta->set(SK::iface, "wlan1");
+	rsta->set(SK::channel, std::to_string(random_channel_2_4()));
+	rsta->set(BK::GHz2_4, true);
 	rap->set(SK::iface, "wlan2");
+	rap->set(SK::channel, std::to_string(random_channel_2_4()));
+	rap->set(BK::GHz2_4, true);
 	sta->set(SK::mac, addrs.addr1.to_string()); // STA = dst
 	ap->set(SK::mac, addrs.addr2.to_string());	// AP  = src
 	ap->set(SK::ssid, string("test"));

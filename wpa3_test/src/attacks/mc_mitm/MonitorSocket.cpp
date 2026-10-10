@@ -91,11 +91,13 @@ vector<uint8_t> MonitorSocket::build_inject_frame(
 	const vector<uint8_t> &raw, const Channel &ch, const bool detect_injected) {
 	if(raw.size() < 4) return {};
 
-	const uint16_t rt_len = raw[2] | (static_cast<uint16_t>(raw[3]) << 8);
+	const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
+
+	if(raw.size() < rt_len) return {}; // claimed RT length exceeds buffer — corrupted frame
 
 	// No valid RadioTap header (revision != 0, or length < 8) — wrap with minimal RT.
 	// No CHANNEL field: adding it breaks ORDER flag scheduling on some drivers (ath9k_htc)
-	if(raw[0] != 0 || rt_len < 8 || raw.size() < rt_len) {
+	if(raw[0] != 0 || rt_len < 8) {
 		RadioTap rt{};
 		rt.tx_flags(0x28); // NOSEQ|ORDER
 		rt.inner_pdu(RawPDU(raw.data(), raw.size()));
@@ -116,15 +118,15 @@ vector<uint8_t> MonitorSocket::build_inject_frame(
 	// Walk RT present fields to find channel field offset
 	// Present flags start at byte 4, each 4 bytes, bit 3 = Channel
 	size_t pos = 8; // skip revision(1) + pad(1) + length(2) + present(4)
-	uint32_t present = raw[4] | (raw[5] << 8) | (raw[6] << 16) | (raw[7] << 24);
+	uint32_t present = raw[4] | raw[5] << 8 | raw[6] << 16 | raw[7] << 24;
 
 	// Skip extended present words (bit 31 = another present word follows)
-	while(present & (1u << 31)) {
-		present = raw[pos] | (raw[pos + 1] << 8) | (raw[pos + 2] << 16) | (raw[pos + 3] << 24);
+	while(present & 1u << 31) {
+		present = raw[pos] | raw[pos + 1] << 8 | (raw[pos + 2] << 16) | (raw[pos + 3] << 24);
 		pos += 4;
 	}
 
-	// Walk fields in order until Channel (bit 3)
+	// Walk fields in order until Channel (bit 3) //TODO source -RFC
 	if(present & 1u << 0) pos += 8; // TSFT: 8 bytes
 	if(present & 1u << 1) pos += 1; // Flags: 1 byte
 	if(present & 1u << 2) pos += 1; // Rate: 1 byte

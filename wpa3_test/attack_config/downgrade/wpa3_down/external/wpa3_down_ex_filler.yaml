@@ -1,0 +1,9 @@
+name: wpa3_down_ex_filler
+suite_functions: wpa3_downgrade_filler
+config_type: test_suite
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./wpa3_down_ex.yaml
+delete_old: true
+rewrite: "errors"

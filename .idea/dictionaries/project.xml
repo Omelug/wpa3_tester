@@ -156,6 +156,7 @@
       <w>journalctl</w>
       <w>jsonfilter</w>
       <w>keydatalen</w>
+      <w>keydes</w>
       <w>keyver</w>
       <w>killpg</w>
       <w>kname</w>
@@ -279,9 +280,11 @@
       <w>rlen</w>
       <w>rmmod</w>
       <w>rowspan</w>
+      <w>rsna</w>
       <w>rsneapol</w>
       <w>rsnxcaps</w>
       <w>rsnxe</w>
+      <w>rsta</w>
       <w>rsvd</w>
       <w>rtmgrp</w>
       <w>rtnetlink</w>

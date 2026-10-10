@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "pcap_helper.h"
@@ -77,6 +79,12 @@ inline void McMitmTestable::append_to_pcap(const std::string &path) const {
 	pcap_close(dead);
 }
 
+inline int random_channel_2_4() {
+	static std::mt19937 rng{std::random_device{}()};
+	static std::uniform_int_distribution<int> dist{1, 11};
+	return dist(rng);
+}
+
 inline std::unique_ptr<McMitmTestable> make_fixture() {
 	auto r_sta_actor = ActorPtr(std::make_shared<Actor_Config_internal>());
 	auto r_ap_actor = ActorPtr(std::make_shared<Actor_Config_internal>());
@@ -84,7 +92,11 @@ inline std::unique_ptr<McMitmTestable> make_fixture() {
 	auto ap_actor = ActorPtr(std::make_shared<Actor_Config_internal>());
 
 	r_sta_actor->set(SK::iface, "wlan1");
+	r_sta_actor->set(SK::channel, std::to_string(random_channel_2_4()));
+	r_sta_actor->set(BK::GHz2_4, true);
 	r_ap_actor->set(SK::iface, "wlan2");
+	r_ap_actor->set(SK::channel, std::to_string(random_channel_2_4()));
+	r_ap_actor->set(BK::GHz2_4, true);
 	sta_actor->set(SK::mac, std::string(CLIENT_MAC));
 	ap_actor->set(SK::mac, std::string(AP_MAC));
 	ap_actor->set(SK::ssid, std::string("test_mc_mitm"));

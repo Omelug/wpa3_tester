@@ -465,6 +465,7 @@ TEST_CASE("get_ap_wpa3_trans_disable - from hostapd_conf non-zero") {
 	setup_test_rs(rs, dir);
 	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
+	rs.get_actor("ap")->set(SK::mac,"02:00:00:00:00:01");
 
 	const auto result = get_ap_wpa3_trans_disable(rs);
 	REQUIRE_FALSE(result.empty());
@@ -483,6 +484,7 @@ TEST_CASE("get_ap_wpa3_trans_disable - conf + log both present") {
 	setup_test_rs(rs, dir);
 	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
+	rs.get_actor("ap")->set(SK::mac,"02:00:00:00:00:01");
 
 	const auto result = get_ap_wpa3_trans_disable(rs, {});
 	REQUIRE_GE(result.pairs.size(), 1u);
@@ -515,6 +517,7 @@ TEST_CASE("get_ap_wpa3_trans_disable - from uci_conf (external WB)") {
 				{ "setup", { { "program", "openwrt" } } } } } } } });
 	rs.parse_requirements();
 	rs.get_actor("ap")->set(SK::radio, "radio0");
+	rs.get_actor("ap")->set(SK::mac,"02:00:00:00:00:01");
 
 	const auto result = get_ap_wpa3_trans_disable(rs);
 	REQUIRE_FALSE(result.empty());
@@ -529,6 +532,7 @@ TEST_CASE("get_ap_wpa3_trans_disable - no config no log returns empty") {
 	setup_test_rs(rs, dir);
 	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
+	rs.get_actor("ap")->set(SK::mac,"02:00:00:00:00:01");
 
 	const auto result = get_ap_wpa3_trans_disable(rs, {});
 	CHECK(result.empty());

@@ -48,7 +48,7 @@ string masked_mac_filter_5(const RunStatus &rs) {
 string all_actors_mac_filter(const RunStatus &rs, const bool broadcast) {
 	vector<string> mac_filters;
 
-	for(const auto &actor: rs.actors | views::values) {mac_filters.push_back("wlan host " + actor.get(SK::mac));}
+	for(const auto &actor: rs.actors | views::values) { mac_filters.push_back("wlan host " + actor.get(SK::mac)); }
 	if(broadcast) mac_filters.emplace_back("wlan host ff:ff:ff:ff:ff:ff");
 	return or_filter(mac_filters);
 }
@@ -145,6 +145,34 @@ static LogTimePoint epoch_str_to_tp(const string &s) {
 	} catch(...) { return LogTimePoint{}; }
 }
 
+pair<vector<LogTimePoint>, vector<double>> times_pdu_sizes_from_csv(const path &csv_path) {
+	vector<LogTimePoint> times;
+	vector<double> sizes;
+
+	ifstream file(csv_path.string());
+	string line;
+
+	while(getline(file, line)) {
+		stringstream ss(line);
+		string frame_num_str, t_str, s_str;
+		if(getline(ss, frame_num_str, '|') && getline(ss, t_str, '|') && getline(ss, s_str, '|')) {
+			const LogTimePoint tp = epoch_str_to_tp(trim(t_str));
+			if(tp.time_since_epoch().count() == 0) continue;
+			try {
+				sizes.push_back(stod(s_str));
+			} catch(...) { continue; }
+			times.push_back(tp);
+		}
+	}
+	return { times, sizes };
+}
+
+LogTimePoint get_pcap_start_time(const string &pcap_path) {
+	const string s = trim(hw_capabilities::run_cmd_output(
+		{ "tshark", "-r", pcap_path, "-T", "fields", "-e", "frame.time_epoch", "-c", "1" }));
+	return epoch_str_to_tp(s);
+}
+
 path extract_pcap_to_csv(const string &actor_name, const path &real_folder, const string &tshark_filter) {
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
 	const path csv_path = real_folder / (actor_name + ".csv");
@@ -177,34 +205,6 @@ path extract_pcap_to_csv(const string &actor_name, const path &real_folder, cons
 	set_public_perms(csv_path);
 
 	return csv_path;
-}
-
-pair<vector<LogTimePoint>, vector<double>> times_pdu_sizes_from_csv(const path &csv_path) {
-	vector<LogTimePoint> times;
-	vector<double> sizes;
-
-	ifstream file(csv_path.string());
-	string line;
-
-	while(getline(file, line)) {
-		stringstream ss(line);
-		string frame_num_str, t_str, s_str;
-		if(getline(ss, frame_num_str, '|') && getline(ss, t_str, '|') && getline(ss, s_str, '|')) {
-			const LogTimePoint tp = epoch_str_to_tp(trim(t_str));
-			if(tp.time_since_epoch().count() == 0) continue;
-			try {
-				sizes.push_back(stod(s_str));
-			} catch(...) { continue; }
-			times.push_back(tp);
-		}
-	}
-	return { times, sizes };
-}
-
-LogTimePoint get_pcap_start_time(const string &pcap_path) {
-	const string s = trim(hw_capabilities::run_cmd_output(
-		{ "tshark", "-r", pcap_path, "-T", "fields", "-e", "frame.time_epoch", "-c", "1" }));
-	return epoch_str_to_tp(s);
 }
 
 vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &process_name, const string &tshark_filter,
@@ -553,6 +553,73 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 	return {};
 }
 
+// ----- Transition Disable -----
+
+string ap_trans_disable_from_beacon_pcap(const path &pcap_path, const string &ap_mac, TimeWindow window) {
+	if(!exists(pcap_path)) return {};
+	// Beacon (0x0008) or Probe Response (0x0005): Transition Disable is extended element (IE 255), extension tag 35
+	string filter = "(wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005) && wlan.ext_tag.number == 35";
+	if(!ap_mac.empty()) filter += " && wlan.sa == " + ap_mac;
+	auto epoch_str = [](const LogTimePoint tp) -> string {
+		const auto ns = chrono::duration_cast<chrono::nanoseconds>(tp.time_since_epoch()).count();
+		return format("{:.6f}", static_cast<double>(ns) / 1e9);
+	};
+	if(window.start_tp.time_since_epoch().count() != 0) filter += " && frame.time_epoch >= " + epoch_str(window.start_tp);
+	if(window.end_tp.time_since_epoch().count() != 0)   filter += " && frame.time_epoch <= " + epoch_str(window.end_tp);
+	return trim(hw_capabilities::run_cmd_output({ "tshark",
+													"-r",
+													pcap_path.string(),
+													"-Y",
+													filter,
+													"-T",
+													"fields",
+													"-e",
+													"wlan.ext_tag.transition_disable_bitmap",
+													"-c",
+													"1" },
+		nullopt));
+}
+
+string ap_trans_disable_from_eapol_pcap(
+	const path &pcap_path, const string &ssid, const string &password, const string &ap_mac, TimeWindow window) {
+	if(!exists(pcap_path) || ssid.empty() || password.empty()) return {};
+	// EAPOL M3: keyinfo.install=1 && keyinfo.key_ack=1 (sent AP->STA); key data encrypted with PTK
+	string filter = "wlan_rsna_eapol.keydes.keyinfo.install == 1 && wlan_rsna_eapol.keydes.keyinfo.key_ack == 1";
+	if(!ap_mac.empty()) filter += " && wlan.sa == " + ap_mac;
+	auto epoch_str = [](const LogTimePoint tp) -> string {
+		const auto ns = chrono::duration_cast<chrono::nanoseconds>(tp.time_since_epoch()).count();
+		return format("{:.6f}", static_cast<double>(ns) / 1e9);
+	};
+	if(window.start_tp.time_since_epoch().count() != 0) filter += " && frame.time_epoch >= " + epoch_str(window.start_tp);
+	if(window.end_tp.time_since_epoch().count() != 0)   filter += " && frame.time_epoch <= " + epoch_str(window.end_tp);
+	// uat:80211_keys format requires literal double-quotes around each field
+	const string key_arg = R"(uat:80211_keys:"wpa-pwd",")" + password + ":" + ssid + "\"";
+	const string raw = trim(hw_capabilities::run_cmd_output({ "tshark",
+																"-r",
+																pcap_path.string(),
+																"-o",
+																"wlan.enable_decryption:TRUE",
+																"-o",
+																key_arg,
+																"-Y",
+																filter,
+																"-T",
+																"fields",
+																"-e",
+																"wlan_rsna_eapol.keydes.data",
+																"-c",
+																"1" },
+		nullopt));
+	if(raw.empty()) return {};
+
+	// KDE wire format: type=0xdd  len=0x05  OUI=50:6f:9a  data_type=0x20  bitmap=1 byte //TOOO source
+	const auto pos = raw.find("dd05506f9a20");
+	if(pos == string::npos) return {};
+	const string bitmap = raw.substr(pos + 12, 2);
+	if(bitmap.size() < 2) return {};
+	return "0x" + bitmap;
+}
+
 // ----- scanning -----
 
 string client_scanning_from_pcap(const path &pcap_path, const string &client_mac, TimeWindow window) {
@@ -604,7 +671,7 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 	}
 
 	if(channels.empty()) return "yes";
-	return "ch: " + join(channels, " ", [](int ch) { return to_string(ch); });
+	return "ch: " + join(channels, " ", [](const int ch) { return to_string(ch); });
 }
 
 }

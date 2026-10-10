@@ -58,7 +58,8 @@ Actor_config::Actor_config(const json &actor_j, string source){
 
 	if(actor_j.contains("netns")) set(SK::netns, actor_j.at("netns").get<string>());
 	if(actor_j.contains("source")) set(SK::source, actor_j.at("source").get<string>());
-	if(actor_j.contains("ip_addr")) set(SK::ip_addr, actor_j.at("ip_addr").get<string>());
+	// dont set ip_addr, //TODO delete if checked ip+addr not needed somewhere
+	//if(actor_j.contains("ip_addr")) set(SK::ip_addr, actor_j.at("ip_addr").get<string>());
 	if(actor_j.contains("sniff_iface")) set(BK::sniff_iface, actor_j.at("sniff_iface").get<bool>());
 }
 

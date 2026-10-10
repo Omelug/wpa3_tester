@@ -278,7 +278,7 @@ TEST_CASE("ap_trans_disable_from_beacon_pcap - time window before frames returns
 	REQUIRE(exists(pcap));
 	// beacon_test.pcapng frame timestamp is ~2026-04-30; window ends before that
 	using namespace chrono;
-	const TimeWindow past{ LogTimePoint(seconds(1000000000)), LogTimePoint(seconds(1000000001)) };
+	constexpr TimeWindow past{ LogTimePoint(seconds(1000000000)), LogTimePoint(seconds(1000000001)) };
 	CHECK_EQ(ap_trans_disable_from_beacon_pcap(pcap, {}, past), "");
 }
 

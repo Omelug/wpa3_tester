@@ -68,9 +68,7 @@ void hw_capabilities::flush_socket(MonitorSocket &s) { while(s.recv()); }
 
 ProbeCapture hw_capabilities::capture_probe_response_ack(
 	const MonitorSocket &sout, MonitorSocket &sin, PDU &probe_req, const Channel &ch, const int retries) {
-	const auto [addr1, addr2] = get_addrs(probe_req, {});
-	const auto src = addr2;
-	const auto dst = addr1;
+	const auto [dst, src] = get_addrs(probe_req, {});
 
 	ProbeCapture result;
 	int attempt = 0;
@@ -102,8 +100,8 @@ InjectionTestResult hw_capabilities::test_injection_more_fragments(
 	Dot11QoSData p(ref.addr1, ref.addr2);
 	if(ref.from_ds) p.from_ds(1);
 	if(ref.to_ds) p.to_ds(1);
-	p.seq_num(33);
-	p.qos_control(2);
+	p.seq_num(33); //TODO remove magic numbers (but defferent in multiple tests)
+	p.qos_control(2); //TODO add description
 	p.more_frag(1);
 
 	const auto captured = inject_and_capture(sout, sin, p, ch, 1);
@@ -201,7 +199,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	Dot11QoSData p5;
 	apply(p5);
 	p5.seq_num(33);
-	p5.qos_control(2 | 0x80);
+	p5.qos_control(2 | 0x80); // TODO magic numebr
 	run(
 		p5,
 		[](const vector<uint8_t> &raw) {
@@ -236,7 +234,7 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 		const auto label = make_label(); // fresh label isolates this round
 		auto p2 = make_qos(2, label), p6 = make_qos(6, label);
 
-		for(int j = 0; j < 4; j++) sout.send(p2, ch);
+		for(int j = 0; j < 4; j++) sout.send(p2, ch); //TODO 4 magic number
 		sout.send(p6, ch);
 		tids.clear();
 

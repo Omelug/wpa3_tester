@@ -163,7 +163,7 @@ public:
 		render_header(prefixes);
 		render_body(prefixes);
 		hg_ << "</table>";
-		if(t_name_) hg_ << "<small>data from " << *t_name_ << "</small>";
+		if(t_name_) hg_ << "<small>data from " << *t_name_ << "</small>"; //TODO add error.txt / pther folders counts
 	}
 
 	struct Helper {

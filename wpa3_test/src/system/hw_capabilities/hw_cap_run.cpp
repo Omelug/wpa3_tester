@@ -22,10 +22,15 @@ using namespace std;
 using namespace filesystem;
 
 void hw_capabilities::run_in(const string &cmd, const path &cwd = current_path()){
-	const string full_cmd = "cd " + cwd.string() + " && " + cmd;
-	if(system(full_cmd.c_str()) != 0){
-		throw run_err("Command failed: " + cmd);
-	}
+	const string full_cmd = "cd " + cwd.string() + " && " + cmd + " 2>&1"; // stdout + stderr
+	FILE *f = popen(full_cmd.c_str(), "r");
+	if(!f) throw run_err("popen failed: " + cmd);
+	string out;
+	char buf[256];
+	while(fgets(buf, sizeof(buf), f)) out += buf;
+	const int ret = pclose(f);
+	if(ret != 0)
+		throw run_err("Command failed (exit " + to_string(WEXITSTATUS(ret)) + "): " + cmd + "\n" + out);
 }
 
 vector<string> wrap_with_netns(const vector<string> &argv, const optional<string> &netns){
@@ -34,7 +39,7 @@ vector<string> wrap_with_netns(const vector<string> &argv, const optional<string
 	}
 
 	vector<string> full_argv;
-	// Pre-allocate space: 4 for "ip netns exec [name]" + the original command size
+	// pre-allocate space for "ip" "netns" "exec" "[name]" + the original command size
 	full_argv.reserve(argv.size() + 4);
 
 	full_argv.insert(full_argv.end(), {"ip", "netns", "exec", *netns});
@@ -101,7 +106,7 @@ string hw_capabilities::run_cmd_output(const vector<string> &argv, const optiona
 	if(ec) {
 		log(LogLevel::ERROR, "Wait error {}", ec.message());
 		return {};
-	};
+	}
 
 	auto [status, wait_ec] = proc.wait(reproc::infinite);
 	if(wait_ec) {
@@ -118,8 +123,8 @@ void hw_capabilities::pkill_wait(const string &pattern) {
 	string line;
 	while (getline(ss, line)) {
 		if (line.empty()) continue;
-		int fd = (int)syscall(SYS_pidfd_open, (pid_t)stoi(line), 0);
-		if (fd < 0) continue;  // proces už skončil
+		const int fd = static_cast<int>(syscall(SYS_pidfd_open, static_cast<pid_t>(stoi(line)), 0));
+		if (fd < 0) continue;  // processes already ended
 		pollfd pfd{fd, POLLIN, 0};
 		poll(&pfd, 1, -1);
 		close(fd);
@@ -135,7 +140,7 @@ bool hw_capabilities::git_available(){
 void hw_capabilities::git_clone_or_pull(const string &url, const path &dest){
 	if(!git_available()) throw req_err("git is not available");
 	if(!exists(dest)){
-		// Create parent directories if needed
+		// create parent directories if needed
 		const path parent = dest.parent_path();
 		if(!parent.empty() && !exists(parent)){
 			create_directories(parent);

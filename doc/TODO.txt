@@ -4,7 +4,9 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version  v 0.0.0.0:
+f: check WPA3 downgrade (or run it again with new )
 
+ f?: vyzkoušet mc_mitm po změnách po ssid separation
 ssid_confusion:
     ?: try on ath without debug -> slow down ?
 
@@ -13,7 +15,6 @@ CSA:
 mc_mitm:
     r?: tshark grafy mají START/start_Attack v záporu (začátek je asi první packet, změnit na START) - ale co když v testu není ?
     f: client se po začátku testu vrátí do default netns a skenuje.
-    +: problém s mt76-git? zkusit kali
 bl0ck:
     +: zkusti BA s dalším připoejným klientem (měl by se taky odpojit)
 
@@ -47,10 +48,10 @@ f+: SSID cofusion
 +: vytvořit fork libtins a naházet tam forky/pull requesty pro EAP (aspoň pro konstatny)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
 
-CSA - upravit report pro external BB
+CSA - přidat tabulku pro external BB (oba)
 +: přidat dhcp na Openwrt (některé mobily potřebují IP, aby se neodpojily)
 +: scanner for external WB actors
-+: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě open_wrt uzpůsobeno) - možná obecný iw phy sinfo formát?
++: add multi BSSID to Actor_Config (zatím jen u OpenWrt, ale na to není ještě openwrt uzpůsobeno) - možná obecný iw phy sinfo formát?
 t: external info/iface_info parsing tests
 +: suite for one client - 2_4GHz, 6Ghz, 5Ghz, OCV hostapd
 f: špatně se resetuje scan_iface (ap_info)

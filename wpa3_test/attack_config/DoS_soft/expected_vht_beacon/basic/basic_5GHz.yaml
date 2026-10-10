@@ -14,6 +14,8 @@ actors:
         version: 2_10
         hw_mode: a   # 5 GHz - VHT requires 5 GHz
         channel: 36
+    selection:
+      permanent_mac: "90:de:80:de:fd:b2"
   client:
     setup:
       program: wpa_supplicant
@@ -23,6 +25,7 @@ actors:
       channel: 36
   attacker:
     selection:
+      permanent_mac: "90:de:80:6c:90:92"
       channel: 36
       condition: [ monitor, 5GHz ]
 

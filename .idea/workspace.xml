@@ -141,14 +141,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: managed support get from real actor in actor setup">
-      <change afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_wpa3_disable_5GHz.yaml" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: wpa3_transition_downgrade_wpa3_disable">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_vuln.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_vuln.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_wpa3_disable.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down/downgrade_wpa3_disable.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/downgrade/wpa3_trans_downgrade.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/downgrade/wpa3_trans_downgrade.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunSuiteStatus.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/Actor_setup.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/basic/basic_5GHz.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/basic/basic_5GHz.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/expected_vht_beacon.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/expected_vht_beacon.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/Dlink/expected_vht_beacon_ex_Dlink.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/Dlink/expected_vht_beacon_ex_Dlink.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/Dlink/expected_vht_beacon_ex_Dlink_5GHz.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/Dlink/expected_vht_beacon_ex_Dlink_5GHz.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/rogueAP/expected_vht_beacon_rogueAP.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/rogueAP/expected_vht_beacon_rogueAP.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/client/client_2_10_WPA3_mixed_MFPo_6.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/client/client_2_10_WPA3_mixed_MFPo_6.comp.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_6.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_6.comp.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1233,9 +1234,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="t: page_cache" />
-    <MESSAGE value="f: revert changes during kernel image raspberry separation (usb_modeswitch//blacklist)" />
-    <MESSAGE value="f: usb_modeswitch rules (different than on nixOS laptop)" />
     <MESSAGE value="f: reset mac address in cleanup" />
     <MESSAGE value="f: log capture before rename (hash cracking )" />
     <MESSAGE value="f: hash cracking WPA-PSK-SHA256 support" />
@@ -1258,7 +1256,10 @@
     <MESSAGE value="r+: more log for  hw_capabilities::run_in" />
     <MESSAGE value="tf: after mc_mitm change , add random channel to McMitmTestable" />
     <MESSAGE value="f: managed support get from real actor in actor setup" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: managed support get from real actor in actor setup" />
+    <MESSAGE value="f: self disconnect" />
+    <MESSAGE value="f: reset_usb_ifaces only before actor_filler" />
+    <MESSAGE value="f: wpa3_transition_downgrade_wpa3_disable" />
+    <option name="LAST_COMMIT_MESSAGE" value="f: wpa3_transition_downgrade_wpa3_disable" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

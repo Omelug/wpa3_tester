@@ -12,6 +12,7 @@ actors:
     $extends: ../../../../comp/Dlink/Dlink_wb.comp.yaml
   attacker:
     source: internal
+    permanent_mac: "90:de:80:6c:90:92"
     selection:
       condition: [ monitor, 2_4GHz ]
       channel: 6

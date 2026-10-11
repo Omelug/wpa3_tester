@@ -173,7 +173,8 @@ CrackResult crack_pmk_hashes(const path &creds_file, const string &psk) {
 			}
 			const string out = hw_capabilities::run_cmd_output({ "hcxpmktool", "-z", tmp.string(), "-p", psk });
 			remove(tmp);
-			cracked += static_cast<int>(ranges::count(out, '\n'));
+			for(size_t p = 0; (p = out.find("WPA*", p)) != string::npos; p += 4)
+				if(p == 0 || out[p - 1] == '\n') ++cracked;
 		}
 	}
 

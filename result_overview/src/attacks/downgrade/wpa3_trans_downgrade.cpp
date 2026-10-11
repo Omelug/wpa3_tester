@@ -32,8 +32,9 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 	<h1>WPA3 Transition - Downgrade to WPA2-PSK</h1>
 
 	<div class="card">
+		<p><b>Sources:</b> [8] z WPA3 specification 3.5 (https://www.wi-fi.org/system/files/WPA3%20Specification%20v3.5.pdf)</p>
 		<p><b>Prerequisites:</b> client connected to a WPA3-Transition AP (SAE+PSK).</p>
-		<p>A rogue WPA2-PSK-only AP with the same SSID is running</p>
+		<p>A rogue WPA2-PSK only AP with the same SSID is running</p>
 		<p>After the legitimate AP is stopped, a vulnerable client automatically associates using WPA2-PSK, completing a downgrade attack.</p>
 		<p>Its prerequisite for get password in other attacks</p>
 		<p><b>Success:</b> client send valid hash to rogue WPA2-PSK AP</p>

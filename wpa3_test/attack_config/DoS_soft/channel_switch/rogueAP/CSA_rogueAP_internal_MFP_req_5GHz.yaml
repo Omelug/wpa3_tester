@@ -2,6 +2,7 @@ name: channel_switch_rogueAP_internal_MFP_req_5GHz
 attacker_module: channel_switch
 $validator: ../channel_switch.schema.yaml
 $extends: [
+  ./CSA_rogueAP_internal_MFP_req.yaml,
   ../../../comp/ap/ap_2_11_WPA3_only_MFPr_36.comp.yaml,
   ../../../comp/client/client_2_11_WPA3_mixed_MFPo_36.comp.yaml,
   ../../../comp/rogue_ap/rogue_ap_48.comp.yaml,
@@ -22,7 +23,6 @@ actors:
     selection:
       channel: 36
       condition: [ monitor, 5GHz ]
-      driver: [ mt76x2u, mt76x2u_git ]
 
 attack_config:
   attack_time: 40

@@ -85,14 +85,6 @@ if (NOT _GIT_HASH)
     set(_GIT_HASH "unknown")
 endif ()
 
-# Get the standard git commit hash
-execute_process(
-        COMMAND git rev-parse --short HEAD
-        WORKING_DIRECTORY ${WPA3_PROJECT_ROOT}
-        OUTPUT_VARIABLE _GIT_HASH
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 # Check if the working tree is dirty
 execute_process(
         COMMAND git status --porcelain

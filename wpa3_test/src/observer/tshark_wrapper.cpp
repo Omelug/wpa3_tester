@@ -555,7 +555,7 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 
 // ----- Transition Disable -----
 
-string ap_trans_disable_from_beacon_pcap(const path &pcap_path, const string &ap_mac, TimeWindow window) {
+string ap_trans_disable_from_beacon_pcap(const path &pcap_path, const string &ap_mac, const TimeWindow window) {
 	if(!exists(pcap_path)) return {};
 	// Beacon (0x0008) or Probe Response (0x0005): Transition Disable is extended element (IE 255), extension tag 35
 	string filter = "(wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005) && wlan.ext_tag.number == 35";
@@ -581,7 +581,7 @@ string ap_trans_disable_from_beacon_pcap(const path &pcap_path, const string &ap
 }
 
 string ap_trans_disable_from_eapol_pcap(
-	const path &pcap_path, const string &ssid, const string &password, const string &ap_mac, TimeWindow window) {
+	const path &pcap_path, const string &ssid, const string &password, const string &ap_mac, const TimeWindow window) {
 	if(!exists(pcap_path) || ssid.empty() || password.empty()) return {};
 	// EAPOL M3: keyinfo.install=1 && keyinfo.key_ack=1 (sent AP->STA); key data encrypted with PTK
 	string filter = "wlan_rsna_eapol.keydes.keyinfo.install == 1 && wlan_rsna_eapol.keydes.keyinfo.key_ack == 1";
@@ -612,7 +612,13 @@ string ap_trans_disable_from_eapol_pcap(
 		nullopt));
 	if(raw.empty()) return {};
 
-	// KDE wire format: type=0xdd  len=0x05  OUI=50:6f:9a  data_type=0x20  bitmap=1 byte //TOOO source
+	// Transition Disable KDE wire format (Wi-Fi Alliance, Wi-Fi Specification 3.5, chapter 8):
+	//   dd       = Vendor Specific KDE type
+	//   05       = length (5 bytes follow)
+	//   50 6f 9a = Wi-Fi Alliance OUI
+	//   20       = data type (Transition Disable KDE)
+	//   XX       = bitmap (1 byte): bit0=disable WPA2-Personal, bit1=disable SAE w/o PK,
+	//                               bit2=disable WPA2-Enterprise, bit3=disable OWE transition
 	const auto pos = raw.find("dd05506f9a20");
 	if(pos == string::npos) return {};
 	const string bitmap = raw.substr(pos + 12, 2);

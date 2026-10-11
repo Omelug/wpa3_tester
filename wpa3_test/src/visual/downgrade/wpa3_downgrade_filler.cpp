@@ -79,7 +79,7 @@ void Wpa3TransDowngradeTestEntry::render_table(
 				 COL("Client", e.client_mac << "(" << e.client_driver << ")");
 				 col("Disconnected", &Wpa3TransDowngradeTestEntry::disconnected);
 				 col("Downgrade Seen", &Wpa3TransDowngradeTestEntry::downgrade_seen);
-				 col("WPA3 disable", &Wpa3TransDowngradeTestEntry::ap_wpa3_trans_disable);
+				 col("WPA3 transition disable", &Wpa3TransDowngradeTestEntry::ap_wpa3_trans_disable);
 			 })->render({ "Test" });
 #undef COL
 		});

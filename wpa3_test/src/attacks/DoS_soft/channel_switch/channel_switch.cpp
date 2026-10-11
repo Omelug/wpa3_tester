@@ -113,7 +113,7 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			const uint8_t type = data[3];
 
 			// type 1 = WPA IE, type 2 = WMM/WME
-			const bool wanted_type = (type == 1 || type == 2);
+			const bool wanted_type = type == 1 || type == 2;
 			return !(oui_match && wanted_type);
 		}
 		return false;

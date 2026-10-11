@@ -4,8 +4,11 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version  v 0.0.0.0:
-f: check WPA3 downgrade (or run it again with new )
+f: disconnnected usb reset?/home/nixos/CLionProjects/wpa3_tester/tester_setup/raspberry_pi4/run/data/suite_data/DoS_soft/bl0ck/suite/BA_filler/all_actors/bl0ck_BA_7ac6b97b/logger/client.log
++: tester_setup/raspberry_pi4/run/data/suite_data/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_filler/all_actors/channel_switch_rogueAP_internal_19eb2177
++: /home/nixos/CLionProjects/wpa3_tester/tester_setup/raspberry_pi4/run/data/suite_data/DoS_soft/bl0ck/suite/BAR_filler/random/bl0ck_random_BAR_d4483bdd
 
+f: v cracked: se někdy objevuje 2/1
  f?: vyzkoušet mc_mitm po změnách po ssid separation
 ssid_confusion:
     ?: try on ath without debug -> slow down ?

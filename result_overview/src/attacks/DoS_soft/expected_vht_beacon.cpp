@@ -54,7 +54,10 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
         <h2>Mitigations</h2>
         <ul>
             <li><b>Beacon Protection (BIGTK, 802.11ax)</b> - fake beacons without a valid
-                BIP-CMAC-256 tag are silently dropped. Not yet widely deployed.</li>
+                BIP-CMAC-256 tag are silently dropped. Not yet widely deployed.
+				# TODO more about hostapd implementation in https://www.mathyvanhoef.com/p/tools.html
+				# (need to be hardware supported only on AP? )
+			</li>
         </ul>
     </div>
 

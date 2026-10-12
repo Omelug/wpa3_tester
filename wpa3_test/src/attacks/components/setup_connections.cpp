@@ -142,7 +142,7 @@ void client_ap_attacker_setup_enterprise(RunStatus &rs) {
 	if(rs.get_actor("ap")->is_WB()) setup_AP(rs, "ap");
 	setup_STA(rs, "client");
 
-	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
+	rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40)); //TODO hardcoded
 	if(rs.get_actor("client")[SK::ip_addr]) ip::set_ip(rs, "client");
 	log(LogLevel::INFO, "client is connected");
 }

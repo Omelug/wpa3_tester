@@ -95,7 +95,7 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title, c
 				 col("Variant", &Bl0ckTestEntry::attack_variant);
 				 COL("Random", e.random_MAC);
 				 col("Disconnected?", &Bl0ckTestEntry::disconnect_count);
-				 col("Iperf blocked?", &Bl0ckTestEntry::bl0ck_iperf);
+				 col("Iperf connectivity", &Bl0ckTestEntry::bl0ck_iperf);
 				 //not cached now, need to be decrypted
 				 //col("ADDBA seen?", &Bl0ckTestEntry::ADDBA_seen);
 				 COL("AP PBAC <br> Client PBAC", e.ap_PBAC << "<br>" << e.client_PBAC);

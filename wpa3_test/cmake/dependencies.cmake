@@ -76,12 +76,13 @@ if (NOT DEFINED WPA3_PROJECT_ROOT)
     set(WPA3_PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 endif ()
 execute_process(
-        COMMAND git -C "${WPA3_PROJECT_ROOT}" rev-parse --short HEAD
+        COMMAND git -C "${CMAKE_SOURCE_DIR}" rev-parse --short HEAD
         OUTPUT_VARIABLE _GIT_HASH
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET
+        RESULT_VARIABLE _GIT_RESULT
 )
-if (NOT _GIT_HASH)
+if (NOT _GIT_HASH OR NOT _GIT_RESULT EQUAL 0)
     set(_GIT_HASH "unknown")
 endif ()
 

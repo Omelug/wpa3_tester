@@ -3,9 +3,14 @@
 #include <fstream>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <openssl/opensslv.h>
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#  include <openssl/core_names.h>
+#else
+#  include <openssl/cmac.h>
+#endif
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "logger/log.h"
-#include "system/hw_capabilities.h"
 
 namespace wpa3_tester::hostapd {
 using namespace std;
@@ -30,6 +35,7 @@ struct WpaHashEntry {
 	vector<uint8_t> anonce; // 32 bytes
 	vector<uint8_t> eapol;	// EAPOL frame, MIC position zeroed
 	bool is_sha256{};
+	uint8_t ver{};          // key_info bits 0-2
 	string raw; // original WPA*02*... line
 };
 
@@ -59,67 +65,120 @@ optional<WpaHashEntry> parse_wpa_hash(const string &line) {
 		return nullopt;
 
 	// EAPOL[5:6] = key_info (big-endian); bits 0-2 = key descriptor version
-	// wpa_supplicant sets 3 (WPA_KEY_INFO_TYPE_AES_128_CMAC) for AKM 5/6 (HMAC-SHA256 MIC)
-	// version 2 -> WPA2-PSK: HMAC-SHA1 MIC
+	// ver 0: modern wpa_supplicant (>=2.10) for AKM 5/6 — MIC = HMAC-SHA256
+	// ver 3: older wpa_supplicant (<2.10) for AKM 5/6 with CCMP — MIC = AES-128-CMAC
+	// ver 2: WPA2-PSK (AKM 2) — MIC = HMAC-SHA1
 	const uint16_t key_info = static_cast<uint16_t>(h.eapol[5]) << 8 | h.eapol[6];
-	h.is_sha256 = (key_info & 0x07) == 3;
+	h.ver = key_info & 0x07;
+	h.is_sha256 = h.ver == 0 || h.ver == 3;
 	return h;
 }
 
-// Verify WPA-PSK-SHA256 (AKM 6) MIC.
-// PMK  = PBKDF2-SHA1(psk, ssid, 4096, 32)
-// PTK  = sha256_prf(PMK, "Pairwise key expansion",
-//            min/max(MACs) || min/max(nonces), 384 bits)
-//        where each PRF iteration:
-//            HMAC-SHA256(k, LE16(i) || label || data || LE16(384))
-// KCK  = PTK[0:16]
-// MIC  = HMAC-SHA256(KCK, eapol_with_zeroed_mic)[0:16]
-bool verify_sha256_mic(const WpaHashEntry &h, const string &psk) {
-	array<uint8_t, 32> pmk{};
-	PKCS5_PBKDF2_HMAC(psk.data(),
-		static_cast<int>(psk.size()),
-		h.ssid.data(),
-		static_cast<int>(h.ssid.size()),
-		4096,
-		EVP_sha1(),
-		32,
-		pmk.data());
+array<uint8_t, 16> aes128_cmac(const uint8_t *key, const uint8_t *data, size_t len) {
+	array<uint8_t, 16> out{};
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	EVP_MAC *mac = EVP_MAC_fetch(nullptr, "CMAC", nullptr);
+	EVP_MAC_CTX *ctx = EVP_MAC_CTX_new(mac);
+	OSSL_PARAM params[] = {
+		OSSL_PARAM_construct_utf8_string(OSSL_MAC_PARAM_CIPHER, const_cast<char*>("AES-128-CBC"), 0),
+		OSSL_PARAM_construct_end()
+	};
+	EVP_MAC_init(ctx, key, 16, params);
+	EVP_MAC_update(ctx, data, len);
+	size_t outlen = 16;
+	EVP_MAC_final(ctx, out.data(), &outlen, 16);
+	EVP_MAC_CTX_free(ctx);
+	EVP_MAC_free(mac);
+#else
+	CMAC_CTX *ctx = CMAC_CTX_new();
+	CMAC_Init(ctx, key, 16, EVP_aes_128_cbc(), nullptr);
+	CMAC_Update(ctx, data, len);
+	size_t outlen = 16;
+	CMAC_Final(ctx, out.data(), &outlen);
+	CMAC_CTX_free(ctx);
+#endif
+	return out;
+}
 
-	const vector snonce(h.eapol.begin() + 17, h.eapol.begin() + 49);
+struct PtkCtx { array<uint8_t, 32> pmk{}; vector<uint8_t> ctx; vector<uint8_t> snonce; };
 
-	vector<uint8_t> ctx;
-	ctx.reserve(76);
-	const auto &[lo_mac, hi_mac] = h.ap_mac < h.sta_mac ? pair{ h.ap_mac, h.sta_mac } : pair{ h.sta_mac, h.ap_mac };
-	const auto &[lo_n, hi_n] = h.anonce < snonce ? pair{ h.anonce, snonce } : pair{ snonce, h.anonce };
-	ctx.insert(ctx.end(), lo_mac.begin(), lo_mac.end());
-	ctx.insert(ctx.end(), hi_mac.begin(), hi_mac.end());
-	ctx.insert(ctx.end(), lo_n.begin(), lo_n.end());
-	ctx.insert(ctx.end(), hi_n.begin(), hi_n.end());
+PtkCtx make_ptk_ctx(const WpaHashEntry &h, const string &psk) {
+	PtkCtx r;
+	PKCS5_PBKDF2_HMAC(psk.data(), static_cast<int>(psk.size()),
+		h.ssid.data(), static_cast<int>(h.ssid.size()),
+		4096, EVP_sha1(), 32, r.pmk.data());
+	r.snonce = vector<uint8_t>(h.eapol.begin() + 17, h.eapol.begin() + 49);
+	r.ctx.reserve(76);
+	const auto &[lo_mac, hi_mac] = h.ap_mac < h.sta_mac ? pair{h.ap_mac, h.sta_mac} : pair{h.sta_mac, h.ap_mac};
+	const auto &[lo_n, hi_n] = h.anonce < r.snonce ? pair{h.anonce, r.snonce} : pair{r.snonce, h.anonce};
+	r.ctx.insert(r.ctx.end(), lo_mac.begin(), lo_mac.end());
+	r.ctx.insert(r.ctx.end(), hi_mac.begin(), hi_mac.end());
+	r.ctx.insert(r.ctx.end(), lo_n.begin(), lo_n.end());
+	r.ctx.insert(r.ctx.end(), hi_n.begin(), hi_n.end());
+	return r;
+}
 
+//TODO sources from IEEE
+
+// WPA2-PSK (AKM 2): WPA-PRF-384 (HMAC-SHA1), MIC = HMAC-SHA1(KCK, eapol)[0:16]
+// PRF iter: HMAC-SHA1(pmk, label || 0x00 || ctx || i8), i=0,1,2 → 60 bytes, take 48
+bool verify_sha1_mic(const WpaHashEntry &h, const string &psk) {
+	const auto [pmk, ctx, snonce] = make_ptk_ctx(h, psk);
 	static constexpr string_view label = "Pairwise key expansion";
+	array<uint8_t, 48> ptk{};
+	for(uint8_t i = 0; i < 3; ++i) {
+		vector<uint8_t> msg;
+		msg.reserve(label.size() + 1 + ctx.size() + 1);
+		msg.insert(msg.end(), label.begin(), label.end());
+		msg.push_back(0x00);
+		msg.insert(msg.end(), ctx.begin(), ctx.end());
+		msg.push_back(i);
+		array<uint8_t, 20> mac{};
+		unsigned int mac_len = 20;
+		HMAC(EVP_sha1(), pmk.data(), 32, msg.data(), msg.size(), mac.data(), &mac_len);
+		memcpy(ptk.data() + i * 20, mac.data(), min<size_t>(20, 48 - i * 20));
+	}
+	array<uint8_t, 20> computed{};
+	unsigned int len = 20;
+	HMAC(EVP_sha1(), ptk.data(), 16, h.eapol.data(), h.eapol.size(), computed.data(), &len);
+	return memcmp(computed.data(), h.mic.data(), 16) == 0;
+}
 
+// WPA-PSK-SHA256 (AKM 6): PTK via SHA256-PRF-384, MIC depends on wpa_supplicant version:
+//   ver=0 (wpa_supplicant >=2.10): MIC = HMAC-SHA256(KCK, eapol)[0:16]
+//   ver=3 (wpa_supplicant <2.10):  MIC = AES-128-CMAC(KCK, eapol)[0:16]
+// PRF iter: HMAC-SHA256(pmk, LE16(i) || label || 0x00 || ctx || LE16(384)), i=1,2 → 64 bytes, take 48
+bool verify_sha256_mic(const WpaHashEntry &h, const string &psk) {
+	const auto [pmk, ctx, snonce] = make_ptk_ctx(h, psk);
+	static constexpr string_view label = "Pairwise key expansion";
 	array<uint8_t, 48> ptk{};
 	for(uint16_t i = 1; i <= 2; ++i) {
 		constexpr uint16_t ptk_bits = 384;
 		vector<uint8_t> msg;
-		msg.reserve(2 + label.size() + ctx.size() + 2);
+		msg.reserve(2 + label.size() + 1 + ctx.size() + 2);
 		msg.push_back(i & 0xFF);
 		msg.push_back((i >> 8) & 0xFF);
 		msg.insert(msg.end(), label.begin(), label.end());
+		msg.push_back(0x00);
 		msg.insert(msg.end(), ctx.begin(), ctx.end());
 		msg.push_back(ptk_bits & 0xFF);
 		msg.push_back(ptk_bits >> 8 & 0xFF);
-
 		array<uint8_t, 32> mac{};
 		unsigned int mac_len = 32;
 		HMAC(EVP_sha256(), pmk.data(), 32, msg.data(), msg.size(), mac.data(), &mac_len);
 		const size_t off = (i - 1) * 32;
 		memcpy(ptk.data() + off, mac.data(), min<size_t>(32, 48 - off));
 	}
-
-	array<uint8_t, 32> computed{};
-	unsigned int len = 32;
-	HMAC(EVP_sha256(), ptk.data(), 16, h.eapol.data(), h.eapol.size(), computed.data(), &len);
+	array<uint8_t, 16> computed{};
+	if(h.ver == 3) {
+		// AES-128-CMAC — older wpa_supplicant (<2.10) uses this for AKM 6 with CCMP
+		computed = aes128_cmac(ptk.data(), h.eapol.data(), h.eapol.size());
+	} else {
+		array<uint8_t, 32> tmp{};
+		unsigned int len = 32;
+		HMAC(EVP_sha256(), ptk.data(), 16, h.eapol.data(), h.eapol.size(), tmp.data(), &len);
+		memcpy(computed.data(), tmp.data(), 16);
+	}
 	return memcmp(computed.data(), h.mic.data(), 16) == 0;
 }
 
@@ -158,30 +217,13 @@ CrackResult crack_pmk_hashes(const path &creds_file, const string &psk) {
 
 	for(const auto &h: sha256_hashes)
 		if(verify_sha256_mic(h, psk)) ++cracked;
-
-	if(!sha1_hashes.empty()) {
-		if(hw_capabilities::run_cmd({ "which", "hcxpmktool" }, nullopt, false) != 0) {
-			log(LogLevel::WARNING, "hcxpmktool not found, skipping {} SHA1 hash(es)", sha1_hashes.size());
-		} else {
-			log(LogLevel::INFO,
-				"hcxpmktool: {}",
-				hw_capabilities::run_cmd_output({ "hcxpmktool", "--version" }, nullopt));
-			const path tmp = temp_directory_path() / "wpa3_tester_sha1.txt";
-			{
-				ofstream f(tmp);
-				for(const auto &h2: sha1_hashes) f << h2.raw << "\n";
-			}
-			const string out = hw_capabilities::run_cmd_output({ "hcxpmktool", "-z", tmp.string(), "-p", psk });
-			remove(tmp);
-			for(size_t p = 0; (p = out.find("WPA*", p)) != string::npos; p += 4)
-				if(p == 0 || out[p - 1] == '\n') ++cracked;
-		}
-	}
+	for(const auto &h: sha1_hashes)
+		if(verify_sha1_mic(h, psk)) ++cracked;
 
 	log(LogLevel::INFO,
-		"cracked: {}/{} hashes ({} SHA256, {} SHA1)",
+		"cracked: {}/{} hashes ({} SHA256, {} SHA1) with password \"{}\"",
 		cracked, total,
-		sha256_hashes.size(), sha1_hashes.size());
+		sha256_hashes.size(), sha1_hashes.size(), psk);
 	return { total, cracked };
 }
 

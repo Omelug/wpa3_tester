@@ -61,6 +61,13 @@ configure_file(
 )
 target_include_directories(wpa3_ex_program PRIVATE "${CMAKE_BINARY_DIR}/generated")
 
+include(CheckIncludeFile)
+check_include_file("openssl/mac.h" HAVE_OPENSSL_MAC_H)
+check_include_file("openssl/core_names.h" HAVE_OPENSSL_CORE_NAMES_H)
+if (HAVE_OPENSSL_MAC_H AND HAVE_OPENSSL_CORE_NAMES_H)
+    target_compile_definitions(wpa3_ex_program PRIVATE HAVE_OPENSSL_MAC_H)
+endif ()
+
 add_executable(${PROJECT_NAME}
         "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
         include/config/Run_Config.h

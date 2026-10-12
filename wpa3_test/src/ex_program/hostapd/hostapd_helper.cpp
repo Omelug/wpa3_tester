@@ -199,6 +199,7 @@ static void build_wpa_supplicant_version(const string &version, const path &buil
 	ofstream conf(config_path, ios::app);
 	conf << "\n# --- Configuration changes for the Wi-Fi Framework ---" "\nCONFIG_SAE=y" "\nCONFIG_TESTING_OPTIONS=y"
 			"\nCONFIG_FRAMEWORK_EXTENSIONS=y" "\nCONFIG_IEEE80211W=y" "\nCONFIG_WNM=y" "\nCONFIG_OCV=y"
+			"\nCONFIG_OWE=y"
 			"\nCONFIG_IEEE80211N=y" "\nCONFIG_IEEE80211AC=y" "\nCONFIG_IEEE80211AX=y" "\nCONFIG_IEEE80211R=y"
 			"\nCONFIG_INTERWORKING=y" "\nCONFIG_CTRL_IFACE=y" "\nCONFIG_DEBUG_FILE=y" "\nCONFIG_EAP_PWD=y"
 			"\nCONFIG_CTRL_IFACE_DBUS=" "\nCONFIG_CTRL_IFACE_DBUS_NEW=" "\nCONFIG_CTRL_IFACE_DBUS_INTRO=" "\n";

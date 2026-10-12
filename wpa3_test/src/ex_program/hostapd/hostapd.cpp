@@ -6,6 +6,7 @@
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "observer/observers.h"
+#include "system/hw_capabilities.h"
 #include "system/utils.h"
 
 namespace wpa3_tester::hostapd{
@@ -123,6 +124,8 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 
 	string hostapd_config_path;
 	if(program_config.value("owe_transition_mode", false)){
+		const string secondary_iface = rs.get_actor(actor_name).get(SK::iface).substr(0, 11) + "_owe";
+		hw_capabilities::run_cmd({"iw", "dev", secondary_iface, "del"}, nullopt, false);
 		hostapd_config_path = hostapd_owe_trans_config(rs, actor_name);
 		rs.get_actor(actor_name)->set(SK::ssid, program_config.at("owe_ssid").get<string>());
 	} else{

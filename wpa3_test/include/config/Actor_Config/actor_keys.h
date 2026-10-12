@@ -65,6 +65,7 @@ enum class BK : uint8_t {
 	MFP,
 	WPA_PSK,
 	WPA3_SAE,
+	OWE,
 	COUNT_
 };
 
@@ -116,6 +117,7 @@ inline constexpr std::array<std::string_view, static_cast<size_t>(BK::COUNT_)> B
 	"MFP",
 	"WPA-PSK",
 	"WPA3-SAE",
+	"OWE",
 };
 
 constexpr std::string_view sk_name(SK k) { return SK_NAMES[static_cast<size_t>(k)]; }

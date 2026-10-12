@@ -72,6 +72,7 @@ struct NlCaps {
 
 	bool wpa2_psk = false; // heuristic
 	bool wpa3_sae = false;
+	bool owe = false;
 
 	bool _80211n = false;  // 802.11n  (HT)
 	bool _80211ac = false; // 802.11ac (VHT)
@@ -98,6 +99,7 @@ struct CryptoCaps {
 
 constexpr uint32_t AKM_PSK = 0x000FAC02;
 constexpr uint32_t AKM_SAE = 0x000FAC08;
+constexpr uint32_t AKM_OWE = 0x000FAC12;
 
 constexpr uint32_t CIPHER_CCMP = 0x000FAC04;
 constexpr uint32_t CIPHER_GCMP_256 = 0x000FAC09;

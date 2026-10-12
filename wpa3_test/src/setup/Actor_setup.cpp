@@ -70,7 +70,8 @@ void Actor_config::real_actor_setup_base_keys(const ActorPtr &real_actor) {
 				BK::OCV,
 				BK::MFP,
 				BK::WPA_PSK,
-				BK::WPA3_SAE } });
+				BK::WPA3_SAE,
+				BK::OWE } });
 	if(!(*this)[SK::netns].has_value()) set(real_actor, SK::netns);
 	if(!(*this)[SK::channel].has_value()) set(real_actor, SK::channel);
 	if(!(*this)[SK::ssid].has_value()) set(real_actor, SK::ssid);

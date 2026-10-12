@@ -88,6 +88,15 @@ void check_WPA2_PSK(nlattr **attrs, NlCaps *caps){
 	}
 }
 
+void check_OWE(nlattr **attrs, NlCaps *caps){
+	if(!attrs[NL80211_ATTR_AKM_SUITES]) return;
+	const auto *akms = static_cast<const uint32_t *>(nla_data(attrs[NL80211_ATTR_AKM_SUITES]));
+	const ulong num = nla_len(attrs[NL80211_ATTR_AKM_SUITES]) / sizeof(uint32_t);
+	for(ulong i = 0; i < num; i++){
+		if(akms[i] == AKM_OWE) caps->owe = true;
+	}
+}
+
 void check_WPA3_SAE(nlattr **attrs, NlCaps *caps){
 	if(attrs[NL80211_ATTR_FEATURE_FLAGS]){
 		const uint32_t feature_flags = nla_get_u32(attrs[NL80211_ATTR_FEATURE_FLAGS]);
@@ -230,6 +239,7 @@ void apply_nl_caps(const ActorPtr &cfg, const NlCaps &caps){
 
 	cfg->set(BK::WPA_PSK, caps.wpa2_psk);
 	cfg->set(BK::WPA3_SAE, caps.wpa3_sae);
+	cfg->set(BK::OWE, caps.owe);
 }
 
 int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
@@ -241,6 +251,7 @@ int hw_capabilities::nl80211_cb(nl_msg *msg, void *arg){
 
 	check_WPA3_SAE(attrs, caps);
 	check_WPA2_PSK(attrs, caps);
+	check_OWE(attrs, caps);
 	check_iftypes(attrs, caps);
 	check_active_monitor(attrs, caps);
 	check_band_caps(attrs, caps);

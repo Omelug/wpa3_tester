@@ -3,7 +3,6 @@
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "interrupt.h"
-#include "scan/active/scan_AP.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::ssid_confusion {

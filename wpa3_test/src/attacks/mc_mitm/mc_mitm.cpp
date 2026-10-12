@@ -82,6 +82,7 @@ bool McMitm::should_check_rogue_beacons() const {
 
 void McMitm::setup_real_AP_RSN_frames() {
 	rogue_sta->set_iface_up();
+	rogue_sta->set_channel(netconfig.real_channel);
 
 	// get real AP beacon
 	beacon = scan::RSN_scan(rogue_sta.get(SK::iface),

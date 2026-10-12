@@ -15,7 +15,7 @@ actors:
         other_options: -d
         version: 2_11
         driver: nl80211
-        ssid: test_mc_mitm
+        ssid: WrongNet
         hw_mode: g
         auth_algs: 1
         wpa: 2

@@ -100,7 +100,6 @@ endif ()
 
 target_compile_definitions(wpa3_deps INTERFACE
         PROJECT_ROOT_DIR="${WPA3_PROJECT_ROOT}"
-        GIT_COMMIT_HASH="${_GIT_HASH}"
 )
 
 target_compile_features(wpa3_deps INTERFACE cxx_std_23)

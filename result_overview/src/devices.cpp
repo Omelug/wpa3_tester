@@ -27,7 +27,7 @@ struct DeviceCaps {
 	optional<bool> AP, STA, monitor;
 	optional<bool> ghz2_4, ghz5, ghz6;
 	optional<bool> n80211n, n80211ac, n80211ax;
-	optional<bool> netns_change, beacon_prot, PBAC, CSA, OCV, MFP, WPA_PSK, WPA3_SAE;
+	optional<bool> netns_change, beacon_prot, PBAC, CSA, OCV, MFP, WPA_PSK, WPA3_SAE, OWE;
 };
 
 struct UsbInfo {
@@ -105,6 +105,7 @@ static optional<DeviceInfo> parse_device_file(const path &p, const string &mac){
 	d.caps.n80211ax = json_bool(caps, "80211ax");
 	d.caps.WPA_PSK  = json_bool(caps, "WPA-PSK");
 	d.caps.WPA3_SAE = json_bool(caps, "WPA3-SAE");
+	d.caps.OWE      = json_bool(caps, "OWE");
 	return d;
 }
 
@@ -255,6 +256,7 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 	tr("MFP",              d.caps.MFP);
 	tr("WPA-PSK",          d.caps.WPA_PSK);
 	tr("WPA3-SAE",         d.caps.WPA3_SAE);
+	tr("OWE",              d.caps.OWE);
 	f << "</table></div>";
 
 	if(d.ap_info){
@@ -378,6 +380,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices,
 		COL("MFP",         d.caps.MFP);
 		COL("PSK",         d.caps.WPA_PSK);
 		COL("SAE",         d.caps.WPA3_SAE);
+		COL("OWE",         d.caps.OWE);
 	})->render();
 #undef COL
 }

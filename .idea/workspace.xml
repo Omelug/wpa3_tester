@@ -141,16 +141,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: only DONT_REORDER in tx_flags in radiotap&#10;r: small changes&#10;ch: cracking in code, no hcxpmktool used  (issue with endlessly waiting for result)">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f-: mc_mitm before scan rogue_sta-&gt;set_channel(netconfig.real_channel);">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/result_overview/src/devices.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/devices.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/owe_trans/owe_trans.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/owe_trans/owe_trans.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/mc_mitm_internal.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/components/setup_connections.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/components/setup_connections.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/setup/usb_helper.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1268,9 +1262,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="r: RSN masks to header (no magic numbers)" />
-    <MESSAGE value="r: Makefile simplify, delete historic doc, small changes" />
-    <MESSAGE value="r: small changes" />
     <MESSAGE value="f+: to EAP" />
     <MESSAGE value="f: rogu/real  channel set" />
     <MESSAGE value="r: handle_probe_real" />
@@ -1293,7 +1284,10 @@
     <MESSAGE value="f: only DONT_REORDER in RadioTap (not no ACK)" />
     <MESSAGE value="f+: check OWE" />
     <MESSAGE value="f: only DONT_REORDER in tx_flags in radiotap&#10;r: small changes&#10;ch: cracking in code, no hcxpmktool used  (issue with endlessly waiting for result)" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: only DONT_REORDER in tx_flags in radiotap&#10;r: small changes&#10;ch: cracking in code, no hcxpmktool used  (issue with endlessly waiting for result)" />
+    <MESSAGE value="fr: small changes" />
+    <MESSAGE value="f: GIT_HASH cause recompilation after every commit" />
+    <MESSAGE value="f-: mc_mitm before scan rogue_sta-&gt;set_channel(netconfig.real_channel);" />
+    <option name="LAST_COMMIT_MESSAGE" value="f-: mc_mitm before scan rogue_sta-&gt;set_channel(netconfig.real_channel);" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

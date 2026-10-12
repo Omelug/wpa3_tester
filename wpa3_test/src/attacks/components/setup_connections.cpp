@@ -19,7 +19,7 @@ void setup_AP(RunStatus &rs, const string &ap_actor_name) {
 	//FIXME this dont work with external logread  (some issue with buffering?)
 	// rs.process_manager.wait_for(actor_name, "AP-ENABLED", chrono::seconds(40));
 
-	interruptible_sleep(seconds(2));
+	interruptible_sleep(seconds(2)); //FIXME magic number
 
 	log(LogLevel::INFO, "{} is running", ap_actor_name);
 	if(rs.get_actor(ap_actor_name)[SK::ip_addr]) { ip::set_ip(rs, ap_actor_name); }

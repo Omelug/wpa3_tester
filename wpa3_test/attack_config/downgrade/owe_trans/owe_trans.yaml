@@ -25,7 +25,10 @@ actors:
   client:
     source: internal
     selection:
-      condition: [ managed, 2_4GHz, netns_change, OWE ]
+      [ managed, 2_4GHz, netns_change,
+        #TODO support any driver now this ?
+        #, OWE  # I dont know if all drivers fill this "AP modes" flags
+      ]
     setup:
       program: wpa_supplicant
       program_config:

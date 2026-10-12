@@ -45,7 +45,7 @@ actors:
       #TODO driver: rtw_8821cu save BSSID in formware -> not reset on test start
       #permanent_mac: 90:de:80:de:ff:7b
       permanent_mac: "24:ec:99:bf:c7:cf"
-      #driver: ath9k_htc
+      driver: ath9k_htc
       channel: 11
     setup:
       program: wpa_supplicant

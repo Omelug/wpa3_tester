@@ -76,7 +76,7 @@ if (NOT DEFINED WPA3_PROJECT_ROOT)
     set(WPA3_PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 endif ()
 execute_process(
-        COMMAND git -C "${CMAKE_SOURCE_DIR}" rev-parse --short HEAD
+        COMMAND git -C "${CMAKE_SOURCE_DIR}" rev-parse HEAD
         OUTPUT_VARIABLE _GIT_HASH
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET

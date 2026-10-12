@@ -141,21 +141,27 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: expected_vht_beacon + fixed">
-      <change beforePath="$PROJECT_DIR$/.envrc" beforeDir="false" afterPath="$PROJECT_DIR$/.envrc.d" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="f: &quot;cracked:&quot; was sometimmes 2/1 because empty lines were count">
+      <change afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/CSA_mitigation_filler.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TODO.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/downgrade/wpa3_trans_downgrade.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/downgrade/wpa3_trans_downgrade.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/result_overview/src/attacks/DoS_soft/channel_switch.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/setup.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tester_setup/raspberry_pi4/image/setup.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/channel_switch.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/external/CSA_ex.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/hostapd_2_10_ocv.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/hostapd_2_10_ocv.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/hostapd_2_10_ocv_beacon_prot.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/hostapd_2_10_ocv_beacon_prot.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation/hostapd_2_10_ocv_protection.yaml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_MFP_req.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_MFP_req.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_MFP_req_5GHz.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_MFP_req_5GHz.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_1.comp.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/comp/rogue_ap/rogue_ap_1.comp.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/cmake/dependencies.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/channel_switch/channel_switch.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_MFPr.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_MFPr.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_same_channel.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_same_channel.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/expected_vht_beacon.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/expected_vht_beacon.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/Dlink/expected_vht_beacon_ex_Dlink.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/expected_vht_beacon/external/Dlink/expected_vht_beacon_ex_Dlink.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/observer/tshark_wrapper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/wpa3_downgrade_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/downgrade/wpa3_downgrade_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/result_helper.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -310,7 +316,7 @@
     &quot;ctest.advertisement.all.test.configuration.is.created&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
     &quot;git.auto.fetch.suggestion.counter&quot;: &quot;3&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/downgrade/wpa3_down&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
@@ -320,11 +326,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/downgrade/wpa3_down" />
       <recent name="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion" />
       <recent name="$PROJECT_DIR$/doc" />
       <recent name="$PROJECT_DIR$/wpa3_test/attack_config/enterprise/reflection_attack" />
-      <recent name="$PROJECT_DIR$/wpa3_test/attack_config/DoS_soft/bl0ck/Dlink/random" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/wpa3_test/src" />
@@ -1241,8 +1247,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: reset mac address in cleanup" />
-    <MESSAGE value="f: log capture before rename (hash cracking )" />
     <MESSAGE value="f: hash cracking WPA-PSK-SHA256 support" />
     <MESSAGE value="f: reset permanent mac oon start" />
     <MESSAGE value="f:CSA in Mitm" />
@@ -1267,7 +1271,9 @@
     <MESSAGE value="f: reset_usb_ifaces only before actor_filler" />
     <MESSAGE value="f: wpa3_transition_downgrade_wpa3_disable" />
     <MESSAGE value="f: expected_vht_beacon + fixed" />
-    <option name="LAST_COMMIT_MESSAGE" value="f: expected_vht_beacon + fixed" />
+    <MESSAGE value="r; channel_switch_rogueAP" />
+    <MESSAGE value="f: &quot;cracked:&quot; was sometimmes 2/1 because empty lines were count" />
+    <option name="LAST_COMMIT_MESSAGE" value="f: &quot;cracked:&quot; was sometimmes 2/1 because empty lines were count" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1364,12 +1370,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp</url>
-          <line>323</line>
+          <line>325</line>
           <option name="timeStamp" value="180" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/wpa3_test/src/config/RunStatus.cpp</url>
-          <line>328</line>
+          <line>330</line>
           <option name="timeStamp" value="181" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">

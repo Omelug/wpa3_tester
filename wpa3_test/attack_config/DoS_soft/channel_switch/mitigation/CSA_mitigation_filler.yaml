@@ -1,0 +1,12 @@
+name: CSA_mitigation_filler
+suite_functions: CSA_rogueAP_internal_filler
+config_type: test_suite
+tests:
+  all_ocv:
+    type: actor_filler
+    config: ./hostapd_2_10_ocv.yaml
+  #all_ocv_beacon_prot:
+  #  type: actor_filler
+  #  config: ./hostapd_2_10_ocv_beacon_prot.yaml
+delete_old: true
+rewrite: "errors"

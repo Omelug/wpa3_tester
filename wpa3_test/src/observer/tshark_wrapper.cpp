@@ -405,18 +405,23 @@ static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_f
 		{ "tshark", "-r", pcap_path.string(), "-Y", full_filter, "-T", "fields", "-e", "wlan.rsn.capabilities" },
 		nullopt);
 
+	bool found = false;
 	stringstream ss(caps_raw);
-	string first_line;
-	while(getline(ss, first_line)) {
-		first_line = trim(first_line);
-		if(!first_line.empty()) { break; }
+	string line;
+	while(getline(ss, line)) {
+		stringstream ls(line);
+		string token;
+		while(getline(ls, token, ',')) {
+			token = trim(token);
+			if(token.empty()) continue;
+			try {
+				const auto val = stoul(token, nullptr, 0);
+				found = true;
+				if(val & RSN_CAP_OCVC) return true;
+			} catch(...) {}
+		}
 	}
-
-	if(first_line.empty()) return nullopt;
-
-	try {
-		return (stoul(first_line, nullptr, 0) & RSN_CAP_OCVC) != 0;
-	} catch(...) { return nullopt; }
+	return found ? optional<bool>(false) : nullopt;
 }
 
 //TODO tests for these functions  with real pcap/logs
@@ -448,8 +453,8 @@ string akm_from_pcap(const path &pcap_path) {
 }
 
 optional<bool> client_ocv_from_pcap(const path &pcap_path) {
-	// Probe Request (0x0004) or Association Request (0x0000) carry client's RSN Capabilities
-	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0000");
+	// Probe Request (0x0004), Reassociation (0x0002) or Association Request (0x0000) carry client's RSN Capabilities
+	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0002 || wlan.fc.type_subtype == 0x0000");
 }
 
 optional<bool> ap_ocv_from_pcap(const path &pcap_path) {
@@ -489,20 +494,23 @@ static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_
 		{ "tshark", "-r", pcap_path.string(), "-Y", full_filter, "-T", "fields", "-e", "wlan.rsn.capabilities" },
 		nullopt);
 
-	// '-c', '1' show empty output, get first line manually
+	bool found = false;
 	stringstream ss(caps_raw);
-	string first_line;
-	while(getline(ss, first_line)) {
-		first_line = trim(first_line);
-		if(!first_line.empty()) { break; }
+	string line;
+	while(getline(ss, line)) {
+		stringstream ls(line);
+		string token;
+		while(getline(ls, token, ',')) {
+			token = trim(token);
+			if(token.empty()) continue;
+			try {
+				const auto val = stoul(token, nullptr, 0);
+				found = true;
+				if(val & RSN_CAP_PBAC) return true;
+			} catch(...) {}
+		}
 	}
-
-	if(first_line.empty()) return nullopt;
-
-	try {
-		const uint32_t caps = stoul(first_line, nullptr, 0);
-		return (caps & RSN_CAP_PBAC) != 0;
-	} catch(...) { return nullopt; }
+	return found ? optional<bool>(false) : nullopt;
 }
 
 described_bool pbac_from_pcap_ap(const path &pcap_path, const string &ap_mac) {
@@ -538,19 +546,24 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 																"wlan.rsn.capabilities" },
 		nullopt);
 
+	string result;
 	stringstream ss(caps_raw);
 	string line;
-	while(getline(ss, line)) { //TODO this parsisng is duplicate
-		line = trim(line);
-		if(line.empty()) continue;
-		try {
-			const uint16_t caps = stoul(line, nullptr, 0); //FIXME only
-			if(caps & RSN_CAP_MFPR) return "REQUIRED";
-			if(caps & RSN_CAP_MFPC) return "OPTIONAL";
-			return "OFF";
-		} catch(...) {}
+	while(getline(ss, line)) {
+		stringstream ls(line);
+		string token;
+		while(getline(ls, token, ',')) {
+			token = trim(token);
+			if(token.empty()) continue;
+			try {
+				const auto caps = stoul(token, nullptr, 0);
+				if(caps & RSN_CAP_MFPR) return "REQUIRED";
+				if(caps & RSN_CAP_MFPC) result = "OPTIONAL";
+				else if(result.empty()) result = "OFF";
+			} catch(...) {}
+		}
 	}
-	return {};
+	return result;
 }
 
 // ----- Transition Disable -----

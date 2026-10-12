@@ -21,8 +21,6 @@ actors:
     setup:
       program_config:
         other_options: "-d"
-      #selection
-      #driver: rtw_8821au
   attacker:
     source: internal
     selection:
@@ -38,5 +36,4 @@ attack_config:
   new_channel: 1
   sleep_before_sec: 10
   sleep_after_sec: 10
-#only_stats: true
 delete_old: false

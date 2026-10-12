@@ -61,7 +61,7 @@ described_bool get_ap_ocv(const RunStatus &rs){
 	if(rs.actor("ap")) {
 		const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 		if(exists(rs.run_folder() / "ap_hostapd.conf") && program_str == "hostapd")
-			ap_ocv += {hostapd::get_okc(rs, "ap").value_or(false), "hostapd_conf"};
+			ap_ocv += {hostapd::get_ocv(rs, "ap").value_or(false), "hostapd_conf"};
 
 		const auto uci_conf = rs.run_folder() / "ap_wireless_uci.conf";
 		if(exists(uci_conf) && program_str == "openwrt"){

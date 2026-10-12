@@ -12,6 +12,7 @@ actors:
       channel: 6
       permanent_mac: "90:de:80:de:fd:b2"
   rogue_ap:
+    source: internal
     selection:
       channel: 6
       permanent_mac: "90:de:80:4e:31:e6"

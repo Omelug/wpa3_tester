@@ -36,7 +36,7 @@ actors:
       program_config:
         ssid: test_wpa3_tester
     selection:
-      permanent_mac: "24:ec:99:bf:b0:a1"
+      permanent_mac: "90:de:80:4e:31:e6"
 $extends: [ ./ex_observers.comp.yaml, ../../../comp/rogue_ap/rogue_ap_1.comp.yaml ]
 
 attack_config:

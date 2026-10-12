@@ -1,22 +1,14 @@
-$extends: ../channel_switch.yaml
+$extends: ./hostapd_2_10_ocv.yaml
 name: channel_switch_2_10_ocv_beacon_prot
 actors:
   ap:
     setup:
-      program: hostapd
       program_config:
-        version: 2_10
-        ocv: 1
         beacon_prot: 1
-    selection:
-      condition: [ AP , OCV, MFP, 2_4GHz ]
+    #selection:
+    #  condition: [ AP , OCV, MFP, 2_4GHz ]
   client:
     setup:
       program: wpa_supplicant
       program_config:
-        version: 2_10
         beacon_prot: 1
-        okc: 1
-    selection:
-      condition: [ monitor, OCV, MFP, 2_4GHz, netns_change ]
-rewrite: "errors"

@@ -12,7 +12,7 @@ actors:
       program: hostapd-mana
       program_config:
         channel: 6
-        hostapd-mana_path: ./config/hostapd-mana.conf
+        #hostapd-mana_path: ./config/hostapd-mana.conf
 
 attack_config:
   attack_time: 15

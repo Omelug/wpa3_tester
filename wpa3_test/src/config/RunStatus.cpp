@@ -139,6 +139,8 @@ void RunStatus::do_run() {
 		clean();
 		return true;
 	};
+	// if failed, at least this will be avaible for debug
+	save_yaml(_config, _run_folder / TEST_CONFIG_NAME);
 
 	setup_test();
 	if(interrupted()) return;

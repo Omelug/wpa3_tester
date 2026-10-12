@@ -22,8 +22,6 @@ actors:
     setup:
       program_config:
         other_options: "-d"
-      #selection
-      #driver: rtw_8821au
   attacker:
     source: internal
     selection:

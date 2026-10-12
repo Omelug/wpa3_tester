@@ -58,6 +58,7 @@ Not very supported, mobile devices have better support.
 
 	// emit tables for each variant
 	emit_table("RogueAP internal",  base / "rogueAP" / "CSA_rogueAP_internal_filler", "CSA_rogueAP_internal_filler");
+	emit_table("OCV/ beacon prot mitigation",  base / "mitigation" / "CSA_mitigation_filler", "CSA_mitigation_filler");
 	emit_table("Dlink", base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler", "CSA_rogueAP_Dlink_filler");
 	emit_table("External Client", base / "external" / "client"/ "CSA_external_client_filler", "CSA_external_client_filler");
 

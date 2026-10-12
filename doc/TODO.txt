@@ -72,7 +72,7 @@ t: Stress tests
     l: log/cache  results per chipset/driver
 
 r?: scan parsing is still messy (maybe do everything with libpcap)
-ch: change functions to work with HWAdress, not string
+ch: change functions to work with HWAddress, not string
 
 //DONE
 f: v cracked: se někdy objevuje 2/1

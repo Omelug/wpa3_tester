@@ -14,6 +14,7 @@ struct ExpVhtTestEntry {
 	std::string ap_mac;
 	std::string ap_source;
 	std::string client_mac;
+	std::string client_driver;
 	std::string client_source;
 	std::string attacker_mac;
 	std::string attacker_driver;

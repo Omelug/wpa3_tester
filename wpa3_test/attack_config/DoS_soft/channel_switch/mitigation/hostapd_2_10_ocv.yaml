@@ -1,18 +1,20 @@
-$extends: ../channel_switch.yaml
+$extends: ../rogueAP/CSA_rogueAP_internal.yaml
 name: channel_switch_2_10_ocv
 actors:
   ap:
     setup:
-      program: hostapd
       program_config:
-        version: 2_10
         ocv: 1
     selection:
-      condition: [ AP , OCV, 2_4GHz ]
+      condition: [ AP,
+                   #OCV,
+                   2_4GHz ]
   client:
     setup:
-      program: wpa_supplicant
       program_config:
-        version: 2_10
+        ocv: 1
     selection:
-      condition: [ monitor, OCV, 2_4GHz, netns_change ]
+      condition: [ monitor,
+                   #OCV,
+                   2_4GHz, netns_change ]
+rewrite: "errors"

@@ -3,7 +3,7 @@ attacker_module: expected_vht_beacon
 $validator: ./expected_vht_beacon.schema.yaml
 $extends: [
   ../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
-  ../../comp/client/client_2_10_WPA3_mixed_MFPo_6.comp.yaml,
+  client_2_11_WPA3_mixed_MFPo_6.comp.yaml,
   ./observers.comp.yaml
 ]
 actors:

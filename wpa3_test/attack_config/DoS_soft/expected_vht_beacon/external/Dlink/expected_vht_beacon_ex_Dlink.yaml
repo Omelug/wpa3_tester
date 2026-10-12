@@ -2,7 +2,7 @@ name: expected_vht_beacon_ex_Dlink
 attacker_module: expected_vht_beacon
 $validator: ../../expected_vht_beacon.schema.yaml
 $extends: [
-  ../../../../comp/client/client_2_10_WPA3_mixed_MFPo_6.comp.yaml,
+  ../../../../comp/client/client_2_11_WPA3_mixed_MFPo_6.comp.yaml,
   ../ex_observers.comp.yaml,
   ../../../../comp/rogue_ap/rogue_ap_6.comp.yaml
 ]

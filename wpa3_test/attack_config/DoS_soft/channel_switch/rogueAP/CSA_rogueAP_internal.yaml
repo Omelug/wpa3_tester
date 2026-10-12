@@ -4,7 +4,7 @@ $validator: ../channel_switch.schema.yaml
 
 $extends: [
   ../../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml,
-  ../../../comp/client/client_2_10_WPA3_mixed_MFPo_6.comp.yaml,
+  ../../../comp/client/client_2_11_WPA3_mixed_MFPo_6.comp.yaml,
   ../../../comp/rogue_ap/rogue_ap_1.comp.yaml,
   ../observers.comp.yaml
 ]
@@ -31,7 +31,7 @@ actors:
     selection:
       permanent_mac: "90:de:80:4e:31:e6"
 attack_config:
-  attack_time: 40
+  attack_time: 60
   ms_interval: 100
   new_channel: 1
   sleep_before_sec: 10

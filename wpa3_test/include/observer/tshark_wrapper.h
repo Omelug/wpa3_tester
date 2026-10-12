@@ -45,7 +45,8 @@ std::string akm_from_pcap(const std::filesystem::path &pcap_path);
 // returns true if OCVC set, false if frame found but bit unset, nullopt if no relevant frame exists
 std::optional<bool> client_ocv_from_pcap(const std::filesystem::path &pcap_path);
 // extract OCV (RSN_CAP_OCVC bit of RSN Capabilities) from AP frames (Beacon / Probe Resp)
-std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path);
+// ap_mac: filter by BSSID (empty = all APs, picks up neighbors too)
+std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path, const std::string &ap_mac = {});
 
 // detect client scanning via Probe Requests in pcap_path within [start_time, end_time]
 // return "ch: X Y" (unique channels from wlan.ds.current_channel / radiotap),

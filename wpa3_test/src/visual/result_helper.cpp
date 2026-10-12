@@ -61,7 +61,7 @@ described_bool get_ap_ocv(const RunStatus &rs){
 	if(rs.actor("ap")) {
 		const auto program_str = rs.config().at("actors").at("ap").at("setup").at("program").get<string>();
 		if(exists(rs.run_folder() / "ap_hostapd.conf") && program_str == "hostapd")
-			ap_ocv += {hostapd::get_ocv(rs, "ap").value_or(false), "hostapd_conf"};
+			ap_ocv += {hostapd::get_ocv(rs, "ap").value_or(false), "hostapd_conf"}; // ocv is implicitly false if absent
 
 		const auto uci_conf = rs.run_folder() / "ap_wireless_uci.conf";
 		if(exists(uci_conf) && program_str == "openwrt"){
@@ -71,7 +71,12 @@ described_bool get_ap_ocv(const RunStatus &rs){
 		}
 	}
 
-	if(const auto v = observer::tshark::ap_ocv_from_pcap(observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap"))
+	string ap_mac;
+	if(rs.actor("ap")) {
+		ap_mac = rs.get_actor("ap").get(SK::mac);
+		if(ap_mac.empty()) ap_mac = rs.get_actor("ap").get(SK::permanent_mac);
+	}
+	if(const auto v = observer::tshark::ap_ocv_from_pcap(observer::get_observer_folder(rs, "tshark") / "attacker_capture.pcap", ap_mac))
 		ap_ocv += {*v, "pcap (beacon)"};
 	return ap_ocv;
 }

@@ -400,7 +400,7 @@ void pcap_events(const RunStatus &rs, vector<unique_ptr<GraphElements>> &element
 static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_filter) {
 	if(!exists(pcap_path)) return nullopt;
 
-	const string full_filter = "(" + frame_filter + ") && wlan.rsn.capabilities";
+	const string full_filter = "(" + frame_filter + ") && wlan.rsn.capabilities && !_ws.malformed";
 	const string caps_raw = hw_capabilities::run_cmd_output(
 		{ "tshark", "-r", pcap_path.string(), "-Y", full_filter, "-T", "fields", "-e", "wlan.rsn.capabilities" },
 		nullopt);
@@ -421,7 +421,7 @@ static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_f
 			} catch(...) {}
 		}
 	}
-	return found ? optional<bool>(false) : nullopt;
+	return found ? optional(false) : nullopt;
 }
 
 //TODO tests for these functions  with real pcap/logs
@@ -457,9 +457,10 @@ optional<bool> client_ocv_from_pcap(const path &pcap_path) {
 	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0002 || wlan.fc.type_subtype == 0x0000");
 }
 
-optional<bool> ap_ocv_from_pcap(const path &pcap_path) {
+optional<bool> ap_ocv_from_pcap(const path &pcap_path, const string &ap_mac) {
 	// Beacon (0x0008) or Probe Response (0x0005) carry AP's RSN Capabilities
-	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005");
+	const string mac_filter = ap_mac.empty() ? "" : " && wlan.bssid == " + ap_mac;
+	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005" + mac_filter);
 }
 
 // ----- ADDBA / PBAC -----
@@ -510,7 +511,7 @@ static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_
 			} catch(...) {}
 		}
 	}
-	return found ? optional<bool>(false) : nullopt;
+	return found ? optional(false) : nullopt;
 }
 
 described_bool pbac_from_pcap_ap(const path &pcap_path, const string &ap_mac) {

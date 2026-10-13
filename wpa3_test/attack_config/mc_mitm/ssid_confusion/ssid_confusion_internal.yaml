@@ -1,6 +1,14 @@
 name: ssid_confusion_test
 attacker_module: ssid_confusion
-
+#requirements:
+#  rssi_setup:
+#    band: "2_4GHz"
+#    conditions: [
+#      "(ap <-> rogue_client) > -90",
+#      "(client <-> rogue_ap) > -90",
+#      "(client <-> ap) < (client <-> rogue_ap)",
+#      "(client <-> ap) < (ap <-> rogue_client)"
+#    ]
 actors:
   # Legitimate WrongNet AP (EAP-PWD, internal hostapd); client has it at lower priority than SafeNet
   ap:

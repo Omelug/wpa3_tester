@@ -141,19 +141,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="ft: verify_sha256_mic">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="-: NOACK in b0ck (dont need wait for ACK )">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/attacks/mc_mitm/test_MonitorSocket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/attacks/mc_mitm/test_MonitorSocket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/ex_program/hostapd/test_hostapd_crack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/ex_program/hostapd/test_hostapd_crack.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/MonitorSocket.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/MonitorSocket.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/DoS_soft/bl0ck/bl0ck.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_helper.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_real.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_real.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
@@ -251,6 +245,7 @@
     "Doctest.Bl0ckTestEntry::parse - no config uses result.json only.executor": "Debug",
     "Doctest.HtmlPathTable prefix grouping functionality.executor": "Debug",
     "Doctest.HtmlPathTable t_name footer on non-empty entries.executor": "Debug",
+    "Doctest.MonitorSocket::parse_frame.executor": "Debug",
     "Doctest.ProbeRequest addr1 = other AP MAC → STOP, no send (filtered).executor": "Debug",
     "Doctest.ProbeRequest addr1 == AP_MAC → STOP, 1 rogue send, state=Finding.executor": "Debug",
     "Doctest.ProbeRequest broadcast (wildcard) → STOP, 1 rogue send, state=Finding.executor": "Debug",
@@ -279,6 +274,7 @@
     "Doctest.iperf_log_has_zero_plain - real AP server log (ctime timestamps, 1 zero interval) → unstable.executor": "Debug",
     "Doctest.pbac_from_pcap_ap - beacon with no PBAC bit returns false.executor": "Debug",
     "Doctest.reset_usb_ifaces - power-cycles adapters and rebinds drivers.executor": "Debug",
+    "Doctest.rewrite_ssid_in_frame.executor": "Debug",
     "Doctest.satisfied conn_cond (STA->AP from data frame) returns true.executor": "Debug",
     "Doctest.setup_actor sim - create sniff iface.executor": "Debug",
     "Doctest.times_packet_sizes_from_csv - two valid rows.executor": "Debug",
@@ -340,7 +336,13 @@
       <recent name="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/client_state" />
     </key>
   </component>
-  <component name="RunManager" selected="Doctest.get_ap_ocv - from hostapd_conf">
+  <component name="RunManager" selected="Doctest.rewrite_ssid_in_frame">
+    <configuration name="MonitorSocket::parse_frame" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_monitor_socket_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_monitor_socket_tests" TEST_CLASS="MonitorSocket::parse_frame" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="crack_pmk_hashes - SHA256: correct PSK cracks the hash" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_hostapd_crack_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_hostapd_crack_tests" TEST_METHOD="crack_pmk_hashes - SHA256: correct PSK cracks the hash" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -359,13 +361,7 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="get_ap_wpa3_trans_disable - no config no log returns empty" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_result_helper_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_result_helper_tests" TEST_METHOD="get_ap_wpa3_trans_disable - no config no log returns empty" TEST_MODE="SUITE_TEST">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-        <option name="BeforeTestRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="hwsim setup_actor - change mac address" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="true" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_hwsim_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_hwsim_tests" TEST_METHOD="hwsim setup_actor - change mac address" TEST_MODE="SUITE_TEST">
+    <configuration name="rewrite_ssid_in_frame" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_monitor_socket_tests" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_monitor_socket_tests" TEST_CLASS="rewrite_ssid_in_frame" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -1148,11 +1144,11 @@
       <item itemvalue="Doctest.run_cleanup_tests" />
       <item itemvalue="Doctest.run_bl0ck_tests" />
       <item itemvalue="Doctest.M1: key_ack=1 key_mic=0 install=0 secure=0" />
+      <item itemvalue="Doctest.MonitorSocket::parse_frame" />
+      <item itemvalue="Doctest.rewrite_ssid_in_frame" />
       <item itemvalue="Doctest.ensure_radiotap" />
       <item itemvalue="Doctest.get_ap_ocv - from hostapd_conf" />
       <item itemvalue="Doctest.crack_pmk_hashes - SHA256: correct PSK cracks the hash" />
-      <item itemvalue="Doctest.get_ap_wpa3_trans_disable - no config no log returns empty" />
-      <item itemvalue="Doctest.hwsim setup_actor - change mac address" />
       <item itemvalue="Native Application.get_commit_values" />
       <item itemvalue="Native Application.openwrt" />
       <item itemvalue="Native Application.external list" />
@@ -1160,11 +1156,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Doctest.rewrite_ssid_in_frame" />
+        <item itemvalue="Doctest.MonitorSocket::parse_frame" />
         <item itemvalue="Doctest.get_ap_ocv - from hostapd_conf" />
         <item itemvalue="Doctest.ensure_radiotap" />
         <item itemvalue="Doctest.crack_pmk_hashes - SHA256: correct PSK cracks the hash" />
-        <item itemvalue="Doctest.hwsim setup_actor - change mac address" />
-        <item itemvalue="Doctest.get_ap_wpa3_trans_disable - no config no log returns empty" />
       </list>
     </recent_temporary>
   </component>
@@ -1277,9 +1273,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: managed support get from real actor in actor setup" />
-    <MESSAGE value="f: self disconnect" />
-    <MESSAGE value="f: reset_usb_ifaces only before actor_filler" />
     <MESSAGE value="f: wpa3_transition_downgrade_wpa3_disable" />
     <MESSAGE value="f: expected_vht_beacon + fixed" />
     <MESSAGE value="r; channel_switch_rogueAP" />
@@ -1302,7 +1295,10 @@
     <MESSAGE value="-: detect_injected" />
     <MESSAGE value="+: dont forward deauth from real AP" />
     <MESSAGE value="ft: verify_sha256_mic" />
-    <option name="LAST_COMMIT_MESSAGE" value="ft: verify_sha256_mic" />
+    <MESSAGE value="+: ensure radiotap (unification)&#10;+: eap_description &#10;r: rewrite_ssid_in_frame moved and tested" />
+    <MESSAGE value="f: handle eapol dont STOP EAPOL without recognizable message number" />
+    <MESSAGE value="-: NOACK in b0ck (dont need wait for ACK )" />
+    <option name="LAST_COMMIT_MESSAGE" value="-: NOACK in b0ck (dont need wait for ACK )" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1426,16 +1422,6 @@
           <url>file://$PROJECT_DIR$/wpa3_test/src/system/ActorConfig_iface_func.cpp</url>
           <line>11</line>
           <option name="timeStamp" value="199" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp</url>
-          <line>62</line>
-          <option name="timeStamp" value="202" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp</url>
-          <line>66</line>
-          <option name="timeStamp" value="203" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/tests/suite/test_result_helper.cpp</url>

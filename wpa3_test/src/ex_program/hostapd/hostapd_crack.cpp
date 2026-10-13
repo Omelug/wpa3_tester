@@ -74,32 +74,6 @@ optional<WpaHashEntry> parse_wpa_hash(const string &line) {
 	return h;
 }
 
-array<uint8_t, 16> aes128_cmac(const uint8_t *key, const uint8_t *data, size_t len) {
-	array<uint8_t, 16> out{};
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-	EVP_MAC *mac = EVP_MAC_fetch(nullptr, "CMAC", nullptr);
-	EVP_MAC_CTX *ctx = EVP_MAC_CTX_new(mac);
-	OSSL_PARAM params[] = {
-		OSSL_PARAM_construct_utf8_string(OSSL_MAC_PARAM_CIPHER, const_cast<char*>("AES-128-CBC"), 0),
-		OSSL_PARAM_construct_end()
-	};
-	EVP_MAC_init(ctx, key, 16, params);
-	EVP_MAC_update(ctx, data, len);
-	size_t outlen = 16;
-	EVP_MAC_final(ctx, out.data(), &outlen, 16);
-	EVP_MAC_CTX_free(ctx);
-	EVP_MAC_free(mac);
-#else
-	CMAC_CTX *ctx = CMAC_CTX_new();
-	CMAC_Init(ctx, key, 16, EVP_aes_128_cbc(), nullptr);
-	CMAC_Update(ctx, data, len);
-	size_t outlen = 16;
-	CMAC_Final(ctx, out.data(), &outlen);
-	CMAC_CTX_free(ctx);
-#endif
-	return out;
-}
-
 struct PtkCtx { array<uint8_t, 32> pmk{}; vector<uint8_t> ctx; vector<uint8_t> snonce; };
 
 PtkCtx make_ptk_ctx(const WpaHashEntry &h, const string &psk) {
@@ -107,7 +81,7 @@ PtkCtx make_ptk_ctx(const WpaHashEntry &h, const string &psk) {
 	PKCS5_PBKDF2_HMAC(psk.data(), static_cast<int>(psk.size()),
 		h.ssid.data(), static_cast<int>(h.ssid.size()),
 		4096, EVP_sha1(), 32, r.pmk.data());
-	r.snonce = vector<uint8_t>(h.eapol.begin() + 17, h.eapol.begin() + 49);
+	r.snonce = vector(h.eapol.begin() + 17, h.eapol.begin() + 49);
 	r.ctx.reserve(76);
 	const auto &[lo_mac, hi_mac] = h.ap_mac < h.sta_mac ? pair{h.ap_mac, h.sta_mac} : pair{h.sta_mac, h.ap_mac};
 	const auto &[lo_n, hi_n] = h.anonce < r.snonce ? pair{h.anonce, r.snonce} : pair{r.snonce, h.anonce};

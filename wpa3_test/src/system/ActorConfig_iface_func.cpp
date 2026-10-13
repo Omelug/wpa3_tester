@@ -33,8 +33,9 @@ void Actor_config::cleanup() const{
 	hw_capabilities::pkill_wait("hostapd.*" + iface);
 
 	run({"rm", "-f", "/var/run/wpa_supplicant/" + iface});
-	if((*this)[BK::sniff_iface].has_value() && (*this)[BK::sniff_iface].value() == true){ // proč to závisí na
-		run({"iw", "dev", get_mon_iface(), "del"}, false);
+	run({"iw", "dev", get_ap_iface(), "del"}, false);
+	run({"iw", "dev", get_mon_iface(), "del"}, false);
+	if((*this)[BK::sniff_iface].has_value() && (*this)[BK::sniff_iface].value() == true){
 		hw_capabilities::pkill_wait("wpa_supplicant.*" + get_mon_iface());
 		hw_capabilities::pkill_wait("hostapd.*" + get_mon_iface());
 		set_iface_down();

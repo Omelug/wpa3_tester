@@ -13,9 +13,9 @@
 namespace wpa3_tester {
 class MonitorSocket {
 public:
-	MonitorSocket(const std::string &iface, const std::optional<std::string> &netns, bool detect_injected = false);
+	MonitorSocket(const std::string &iface, const std::optional<std::string> &netns);
 	// Remote capture: persistent SSH channel from open_capture_channel()
-	explicit MonitorSocket(ssh_channel rx_ch, bool detect_injected = false);
+	explicit MonitorSocket(ssh_channel rx_ch);
 
 	// Remote TX injection: persistent SSH channel running remote_injector
 	struct tag_tx_t {};
@@ -34,7 +34,7 @@ public:
 
 	void send(Tins::PDU &pdu, const Channel &ch) const;
 	static std::vector<uint8_t> build_inject_frame(
-		const std::vector<uint8_t> &raw, const Channel &ch, bool detect_injected = false);
+		const std::vector<uint8_t> &raw, const Channel &ch);
 	void send(const std::vector<unsigned char> &raw, const Channel &ch) const;
 	static RecvResult parse_frame(const frame_raw_t &frame);
 	RecvResult recv();
@@ -45,7 +45,6 @@ public:
 	void set_filter(const std::string &bpf) const;
 private:
 	static Tins::SnifferConfiguration make_sniff_cfg();
-	bool detect_injected_;
 	std::unique_ptr<Tins::Sniffer> sniffer_; // nullptr when remote
 	//  capture state (null sniffer_ when set)
 	ssh_channel rx_ch_ = nullptr;

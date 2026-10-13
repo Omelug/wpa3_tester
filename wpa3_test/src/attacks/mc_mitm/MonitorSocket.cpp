@@ -13,8 +13,7 @@ using namespace std;
 using namespace Tins;
 
 namespace wpa3_tester {
-MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns, const bool detect_injected):
-	detect_injected_(detect_injected) {
+MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns){
 	netlink_helper::NetNSContext ns_guard(netns);
 	sniffer_ = make_unique<Sniffer>(iface, make_sniff_cfg());
 	char errbuf[PCAP_ERRBUF_SIZE];
@@ -22,12 +21,10 @@ MonitorSocket::MonitorSocket(const string &iface, const optional<string> &netns,
 		throw run_err("pcap_setnonblock failed: " + string(errbuf));
 }
 
-MonitorSocket::MonitorSocket(const ssh_channel rx_ch, const bool detect_injected):
-	detect_injected_(detect_injected),
+MonitorSocket::MonitorSocket(const ssh_channel rx_ch):
 	rx_ch_(rx_ch) {}
 
 MonitorSocket::MonitorSocket(const ssh_channel tx_ch, tag_tx_t):
-	detect_injected_(false),
 	tx_ch_(tx_ch) {}
 
 MonitorSocket::~MonitorSocket() {
@@ -44,7 +41,6 @@ MonitorSocket::~MonitorSocket() {
 }
 
 MonitorSocket::MonitorSocket(MonitorSocket &&o) noexcept:
-	detect_injected_(o.detect_injected_),
 	sniffer_(std::move(o.sniffer_)),
 	rx_ch_(exchange(o.rx_ch_, nullptr)),
 	tx_ch_(exchange(o.tx_ch_, nullptr)),
@@ -62,10 +58,6 @@ static void write_to_inject_channel(const ssh_channel ch, const vector<uint8_t> 
 // Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
 void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
-	if(detect_injected_) {
-		// Set More Data flag so we can detect injected frames
-		if(auto *dot11 = pdu.find_pdu<Dot11>()) dot11->more_data(1);
-	}
 
 	// wrap in RadioTap if not already present.
 	// keep the header minimal (only TXFlags) - matching Python behavior.
@@ -88,7 +80,7 @@ void MonitorSocket::send(PDU &pdu, const Channel &) const {
 }
 
 vector<uint8_t> MonitorSocket::build_inject_frame(
-	const vector<uint8_t> &raw, const Channel &ch, const bool detect_injected) {
+	const vector<uint8_t> &raw, const Channel &) {
 	if(raw.size() < 4) return {};
 
 	const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
@@ -146,7 +138,7 @@ vector<uint8_t> MonitorSocket::build_inject_frame(
 
 void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch) const {
 	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
-	const auto out = build_inject_frame(raw, ch, detect_injected_);
+	const auto out = build_inject_frame(raw, ch);
 	if(out.empty()) return;
 	if(tx_ch_) {
 		write_to_inject_channel(tx_ch_, out);

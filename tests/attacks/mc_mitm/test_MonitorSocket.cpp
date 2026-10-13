@@ -107,22 +107,6 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 		CHECK_EQ(old_payload, new_payload);
 	}
 
-	TEST_CASE("detect_injected sets More Data bit in FC field") {
-		frame_raw_t raw = test_helpers::read_one_frame(PCAP_NO_FCS);
-		constexpr Channel ch6{ 6, WifiBand::BAND_2_4, nullopt };
-		const auto out = MonitorSocket::build_inject_frame({ raw.begin(), raw.end() }, ch6, /*detect_injected=*/true);
-
-		REQUIRE_UNARY_FALSE(out.empty());
-
-		RadioTap rt_check{};
-		rt_check.channel(hw_capabilities::channel_to_freq(ch6), RadioTap::OFDM);
-		const auto new_rt_len = rt_check.serialize().size();
-		REQUIRE_GT(out.size(), new_rt_len + 1u);
-
-		CHECK_EQ(out[new_rt_len + 1] & 0x20, 0x20); // More Data bit
-	}
-}
-
 // -- Sequence test: multiple frames from a single pcap file ---
 
 TEST_SUITE("MonitorSocket::parse_frame sequence") {

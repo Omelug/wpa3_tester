@@ -149,6 +149,23 @@ static string ssid_from_raw(const vector<uint8_t> &raw) {
 	return { reinterpret_cast<const char *>(opt->data_ptr()), opt->data_size() };
 }
 
+static vector<uint8_t> make_beacon_raw(const string &ssid) {
+	Dot11Beacon beacon;
+	beacon.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
+	beacon.addr2(HWAddress<6>("aa:bb:cc:dd:ee:ff"));
+	beacon.addr3(HWAddress<6>("aa:bb:cc:dd:ee:ff"));
+	beacon.add_option({ Dot11::SSID, static_cast<uint8_t>(ssid.size()),
+		reinterpret_cast<const uint8_t *>(ssid.data()) });
+	return beacon.serialize();
+}
+
+static string ssid_from_beacon_raw(const vector<uint8_t> &raw) {
+	const Dot11Beacon b(raw.data(), raw.size());
+	const auto *opt = b.search_option(Dot11::SSID);
+	if(!opt) return "";
+	return { reinterpret_cast<const char *>(opt->data_ptr()), opt->data_size() };
+}
+
 TEST_SUITE("rewrite_ssid_in_frame") {
 
 	TEST_CASE("replaces SSID in bare AssocRequest") {
@@ -162,6 +179,27 @@ TEST_SUITE("rewrite_ssid_in_frame") {
 		auto raw = ensure_radiotap(bare);
 		rewrite_ssid_in_frame(raw, "WrongNet");
 		CHECK_EQ(ssid_from_raw(raw), "WrongNet");
+	}
+
+	TEST_CASE("replaces SSID in Beacon frame (subtype 8, 12-byte fixed fields)") {
+		auto raw = make_beacon_raw("SafeNet");
+		rewrite_ssid_in_frame(raw, "WrongNet");
+		CHECK_EQ(ssid_from_beacon_raw(raw), "WrongNet");
+	}
+
+	TEST_CASE("no-op when malformed IE precedes SSID") {
+		// bare AssocRequest: 24B mgmt hdr + 4B fixed fields
+		// IEs: SupportedRates(valid) + VendorIE(len=200, only 1 byte present) + SSID(unreachable)
+		vector<uint8_t> frame(28, 0x00); // FC=0x00 (AssocRequest subtype 0)
+		const vector<uint8_t> ies = {
+			0x01, 0x01, 0x82,                            // SupportedRates: ok
+			0xDD, 200, 0xAA,                             // VendorIE: len=200, only 1 byte (malformed)
+			0x00, 0x07, 'S','a','f','e','N','e','t',     // SSID: unreachable
+		};
+		frame.insert(frame.end(), ies.begin(), ies.end());
+		const auto orig = frame;
+		rewrite_ssid_in_frame(frame, "WrongNet");
+		CHECK_EQ(frame, orig);
 	}
 
 	TEST_CASE("truncates new SSID to 32 bytes") {

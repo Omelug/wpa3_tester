@@ -80,7 +80,7 @@ RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, 
 		0x08,
 		0x80 };
 	RadioTap rt{};
-	rt.tx_flags(0x20); // DONT_REORDER
+	rt.tx_flags(0x28); // DONT_REORDER| NOOACK
 	return rt / bar / RawPDU(payload_data);
 }
 
@@ -122,7 +122,7 @@ RadioTap get_BA_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 		0x08,
 		0x80 };
 	RadioTap rt{};
-	rt.tx_flags(0x20); // DONT_REORDER
+	rt.tx_flags(0x28); // DONT_REORDER| NOACK
 	return rt / ba / RawPDU(payload_data);
 }
 

@@ -281,7 +281,7 @@ TEST_CASE("get_ap_ocv - from hostapd_conf") {
 
 	// ap_hostapd.conf with okc value
 	ofstream f(dir / "ap_hostapd.conf");
-	f << "okc=1\n";
+	f << "ocv=1\n";
 	f.close();
 
 	RunStatus rs;

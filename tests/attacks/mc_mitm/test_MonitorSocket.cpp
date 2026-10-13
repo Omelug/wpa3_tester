@@ -1,6 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
 #include "attacks/mc_mitm/MonitorSocket.h"
+#include "attacks/mc_mitm/wifi_util.h"
 #include "pcap_helper.h"
 #include "system/hw_capabilities.h"
 
@@ -129,7 +130,10 @@ static vector<uint8_t> make_assoc_req_raw(const string &ssid) {
 	req.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
 	req.addr2(HWAddress<6>("aa:bb:cc:dd:ee:ff"));
 	req.addr3(HWAddress<6>("11:22:33:44:55:66"));
-	req.capabilities(0x0431);
+	req.capabilities().ess(true);
+	req.capabilities().privacy(true);
+	req.capabilities().short_preamble(true);
+	req.capabilities().sst(true);
 	req.listen_interval(10);
 	req.add_option({ Dot11::SSID, static_cast<uint8_t>(ssid.size()),
 		reinterpret_cast<const uint8_t *>(ssid.data()) });

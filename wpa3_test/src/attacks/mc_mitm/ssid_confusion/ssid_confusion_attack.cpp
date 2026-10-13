@@ -22,9 +22,9 @@ void setup_attack(RunStatus &rs) {
         const auto src = cfg_dir / f;
         if(exists(src)) copy_f(src, rs.run_folder() / f);
     }
-
+	rs.get_actor("rogue_ap")->set_mac_address(rs.get_actor("ap").get(SK::permanent_mac));
     const auto rogue_client = rs.get_actor("rogue_client");
-	rogue_client->set_mac_address(rs.get_actor("ap").get(SK::mac));
+	rogue_client->set_mac_address(rs.get_actor("client").get(SK::mac));
     rogue_client->set_iface_up();
     components::client_ap_setup_t(rs);
 }
@@ -45,7 +45,7 @@ void run_attack(RunStatus &rs) {
 
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	attack.run(rs, rs.config().at("attack_config").at("attack_time_sec").get<int>());
-	//rs.process_manager.write_log_all(ATTACK_STOP_tag); //Already in attck.run , change?
+	//rs.process_manager.write_log_all(ATTACK_STOP_tag); //Already in attack run , change?
 }
 
 void stats_attack(const RunStatus &rs) {

@@ -17,7 +17,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     rogue_sta->set_iface_up();
 
     const HWAddress<6> ap_bssid(ap.get(SK::permanent_mac));
-    const HWAddress<6> rogue_ap_mac(rogue_ap.get(SK::permanent_mac));
+    const HWAddress<6> rogue_ap_mac(rogue_ap.get(SK::mac)); //TODO have to be same as ap (At least EAP-pwd, every what need AP mac)
     const HWAddress<6> client_perm(sta.get(SK::permanent_mac));
 
     // Scan for WrongNet beacon on ch 11.

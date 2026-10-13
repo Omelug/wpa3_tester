@@ -24,6 +24,7 @@ void setup_attack(RunStatus &rs) {
     }
 
     const auto rogue_client = rs.get_actor("rogue_client");
+	rogue_client->set_mac_address(rs.get_actor("ap").get(SK::mac));
     rogue_client->set_iface_up();
     components::client_ap_setup_t(rs);
 }

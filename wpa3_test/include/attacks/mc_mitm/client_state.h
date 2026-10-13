@@ -22,7 +22,7 @@ public:
 		Target_disconnected,
 		// tester send CSA frames to move
 		Sent_to_rogue,
-		// Probe requests in Drogue channel
+		// Probe requests in rogue channel
 		Finding,
 		// Auth on rogue channel
 		Authenticated,

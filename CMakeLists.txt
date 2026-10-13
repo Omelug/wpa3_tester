@@ -57,3 +57,10 @@ endif ()
 enable_testing()
 add_subdirectory(wpa3_test)
 add_subdirectory(wpa3_test/remote_injector)
+
+if (UNIX)
+    execute_process(
+        COMMAND chmod -R a+rw "${CMAKE_BINARY_DIR}"
+        ERROR_QUIET
+    )
+endif ()

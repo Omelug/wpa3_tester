@@ -132,16 +132,16 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 	}
 }
 
-void McMitm::power_mgmt_response_real(HWAddress<6> addr2, const Dot11 &dot11) const{
+void McMitm::power_mgmt_response_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
 	if(dot11.addr1() == ap.get(SK::mac)){ // ->AP
 		// sleep mode detection for keep wake up
 		// encrypted, but still works for wake up TODO source
 		if(dot11.power_mgmt() && client_state.get_mac() == addr2){
-			log(LogLevel::WARNING, "Client {} is going to sleep on real channel.", addr2);
 			Dot11Data null_frame(ap.get(SK::mac), addr2);
 			null_frame.subtype(Dot11::DATA_NULL);
 			null_frame.addr3(ap.get(SK::mac));
-			sock_real->send(null_frame, netconfig.real_channel);
+			send_to_real(null_frame);
+			display_traffic(dot11, "Rogue channel", " -- Replied");
 		}
 	}
 }

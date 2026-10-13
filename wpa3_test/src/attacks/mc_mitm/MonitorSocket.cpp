@@ -55,7 +55,7 @@ static void write_to_inject_channel(const ssh_channel ch, const vector<uint8_t> 
 	ssh_channel_write(ch, bytes.data(), static_cast<uint32_t>(bytes.size()));
 }
 
-// Send with RadioTap TXFlags=NOSEQ+ORDER (matches Python MonitorSocket.send)
+// Send with RadioTap TXFlags=ORDER (matches Python MonitorSocket.send)
 void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
 
@@ -65,11 +65,11 @@ void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	vector<uint8_t> bytes;
 	if(!pdu.find_pdu<RadioTap>()) {
 		RadioTap rt{};
-		rt.tx_flags(0x20); // DONT_REORDER
+		rt.tx_flags(0x20); // DONT_REORDER //FIXME NOACK?
 		rt.inner_pdu(RawPDU(pdu.serialize()));
 		bytes = rt.serialize();
 	} else {
-		pdu.find_pdu<RadioTap>()->tx_flags(0x20); // DONT_REORDER
+		pdu.find_pdu<RadioTap>()->tx_flags(0x20); //FIXME NOACK?
 		bytes = pdu.serialize();
 	}
 	if(tx_ch_) {

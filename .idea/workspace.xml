@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
-    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="12" type="long" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="26" type="long" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/LiveTemplatesHousekeeping/HotspotSessionHintIsShown/@EntryValue" value="true" type="bool" />
@@ -141,18 +141,21 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="-: NOACK in b0ck (dont need wait for ACK )">
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: ssid_cofusion EAP-pwd + wpa_cli obeserver">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/attacks/mc_mitm/test_MonitorSocket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/attacks/mc_mitm/test_MonitorSocket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/suite/test_result_helper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/attack_config/mc_mitm/ssid_confusion/ssid_confusion_internal.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/attacks/mc_mitm/mitm_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/tests/attacks/mc_mitm/mitm_helpers.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_real_channel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_real_channel.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_real.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_real.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd_crack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/ex_program/hostapd/hostapd_crack.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/ssid_confusion_filler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/visual/mc_mitm/ssid_confusion_filler.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -336,7 +339,12 @@
       <recent name="$PROJECT_DIR$/result_overview/src/observer/observers_test_data/observer/client_state" />
     </key>
   </component>
-  <component name="RunManager" selected="Doctest.rewrite_ssid_in_frame">
+  <component name="RunManager" selected="Doctest.get_ap_ocv - from hostapd_conf">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="MonitorSocket::parse_frame" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_monitor_socket_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_monitor_socket_tests" TEST_CLASS="MonitorSocket::parse_frame" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -361,7 +369,7 @@
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="rewrite_ssid_in_frame" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_monitor_socket_tests" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_monitor_socket_tests" TEST_CLASS="rewrite_ssid_in_frame" TEST_MODE="SUITE_TEST">
+    <configuration name="rewrite_ssid_in_frame" type="CMakeDoctestTestRunConfigurationType" factoryName="doctest Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wpa3_tester" TARGET_NAME="run_monitor_socket_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="wpa3_tester" RUN_TARGET_NAME="run_monitor_socket_tests" TEST_CLASS="rewrite_ssid_in_frame" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
@@ -1156,9 +1164,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Doctest.get_ap_ocv - from hostapd_conf" />
         <item itemvalue="Doctest.rewrite_ssid_in_frame" />
         <item itemvalue="Doctest.MonitorSocket::parse_frame" />
-        <item itemvalue="Doctest.get_ap_ocv - from hostapd_conf" />
         <item itemvalue="Doctest.ensure_radiotap" />
         <item itemvalue="Doctest.crack_pmk_hashes - SHA256: correct PSK cracks the hash" />
       </list>
@@ -1273,15 +1281,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: wpa3_transition_downgrade_wpa3_disable" />
-    <MESSAGE value="f: expected_vht_beacon + fixed" />
-    <MESSAGE value="r; channel_switch_rogueAP" />
-    <MESSAGE value="f: &quot;cracked:&quot; was sometimmes 2/1 because empty lines were count" />
-    <MESSAGE value="f: ocv&#10;+: CSA with ocv test configs" />
-    <MESSAGE value="f: get_ocv form pcap ignore  malformed" />
-    <MESSAGE value="r: TYPO / small changes" />
-    <MESSAGE value="f: only DONT_REORDER in RadioTap (not no ACK)" />
-    <MESSAGE value="f+: check OWE" />
     <MESSAGE value="f: only DONT_REORDER in tx_flags in radiotap&#10;r: small changes&#10;ch: cracking in code, no hcxpmktool used  (issue with endlessly waiting for result)" />
     <MESSAGE value="fr: small changes" />
     <MESSAGE value="f: GIT_HASH cause recompilation after every commit" />
@@ -1291,14 +1290,23 @@
     <MESSAGE value="f: confused_beacon (SsfeNet on real channel)" />
     <MESSAGE value="+: wpa_cli" />
     <MESSAGE value="f: remove mon/ap ifaces in cleanup" />
-    <MESSAGE value="r: small changes" />
     <MESSAGE value="-: detect_injected" />
     <MESSAGE value="+: dont forward deauth from real AP" />
     <MESSAGE value="ft: verify_sha256_mic" />
     <MESSAGE value="+: ensure radiotap (unification)&#10;+: eap_description &#10;r: rewrite_ssid_in_frame moved and tested" />
     <MESSAGE value="f: handle eapol dont STOP EAPOL without recognizable message number" />
     <MESSAGE value="-: NOACK in b0ck (dont need wait for ACK )" />
-    <option name="LAST_COMMIT_MESSAGE" value="-: NOACK in b0ck (dont need wait for ACK )" />
+    <MESSAGE value="ft: get_ap_ocv&#10;ft:" />
+    <MESSAGE value="ft: get_ap_ocv" />
+    <MESSAGE value="ft: get_ap_ocv&#10;ft: make_assoc_req_raw" />
+    <MESSAGE value="+f: ensure_radiotap,ensure_radiotap&#10;f: rewrite_ssid_in_frame" />
+    <MESSAGE value="t: &quot;replaces SSID beacon" />
+    <MESSAGE value="f+: hostapd.eap_user in ssid_confusion_filler" />
+    <MESSAGE value="r: small changes" />
+    <MESSAGE value="f: get_ap_ocv - from hostapd_conf TYPO" />
+    <MESSAGE value="+: get_eapol_msg_num print param" />
+    <MESSAGE value="+: ssid_cofusion EAP-pwd + wpa_cli obeserver" />
+    <option name="LAST_COMMIT_MESSAGE" value="+: ssid_cofusion EAP-pwd + wpa_cli obeserver" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1424,9 +1432,9 @@
           <option name="timeStamp" value="199" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/tests/suite/test_result_helper.cpp</url>
-          <line>295</line>
-          <option name="timeStamp" value="205" />
+          <url>file://$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp</url>
+          <line>140</line>
+          <option name="timeStamp" value="208" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

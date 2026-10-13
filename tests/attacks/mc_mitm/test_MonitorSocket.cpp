@@ -110,18 +110,19 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
 // -- Sequence test: multiple frames from a single pcap file ---
 
-TEST_SUITE("MonitorSocket::parse_frame sequence") {
+	TEST_SUITE("MonitorSocket::parse_frame sequence") {
 
-	TEST_CASE("all frames in multi-frame pcap parse without error") {
-		const auto frames = test_helpers::read_all_frames(PCAP_MULTI);
-		REQUIRE_UNARY_FALSE(frames.empty());
+		TEST_CASE("all frames in multi-frame pcap parse without error") {
+			const auto frames = test_helpers::read_all_frames(PCAP_MULTI);
+			REQUIRE_UNARY_FALSE(frames.empty());
 
-		for(const auto &raw: frames) {
-			auto result = MonitorSocket::parse_frame(raw);
-			CHECK_NE(result.pdu, nullptr);
+			for(const auto &raw: frames) {
+				auto result = MonitorSocket::parse_frame(raw);
+				CHECK_NE(result.pdu, nullptr);
+			}
 		}
-	}
-}}
+}
+}
 
 // -----------------
 

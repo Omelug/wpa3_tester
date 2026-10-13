@@ -31,6 +31,7 @@ void setup_suite(const RunSuiteStatus &rss) {
 	const auto config_dir = rss.run_folder() / TEST_SUITE_CONFIG_DIR / "all_actors" / "config";
 	create_public_dirs(config_dir);
 	copy_f(rss.config_path().parent_path() / "config" / "SafeNet_WrongNet.conf", config_dir / "SafeNet_WrongNet.conf");
+	copy_f(rss.config_path().parent_path() / "config" / "hostapd.eap_user", config_dir / "hostapd.eap_user");
 }
 
 SsidConfusionEntry SsidConfusionEntry::parse(const path &test_folder) {

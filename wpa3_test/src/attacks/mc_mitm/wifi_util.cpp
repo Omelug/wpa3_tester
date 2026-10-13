@@ -134,17 +134,6 @@ int get_eapol_msg_num(const PDU &pdu) {
 	return -1;
 }
 
-vector<uint8_t> ensure_radiotap(const vector<uint8_t> &raw) {
-	if(raw.size() < 4) throw run_err("ensure_radiotap: frame too short ({} bytes)", raw.size());
-	const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
-	if(raw[0] == 0 && rt_len >= 8 && raw.size() >= rt_len) return raw;
-	if(((raw[0] >> 2) & 0x03) > 2)
-		throw run_err("ensure_radiotap: not a valid 802.11 frame, FC=0x{:02x}", raw[0]);
-	RadioTap rt{};
-	rt.inner_pdu(RawPDU(raw.data(), raw.size()));
-	return rt.serialize();
-}
-
 string eap_description(const PDU &pdu) {
 	const auto *eapol = pdu.find_pdu<EAPOL>();
 	if(!eapol) return "EAPOL?";
@@ -159,12 +148,26 @@ string eap_description(const PDU &pdu) {
 		const string dir = code == 1 ? "Request" : "Response";
 		if(raw.size() < 9) return "EAP " + dir;
 		const uint8_t type = raw[8];
-		if(type == 1)  return "EAP " + dir + " Identity";
+		if(type == 1) return "EAP " + dir + " Identity";
 		if(type == 21) return "EAP " + dir + " TTLS";
 		if(type == 25) return "EAP " + dir + " PEAP";
 		return "EAP " + dir + " type=" + to_string(type);
 	}
 	return "EAP code=" + to_string(code);
+}
+
+vector<uint8_t> ensure_radiotap(const vector<uint8_t> &raw) {
+	if(raw.size() < 4) throw run_err("ensure_radiotap: frame too short ({} bytes)", raw.size());
+	const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
+	if(raw[0] == 0 && rt_len >= 8 && raw.size() >= rt_len) return raw;
+	if((raw[0] >> 2 & 0x03) > 2) throw run_err("ensure_radiotap: not a valid 802.11 frame, FC=0x{:02x}", raw[0]);
+	// present=FLAGS(bit1); flags=0x28 (short preamble + data pad, no FCS bit)
+	static constexpr uint8_t RT_HDR[] = { 0x00, 0x00, 0x09, 0x00, 0x02, 0x00, 0x00, 0x00, 0x28 };
+	vector<uint8_t> result;
+	result.reserve(9 + raw.size());
+	result.insert(result.end(), RT_HDR, RT_HDR + 9);
+	result.insert(result.end(), raw.begin(), raw.end());
+	return result;
 }
 
 Dot11Beacon append_csa(const Dot11Beacon &beacon, const Channel &new_channel, const uint8_t count) {
@@ -265,11 +268,6 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	//hw_capabilities::run_cmd({"iw", "dev", ap_iface, "set", "power_save", "off"}, netns); //TODO disable for test ?
 }
 
-void stop_ap(const string &iface, const optional<string> &netns) {
-	log(LogLevel::INFO, "Stopping AP: iw dev {} del", iface);
-	hw_capabilities::run_cmd({ "iw", "dev", iface, "del" }, netns, true);
-}
-
 void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
 	optional<HWAddress<6>> mac) {
 	const optional<string> &netns = base_actor[SK::netns];
@@ -306,19 +304,24 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 	rs.process_manager.wait_for(ap_iface + "_hostapd", "AP-ENABLED", chrono::seconds(20));
 }
 
+void stop_ap(const string &iface, const optional<string> &netns) {
+	log(LogLevel::INFO, "Stopping AP: iw dev {} del", iface);
+	hw_capabilities::run_cmd({ "iw", "dev", iface, "del" }, netns, true);
+}
+
 void rewrite_ssid_in_frame(vector<uint8_t> &raw, const string &new_ssid) {
 	if(raw.size() < 6) return;
 	const uint16_t rt_len_raw = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
 	const size_t rt_len = (raw[0] == 0 && rt_len_raw >= 8 && raw.size() >= rt_len_raw) ? rt_len_raw : 0;
 
-	// 802.11 mgmt header = 24 B; AssocReq fixed = 4 B, ReassocReq fixed = 10 B
+	// fixed-field sizes: AssocReq=4, ReassocReq=10, Beacon/ProbeResp=12
 	const uint8_t subtype = raw[rt_len] >> 4 & 0x0F;
-	const size_t fixed = subtype == 2 ? 10 : 4;
+	const size_t fixed = (subtype == 2) ? 10 : (subtype == 5 || subtype == 8) ? 12 : 4;
 	const size_t ie_start = rt_len + 24 + fixed;
 
 	if(raw.size() < ie_start + 2) return;
 
-	for(size_t i = ie_start; i + 1 < raw.size(); ) {
+	for(size_t i = ie_start; i + 1 < raw.size();) {
 		if(raw[i] == 0) { // SSID IE
 			const size_t old_len = raw[i + 1];
 			const size_t new_len = min(new_ssid.size(), static_cast<size_t>(32));
@@ -330,7 +333,9 @@ void rewrite_ssid_in_frame(vector<uint8_t> &raw, const string &new_ssid) {
 			raw[i + 1] = static_cast<uint8_t>(new_len);
 			return;
 		}
-		i += 2 + raw[i + 1];
+		const size_t step = 2 + raw[i + 1];
+		if(i + step > raw.size()) break; // malformed IE: claimed length exceeds frame
+		i += step;
 	}
 }
 

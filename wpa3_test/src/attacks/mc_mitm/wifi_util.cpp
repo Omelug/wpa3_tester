@@ -103,7 +103,7 @@ bool is_eapol(const PDU &pdu) {
 	return pdu.find_pdu<EAPOL>() != nullptr;
 }
 
-int get_eapol_msg_num(const PDU &pdu) {
+int get_eapol_msg_num(const PDU &pdu, bool print) {
 	const auto *rsneapol = pdu.find_pdu<RSNEAPOL>();
 	if(!rsneapol) return -1;
 	const uint8_t key_ack = rsneapol->key_ack();
@@ -112,13 +112,15 @@ int get_eapol_msg_num(const PDU &pdu) {
 	const uint8_t secure = rsneapol->secure();
 	const uint8_t key_type = rsneapol->key_t();
 
-	log(LogLevel::DEBUG,
-		"EAPOL key_info bits: type={} mic={} ack={} install={} secure={}",
-		key_type,
-		key_mic,
-		key_ack,
-		install,
-		secure);
+	if(print) {
+		log(LogLevel::DEBUG,
+			"EAPOL key_info bits: type={} mic={} ack={} install={} secure={}",
+			key_type,
+			key_mic,
+			key_ack,
+			install,
+			secure);
+	}
 
 	// group Key handshake  FIXME ignore, is forwarded?
 	if(key_type == 0) {

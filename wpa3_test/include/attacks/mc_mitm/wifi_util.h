@@ -21,7 +21,7 @@ Dot11Addrs get_addrs(const Tins::PDU &pdu, const std::vector<uint8_t> &raw);
 Tins::Dot11ProbeResponse beacon_to_probe_resp(const Tins::Dot11Beacon &beacon, const Channel &rogue_channel);
 Tins::Dot11AssocResponse *assoc_resp_channel_patch(const Tins::Dot11AssocResponse &assoc, const Channel &rogue_channel);
 bool is_eapol(const Tins::PDU &pdu);
-int get_eapol_msg_num(const Tins::PDU &pdu);
+int get_eapol_msg_num(const Tins::PDU &pdu, bool print = false);
 std::string eap_description(const Tins::PDU &pdu);
 
 // return raw bytes guaranteed to start with a RadioTap header

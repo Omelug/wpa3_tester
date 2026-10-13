@@ -10,7 +10,6 @@ f: disconnnected usb reset?/home/nixos/CLionProjects/wpa3_tester/tester_setup/ra
 +: tester_setup/raspberry_pi4/run/data/suite_data/DoS_soft/channel_switch/rogueAP/CSA_rogueAP_internal_filler/all_actors/channel_switch_rogueAP_internal_19eb2177
 +: /home/nixos/CLionProjects/wpa3_tester/tester_setup/raspberry_pi4/run/data/suite_data/DoS_soft/bl0ck/suite/BAR_filler/random/bl0ck_random_BAR_d4483bdd
 
- f?: vyzkoušet mc_mitm po změnách po ssid separation
 ssid_confusion:
     ?: try on ath without debug -> slow down ?
 
@@ -77,6 +76,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAddress, not string
 
 //DONE
+f?: vyzkoušet mc_mitm po změnách po ssid separation
 f: v cracked: se někdy objevuje 2/1
 t: "crack_pmk_hashes - SHA256: correct PSK cracks the hash
 +: ap_info to device page

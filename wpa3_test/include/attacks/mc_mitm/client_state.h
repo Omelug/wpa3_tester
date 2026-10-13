@@ -64,9 +64,9 @@ public:
 				std::stringstream ss;
 				ss << current_timestamp();
 				ss << " [STATE] " << macaddr << " : ";
-				ss << state2str(state) << " -> " << state2str(s) << std::endl;
-				;
+				ss << state2str(state) << " -> " << state2str(s);
 				f << ss.str();
+				f << std::endl;
 				log(LogLevel::INFO, ss.str());
 			}
 		}

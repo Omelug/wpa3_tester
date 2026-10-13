@@ -209,6 +209,7 @@
       <w>nmcli</w>
       <w>nmconnection</w>
       <w>nmethod</w>
+      <w>noack</w>
       <w>nobmap</w>
       <w>noborder</w>
       <w>nocapture</w>

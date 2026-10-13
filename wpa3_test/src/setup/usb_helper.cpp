@@ -130,6 +130,23 @@ void reset_usb_ifaces() {
 		if(iface.module_name != "unknown") drivers.insert(iface.module_name);
 	}
 	const size_t expected_with_driver = wifi_ifaces.size();
+	/*TODO needed in same edge cases?
+	 for(const auto &dev: wifi_ifaces) {
+		error_code ec;
+		for(const auto &sub: directory_iterator(dev.dev_path, ec)) {
+			const string usb_iface_id = sub.path().filename().string();
+			if(usb_iface_id.find(':') == string::npos) continue;
+			const path drv_link = sub.path() / "driver";
+			if(!is_symlink(drv_link)) continue;
+			const string drv = canonical(drv_link).filename().string();
+			if(drv == "hub") continue;
+			ofstream f(path("/sys/bus/usb/drivers") / drv / "unbind");
+			if(f) {
+				f << usb_iface_id;
+				log(LogLevel::DEBUG, "reset_usb_ifaces: unbound {} from {}", usb_iface_id, drv);
+			}
+		}
+	}*/
 	for(const auto &drv: drivers) {
 		hw_capabilities::run_cmd({ "modprobe", "-r", drv }, nullopt, false);
 		log(LogLevel::DEBUG, "reset_usb_ifaces: unloaded driver {}", drv);

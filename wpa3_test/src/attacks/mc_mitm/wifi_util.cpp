@@ -61,7 +61,7 @@ Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const Channel
 			resp.add_option({ Dot11::DS_SET, 1, &ch });
 			continue;
 		}
-		//FIXME in python is HT_OPRAITon unchanged
+		//FIXME in python is HT_OPERATION unchanged
 		if(opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
 			vector ht_data(opt.data_ptr(), opt.data_ptr() + opt.data_size());
 			ht_data[0] = static_cast<uint8_t>(rogue_channel.ch_num);
@@ -243,7 +243,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	}
 
 	if(netns.has_value()) cmd.insert(cmd.begin(), { "ip", "netns", "exec", *netns });
-	interruptible_sleep(chrono::milliseconds(200)); // firmware need some time to up ?
+	interruptible_sleep(chrono::milliseconds(200)); // firmware need some time to up ? //TODO hardcoded
 	rs.process_manager.run(ap_iface + "_start", cmd);
 
 	// With rt2800usb we need "ifconfig up" after "ap start" to make the interface //TODO rewritten from python, try
@@ -271,7 +271,7 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 		{ "iw", "dev", base_actor.get(SK::iface), "interface", "add", ap_iface, "type", "managed" }, netns);
 	if(netlink_helper::wait_for_iface_appear(ap_iface, netns))
 		throw setup_err("Interface " + ap_iface + " did not appear");
-	interruptible_sleep(2000ms);
+	interruptible_sleep(2s); //TODO hardcoded timeout
 	// Leave VIF in managed+down state - hostapd sets the mode and brings it up itself
 	hw_capabilities::set_iface_down(ap_iface, netns);
 	base_actor->set_iface_up();

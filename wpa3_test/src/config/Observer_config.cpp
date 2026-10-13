@@ -10,6 +10,7 @@
 #include "observer/tcpdump_wrapper.h"
 #include "observer/trace_cmd_wrapper.h"
 #include "observer/tshark_wrapper.h"
+#include "observer/wpa_cli_poller.h"
 
 using namespace std;
 
@@ -62,6 +63,11 @@ void Observer_config::start(RunStatus &rs) const {
 		const auto events = program_config.at("events").get<std::vector<std::string>>();
 		const auto kprobes = program_config.value("kprobes", std::vector<std::string>{});
 		trace_cmd::start_trace_cmd(rs, actor_name, events, kprobes);
+		return;
+	}
+	if(program == "wpa_cli") {
+		const auto interval = program_config.value("interval", 1);
+		wpa_cli_poller::start_wpa_cli_polling(rs, actor_name, interval);
 		return;
 	}
 	throw run_err("Invalid observer program: " + program);

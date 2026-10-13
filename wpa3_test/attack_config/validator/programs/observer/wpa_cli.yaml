@@ -1,0 +1,10 @@
+title: wpa_cli status poller program_config
+type: object
+properties:
+  $validator:
+    type: string
+  interval:
+    type: integer
+    description: seconds between wpa_cli status calls
+    default: 1
+additionalProperties: false

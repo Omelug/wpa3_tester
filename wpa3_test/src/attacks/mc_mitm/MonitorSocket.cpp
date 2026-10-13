@@ -5,7 +5,9 @@
 #include <sys/poll.h>
 #include <tins/tins.h>
 
+#include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
+#include "logger/log.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
 
@@ -83,57 +85,16 @@ frame_raw_t MonitorSocket::build_inject_frame(
 	const frame_raw_t &raw, const Channel &) {
 	if(raw.size() < 4) return {};
 
-	const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
+	const auto with_rt = ensure_radiotap(raw);
 
-	if(raw.size() < rt_len) return {}; // claimed RT length exceeds buffer — corrupted frame
+	// Strip RX RT metadata, always inject with fresh minimal TX RT (NOACK|ORDER).
+	const uint16_t rt_len = with_rt[2] | static_cast<uint16_t>(with_rt[3]) << 8;
+	if(rt_len >= with_rt.size()) return {};
 
-	// No valid RadioTap header (revision != 0, or length < 8) — wrap with minimal RT.
-	// No CHANNEL field: adding it breaks ORDER flag scheduling on some drivers (ath9k_htc)
-	if(raw[0] != 0 || rt_len < 8) {
-		RadioTap rt{};
-		rt.tx_flags(0x28); // NOSEQ|ORDER
-		rt.inner_pdu(RawPDU(raw.data(), raw.size()));
-		auto out = rt.serialize();
-		const uint16_t new_rt_len = out[2] | (static_cast<uint16_t>(out[3]) << 8);
-		if(detect_injected && out.size() > static_cast<size_t>(new_rt_len) + 1)
-			out[new_rt_len + 1] |= 0x20;
-		return out;
-	}
-
-	vector out(raw); // copy entire frame, RT header untouched
-
-	// Patch channel frequency in-place inside the existing RT header
-	const int freq_mhz = hw_capabilities::channel_to_freq(ch);
-	const uint8_t freq_lo = freq_mhz & 0xFF;
-	const uint8_t freq_hi = (freq_mhz >> 8) & 0xFF;
-
-	// Walk RT present fields to find channel field offset
-	// Present flags start at byte 4, each 4 bytes, bit 3 = Channel
-	size_t pos = 8; // skip revision(1) + pad(1) + length(2) + present(4)
-	uint32_t present = raw[4] | raw[5] << 8 | raw[6] << 16 | raw[7] << 24;
-
-	// Skip extended present words (bit 31 = another present word follows)
-	while(present & 1u << 31) {
-		present = raw[pos] | raw[pos + 1] << 8 | (raw[pos + 2] << 16) | (raw[pos + 3] << 24);
-		pos += 4;
-	}
-
-	// Walk fields in order until Channel (bit 3) //TODO source -RFC
-	if(present & 1u << 0) pos += 8; // TSFT: 8 bytes
-	if(present & 1u << 1) pos += 1; // Flags: 1 byte
-	if(present & 1u << 2) pos += 1; // Rate: 1 byte
-	if(present & 1u << 3) {			// Channel: freq(2) + flags(2)
-		// Align to 2 bytes
-		if(pos % 2 != 0) pos++;
-		if(pos + 2 <= rt_len) {
-			out[pos] = freq_lo;
-			out[pos + 1] = freq_hi;
-		}
-	}
-
-	if(detect_injected && out.size() > static_cast<size_t>(rt_len) + 1) out[rt_len + 1] |= 0x20;
-
-	return out;
+	RadioTap rt{};
+	rt.tx_flags(0x28); //NO ORDER CHANGE| NOACK
+	rt.inner_pdu(RawPDU(with_rt.data() + rt_len, with_rt.size() - rt_len));
+	return rt.serialize();
 }
 
 void MonitorSocket::send(const vector<unsigned char> &raw, const Channel &ch) const {

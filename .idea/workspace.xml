@@ -141,21 +141,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="+: ssid_cofusion EAP-pwd + wpa_cli obeserver">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/attacks/mc_mitm/mitm_helpers.h" beforeDir="false" afterPath="$PROJECT_DIR$/tests/attacks/mc_mitm/mitm_helpers.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/mc_mitm.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/ssid_confusion/ssid_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/include/attacks/mc_mitm/wifi_util.h" afterDir="false" />
+    <list default="true" id="a9c8a9ae-6b43-4c83-a48d-3d78f045c100" name="Changes" comment="r: simplify SsidConfusion::handle_assoc_reques">
       <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_real_channel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_real_channel.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/mc_mitm_rogue_channel.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_real.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_real.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/ssid_confusion/ssid_rogue.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/attacks/mc_mitm/wifi_util.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/wpa3_test/src/system/hw_capabilities/hw_cap_injection.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -315,12 +302,13 @@
     "ctest.advertisement.all.test.configuration.is.created": "true",
     "git-widget-placeholder": "dev",
     "git.auto.fetch.suggestion.counter": "3",
-    "last_opened_file_path": "/home/nixos/CLionProjects/wpa3_tester/wpa3_test/attack_config/DoS_soft/channel_switch/mitigation",
+    "last_opened_file_path": "/home/nixos/CLionProjects/wpa3_tester/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "two.files.diff.last.used.file": "/home/nixos/CLionProjects/wpa3_tester/wpa3_test/src/attacks/mc_mitm/MonitorSocket.cpp"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -1281,9 +1269,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="f: only DONT_REORDER in tx_flags in radiotap&#10;r: small changes&#10;ch: cracking in code, no hcxpmktool used  (issue with endlessly waiting for result)" />
-    <MESSAGE value="fr: small changes" />
-    <MESSAGE value="f: GIT_HASH cause recompilation after every commit" />
     <MESSAGE value="f-: mc_mitm before scan rogue_sta-&gt;set_channel(netconfig.real_channel);" />
     <MESSAGE value="f-: TYPO in ssid" />
     <MESSAGE value="f: remove ath_htc debug (lot of useless logs and add latency?)" />
@@ -1306,7 +1291,10 @@
     <MESSAGE value="f: get_ap_ocv - from hostapd_conf TYPO" />
     <MESSAGE value="+: get_eapol_msg_num print param" />
     <MESSAGE value="+: ssid_cofusion EAP-pwd + wpa_cli obeserver" />
-    <option name="LAST_COMMIT_MESSAGE" value="+: ssid_cofusion EAP-pwd + wpa_cli obeserver" />
+    <MESSAGE value="r+: frame_raw_t&#10;+: add CSA if probe request on mc_mitm" />
+    <MESSAGE value="f: signatures&#10;+: mitming" />
+    <MESSAGE value="r: simplify SsidConfusion::handle_assoc_reques" />
+    <option name="LAST_COMMIT_MESSAGE" value="r: simplify SsidConfusion::handle_assoc_reques" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

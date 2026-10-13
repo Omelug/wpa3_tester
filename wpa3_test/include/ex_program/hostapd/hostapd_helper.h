@@ -51,7 +51,7 @@ struct CrackResult {
 // parse hccapx v4 binary (written by hostapd-mana) -> WPA*02* hashcat lines
 std::vector<std::string> hccapx_to_wpa_hashes(const std::filesystem::path &hccapx_path);
 
-// verify each WPA*02* hash from a creds file against psk using hcxpmktool
+// verify each WPA*02* hash from a creds file against psk
 CrackResult crack_pmk_hashes(const std::filesystem::path &creds_file, const std::string &psk);
 
 std::string get_conf_value(const std::filesystem::path &cfg, std::initializer_list<std::string_view> keys);

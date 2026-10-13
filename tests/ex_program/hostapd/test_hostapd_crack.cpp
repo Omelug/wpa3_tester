@@ -5,7 +5,6 @@
 #include <string>
 
 #include "ex_program/hostapd/hostapd_helper.h"
-#include "system/hw_capabilities.h"
 
 using namespace std;
 using namespace filesystem;
@@ -89,8 +88,7 @@ TEST_CASE("crack_pmk_hashes - SHA256: wrong PSK cracks nothing") {
 	remove(tmp);
 }
 
-TEST_CASE("crack_pmk_hashes - SHA1: correct PSK cracks the hash" *
-	doctest::skip(hw_capabilities::run_cmd({ "which", "hcxpmktool" }, nullopt, false) != 0)) {
+TEST_CASE("crack_pmk_hashes - SHA1: correct PSK cracks the hash") {
 	const path tmp = temp_directory_path() / "wpa3_crack_sha1_good.txt";
 	{
 		ofstream f(tmp);
@@ -102,8 +100,7 @@ TEST_CASE("crack_pmk_hashes - SHA1: correct PSK cracks the hash" *
 	remove(tmp);
 }
 
-TEST_CASE("crack_pmk_hashes - SHA1: wrong PSK cracks nothing" *
-	doctest::skip(hw_capabilities::run_cmd({ "which", "hcxpmktool" }, nullopt, false) != 0)) {
+TEST_CASE("crack_pmk_hashes - SHA1: wrong PSK cracks nothing") {
 	const path tmp = temp_directory_path() / "wpa3_crack_sha1_wrong.txt";
 	{
 		ofstream f(tmp);

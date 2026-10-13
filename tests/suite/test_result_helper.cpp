@@ -286,7 +286,10 @@ TEST_CASE("get_ap_ocv - from hostapd_conf") {
 
 	RunStatus rs;
 	rs.run_folder(dir);
-	rs.config({ { "actors", { { "ap", { { "source", "internal" }, { "setup", { { "program", "hostapd" } } } } } } } });
+	rs.config({ { "actors", { { "attacker",
+		{ { "source", "internal" },
+			{ "selection", { { "mac", "24:ec:99:bf:b0:a1" } } },
+			{ "setup", { { "program", "hostapd" } } } } } } } });
 	rs.parse_requirements();
 
 	const auto result = get_ap_ocv(rs);

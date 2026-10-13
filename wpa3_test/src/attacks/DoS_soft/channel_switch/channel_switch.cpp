@@ -262,8 +262,8 @@ void generate_report(const RunStatus &rs, const vector<unique_ptr<GraphElements>
 	}
 
 	if(crack_result.has_value()) {
-		report << "## Credential Cracking (hcxpmktool)\n";
-		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
+		report << "## Credential Cracking \n";
+		report << "Each captured handshake was verified against the known PSK\n\n";
 		report << "| Metric | Value |\n|--------|-------|\n";
 		report << "| Captured handshakes | " << crack_result->total << " |\n";
 		report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";

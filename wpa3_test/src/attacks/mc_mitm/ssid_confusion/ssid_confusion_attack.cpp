@@ -44,7 +44,7 @@ void run_attack(RunStatus &rs) {
 
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	attack.run(rs, rs.config().at("attack_config").at("attack_time_sec").get<int>());
-	rs.process_manager.write_log_all(ATTACK_STOP_tag);
+	//rs.process_manager.write_log_all(ATTACK_STOP_tag); //Already in attck.run , change?
 }
 
 void stats_attack(const RunStatus &rs) {

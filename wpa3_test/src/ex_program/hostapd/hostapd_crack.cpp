@@ -144,10 +144,9 @@ bool verify_sha1_mic(const WpaHashEntry &h, const string &psk) {
 	return memcmp(computed.data(), h.mic.data(), 16) == 0;
 }
 
-// WPA-PSK-SHA256 (AKM 6): PTK via SHA256-PRF-384, MIC depends on wpa_supplicant version:
-//   ver=0 (wpa_supplicant >=2.10): MIC = HMAC-SHA256(KCK, eapol)[0:16]
-//   ver=3 (wpa_supplicant <2.10):  MIC = AES-128-CMAC(KCK, eapol)[0:16]
-// PRF iter: HMAC-SHA256(pmk, LE16(i) || label || 0x00 || ctx || LE16(384)), i=1,2 → 64 bytes, take 48
+// WPA-PSK-SHA256 (AKM 6): PTK via SHA256-PRF-384, MIC = HMAC-SHA256(KCK, eapol)[0:16]
+// PRF iter: HMAC-SHA256(pmk, LE16(i) || label || ctx || LE16(384)), i=1,2 → 64 bytes, take 48
+// matches wpa_supplicant sha256_prf_bits: no 0x00 separator between label and context
 bool verify_sha256_mic(const WpaHashEntry &h, const string &psk) {
 	const auto [pmk, ctx, snonce] = make_ptk_ctx(h, psk);
 	static constexpr string_view label = "Pairwise key expansion";
@@ -155,11 +154,10 @@ bool verify_sha256_mic(const WpaHashEntry &h, const string &psk) {
 	for(uint16_t i = 1; i <= 2; ++i) {
 		constexpr uint16_t ptk_bits = 384;
 		vector<uint8_t> msg;
-		msg.reserve(2 + label.size() + 1 + ctx.size() + 2);
+		msg.reserve(2 + label.size() + ctx.size() + 2);
 		msg.push_back(i & 0xFF);
-		msg.push_back((i >> 8) & 0xFF);
+		msg.push_back(i >> 8 & 0xFF);
 		msg.insert(msg.end(), label.begin(), label.end());
-		msg.push_back(0x00);
 		msg.insert(msg.end(), ctx.begin(), ctx.end());
 		msg.push_back(ptk_bits & 0xFF);
 		msg.push_back(ptk_bits >> 8 & 0xFF);
@@ -169,17 +167,10 @@ bool verify_sha256_mic(const WpaHashEntry &h, const string &psk) {
 		const size_t off = (i - 1) * 32;
 		memcpy(ptk.data() + off, mac.data(), min<size_t>(32, 48 - off));
 	}
-	array<uint8_t, 16> computed{};
-	if(h.ver == 3) {
-		// AES-128-CMAC — older wpa_supplicant (<2.10) uses this for AKM 6 with CCMP
-		computed = aes128_cmac(ptk.data(), h.eapol.data(), h.eapol.size());
-	} else {
-		array<uint8_t, 32> tmp{};
-		unsigned int len = 32;
-		HMAC(EVP_sha256(), ptk.data(), 16, h.eapol.data(), h.eapol.size(), tmp.data(), &len);
-		memcpy(computed.data(), tmp.data(), 16);
-	}
-	return memcmp(computed.data(), h.mic.data(), 16) == 0;
+	array<uint8_t, 32> tmp{};
+	unsigned int len = 32;
+	HMAC(EVP_sha256(), ptk.data(), 16, h.eapol.data(), h.eapol.size(), tmp.data(), &len);
+	return memcmp(tmp.data(), h.mic.data(), 16) == 0;
 }
 
 }

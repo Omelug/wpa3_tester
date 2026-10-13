@@ -116,8 +116,8 @@ void stats_attack(const RunStatus &rs){
 	report << "| SSID probe requests | " << ssid_probe_count << " |\n";
 	report << "| Vulnerable (probes sent) | " << (broadcast_probe_count + ssid_probe_count > 0) << " |\n\n";
 	if(crack_result.has_value()){
-		report << "## Credential Capture (hcxpmktool)\n";
-		report << "Each captured handshake was verified against the known PSK using hcxpmktool.\n\n";
+		report << "## Credential Capture \n";
+		report << "Each captured handshake was verified against the known PSK.\n\n";
 		report << "| Metric | Value |\n|--------|-------|\n";
 		report << "| Captured handshakes | " << crack_result->total << " |\n";
 		report << "| Successfully cracked | " << crack_result->cracked << " |\n\n";

@@ -134,6 +134,28 @@ int get_eapol_msg_num(const PDU &pdu) {
 	return -1;
 }
 
+string eap_description(const PDU &pdu) {
+	const auto *eapol = pdu.find_pdu<EAPOL>();
+	if(!eapol) return "EAPOL?";
+	const auto raw = const_cast<EAPOL *>(eapol)->serialize();
+	// raw: version(1) type(1) length(2) [EAP: code(1) id(1) len(2) type?(1) ...]
+	if(raw.size() < 2 || raw[1] != 0) return "EAPOL type=" + to_string(raw.size() > 1 ? raw[1] : 0u);
+	if(raw.size() < 5) return "EAP";
+	const uint8_t code = raw[4];
+	if(code == 3) return "EAP Success";
+	if(code == 4) return "EAP Failure";
+	if(code == 1 || code == 2) {
+		const string dir = code == 1 ? "Request" : "Response";
+		if(raw.size() < 9) return "EAP " + dir;
+		const uint8_t type = raw[8];
+		if(type == 1)  return "EAP " + dir + " Identity";
+		if(type == 21) return "EAP " + dir + " TTLS";
+		if(type == 25) return "EAP " + dir + " PEAP";
+		return "EAP " + dir + " type=" + to_string(type);
+	}
+	return "EAP code=" + to_string(code);
+}
+
 Dot11Beacon append_csa(const Dot11Beacon &beacon, const Channel &new_channel, const uint8_t count) {
 	Dot11Beacon copy = beacon;
 	copy.channel_switch({ 1, //type

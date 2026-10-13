@@ -14,7 +14,8 @@ actors:
   ap:
     source: internal
     selection:
-      permanent_mac: "24:ec:99:bf:b0:a1"
+      permanent_mac: "90:de:80:4e:31:e6"
+      #permanent_mac: "24:ec:99:bf:b0:a1"
       channel: 11
       condition: [ AP, 2_4GHz, netns_change ]
     setup:
@@ -25,23 +26,26 @@ actors:
         driver: nl80211
         ssid: WrongNet
         hw_mode: g
-        auth_algs: 1
-        wpa: 2
-        ieee80211n: 1
-        ieee80211w: 2
-        wpa_key_mgmt: SAE
-        rsn_pairwise: CCMP
-        wpa_passphrase: password123
-        sae_password: password123
         channel: 11
+        auth_algs: 1
+        ieee80211n: 1
+        wpa: 2
+        wpa_key_mgmt: WPA-EAP
+        rsn_pairwise: CCMP
+        ieee8021x: 1
+        eap_server: 1
+        eap_user_file: hostapd.eap_user
+        pwd_group: 19
+        own_ip_addr: "127.0.0.1"
     ip_addr: "172.16.100.1"
     netns: ap
 
   client:
     source: internal
     selection:
-      permanent_mac: "24:ec:99:bf:c7:cf"
-      driver: ath9k_htc
+      #permanent_mac: "24:ec:99:bf:c7:cf"
+      #permanent_mac: "90:de:80:de:ff:7b"
+      #driver: ath9k_htc
       condition: [ managed, 2_4GHz, netns_change ]
       channel: 11
     setup:
@@ -73,6 +77,11 @@ actors:
       channel: 1
 
 observers:
+  watch_client:
+    actor: client
+    program: wpa_cli
+    program_config:
+      interval: 2
   tester_dmesg:
     program: dmesg
     program_config:
@@ -105,7 +114,7 @@ observers:
 
 attack_config:
   confused_ssid: SafeNet
-  attack_time_sec: 40
+  attack_time_sec: 100
   beacon_interval_ms: 100
   beacon_warning_sec: 2
   only_to_mitm: false

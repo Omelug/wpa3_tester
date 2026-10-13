@@ -33,14 +33,14 @@ public:
 	};
 
 	void send(Tins::PDU &pdu, const Channel &ch) const;
-	static std::vector<uint8_t> build_inject_frame(
-		const std::vector<uint8_t> &raw, const Channel &ch);
-	void send(const std::vector<unsigned char> &raw, const Channel &ch) const;
+	static frame_raw_t build_inject_frame(
+		const frame_raw_t &raw, const Channel &ch);
+	void send(const frame_raw_t &raw, const Channel &ch) const;
 	static RecvResult parse_frame(const frame_raw_t &frame);
 	RecvResult recv();
 	void recv_loop(std::chrono::steady_clock::time_point deadline, const std::function<bool(RecvResult)> &on_frame);
-	pcap_t *get_pcap_handle() { return sniffer_ ? sniffer_->get_pcap_handle() : nullptr; }
-	Tins::Sniffer &sniffer() { return *sniffer_; }
+	pcap_t *get_pcap_handle() const { return sniffer_ ? sniffer_->get_pcap_handle() : nullptr; }
+	Tins::Sniffer &sniffer() const { return *sniffer_; }
 
 	void set_filter(const std::string &bpf) const;
 private:

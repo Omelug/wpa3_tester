@@ -13,7 +13,7 @@ void SsidConfusion::send_to_real(PDU &pdu) const {
 }
 
 void SsidConfusion::send_to_real(const vector<uint8_t> &raw) const{
-	auto translated = raw;
+	auto translated = ensure_radiotap(raw);
 	translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac), false);
 	sock_real->send(translated, netconfig.real_channel);
 }

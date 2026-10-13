@@ -71,7 +71,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 		CHECK_UNARY(out.empty());
 	}
 
-	TEST_CASE("rt_len larger than buffer returns empty") {
+	TEST_CASE("rt_len larger than buffer returns empty") { //FIXME change, added r
 		// bytes 2-3 claim rt_len = 0xFFFF
 		const vector<uint8_t> bad = { 0x00, 0x00, 0xFF, 0xFF, 0xAA, 0xBB };
 		Channel ch{ 6, WifiBand::BAND_2_4, nullopt };
@@ -119,5 +119,85 @@ TEST_SUITE("MonitorSocket::parse_frame sequence") {
 			auto result = MonitorSocket::parse_frame(raw);
 			CHECK_NE(result.pdu, nullptr);
 		}
+	}
+}}
+
+// -----------------
+
+static vector<uint8_t> make_assoc_req_raw(const string &ssid) {
+	Dot11AssocRequest req;
+	req.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
+	req.addr2(HWAddress<6>("aa:bb:cc:dd:ee:ff"));
+	req.addr3(HWAddress<6>("11:22:33:44:55:66"));
+	req.capabilities(0x0431);
+	req.listen_interval(10);
+	req.add_option({ Dot11::SSID, static_cast<uint8_t>(ssid.size()),
+		reinterpret_cast<const uint8_t *>(ssid.data()) });
+	return req.serialize();
+}
+
+static string ssid_from_raw(const vector<uint8_t> &raw) {
+	const uint16_t rt_len_raw = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
+	const size_t rt_off = (raw[0] == 0 && rt_len_raw >= 8 && raw.size() >= rt_len_raw) ? rt_len_raw : 0;
+	const Dot11AssocRequest req(raw.data() + rt_off, raw.size() - rt_off);
+	const auto *opt = req.search_option(Dot11::SSID);
+	if(!opt) return "";
+	return { reinterpret_cast<const char *>(opt->data_ptr()), opt->data_size() };
+}
+
+TEST_SUITE("rewrite_ssid_in_frame") {
+
+	TEST_CASE("replaces SSID in bare AssocRequest") {
+		auto raw = make_assoc_req_raw("SafeNet");
+		rewrite_ssid_in_frame(raw, "WrongNet");
+		CHECK_EQ(ssid_from_raw(raw), "WrongNet");
+	}
+
+	TEST_CASE("replaces SSID when RadioTap header is present") {
+		auto bare = make_assoc_req_raw("SafeNet");
+		auto raw = ensure_radiotap(bare);
+		rewrite_ssid_in_frame(raw, "WrongNet");
+		CHECK_EQ(ssid_from_raw(raw), "WrongNet");
+	}
+
+	TEST_CASE("truncates new SSID to 32 bytes") {
+		auto raw = make_assoc_req_raw("SafeNet");
+		const string long_ssid(40, 'X');
+		rewrite_ssid_in_frame(raw, long_ssid);
+		CHECK_EQ(ssid_from_raw(raw).size(), 32u);
+	}
+
+	TEST_CASE("no-op on frame too short to contain IEs") {
+		vector<uint8_t> tiny = { 0x00, 0x04, 0xFF, 0xFF };
+		const auto orig = tiny;
+		rewrite_ssid_in_frame(tiny, "WrongNet");
+		CHECK_EQ(tiny, orig);
+	}
+}
+
+// -----------------
+
+TEST_SUITE("ensure_radiotap") {
+
+	TEST_CASE("idempotent on frame that already has RadioTap") {
+		frame_raw_t raw = test_helpers::read_one_frame(PCAP_NO_FCS);
+		const auto once = ensure_radiotap(raw);
+		const auto twice = ensure_radiotap(once);
+		CHECK_EQ(once, twice);
+	}
+
+	TEST_CASE("adds RadioTap to bare 802.11 frame; second call is no-op") {
+		frame_raw_t raw = test_helpers::read_one_frame(PCAP_NO_FCS);
+		const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
+		const vector bare(raw.begin() + rt_len, raw.end());
+
+		const auto with_rt = ensure_radiotap(bare);
+		CHECK_NE(with_rt, bare);
+		CHECK_EQ(with_rt[0], 0x00); // RadioTap revision byte
+		CHECK_EQ(ensure_radiotap(with_rt), with_rt);
+	}
+
+	TEST_CASE("invalid frame type (FC type=3) throws") {
+		CHECK_THROWS(ensure_radiotap({ 0xFF, 0xFF, 0xFF, 0xFF }));
 	}
 }

@@ -22,6 +22,12 @@ Tins::Dot11ProbeResponse beacon_to_probe_resp(const Tins::Dot11Beacon &beacon, c
 Tins::Dot11AssocResponse *assoc_resp_channel_patch(const Tins::Dot11AssocResponse &assoc, const Channel &rogue_channel);
 bool is_eapol(const Tins::PDU &pdu);
 int get_eapol_msg_num(const Tins::PDU &pdu);
+std::string eap_description(const Tins::PDU &pdu);
+
+// return raw bytes guaranteed to start with a RadioTap header
+// idempotent: if RT is already present, returns the input unchanged
+// throw run_err if bytes are not a valid 802.11 frame (not valid after add of radiotap)
+std::vector<uint8_t> ensure_radiotap(const std::vector<uint8_t> &raw);
 Tins::Dot11Beacon append_csa(const Tins::Dot11Beacon &beacon, const Channel &new_channel, uint8_t count = 1);
 
 // EAPOL helpers
@@ -34,6 +40,7 @@ void start_ap_hostapd(RunStatus &rs, const std::string &ap_iface, const ActorPtr
 	std::optional<Tins::HWAddress<6>> mac = std::nullopt);
 void stop_ap(const std::string &iface, const std::optional<std::string> &netns);
 
+void rewrite_ssid_in_frame(std::vector<uint8_t> &raw, const std::string &new_ssid);
 Tins::Dot11AssocRequest make_real_ssid_assoc_req(const Tins::Dot11AssocRequest &assoc, const std::string &real_ssid);
 
 }

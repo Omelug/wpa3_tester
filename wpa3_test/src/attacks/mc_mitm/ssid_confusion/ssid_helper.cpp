@@ -6,15 +6,16 @@ namespace wpa3_tester::ssid_confusion {
 using namespace Tins;
 using namespace std;
 
-void SsidConfusion::translate_data_mac(vector<uint8_t>& raw,
+void SsidConfusion::translate_data_mac(frame_raw_t& raw,
 							   const HWAddress<6>& from_bssid,
 							   const HWAddress<6>& to_bssid, const bool change_sa) {
 	if(raw.size() < 24) return;
 
-	const uint16_t rt_len = static_cast<uint16_t>(raw[2]) |
-						   (static_cast<uint16_t>(raw[3]) << 8);
+	const uint16_t rt_len_raw = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
+	const bool has_rt = raw[0] == 0 && rt_len_raw >= 8 && raw.size() >= rt_len_raw;
+	const size_t rt_len = has_rt ? rt_len_raw : 0;
 
-	if(raw.size() < static_cast<size_t>(rt_len) + 16 + 6) return;
+	if(raw.size() < rt_len + 16 + 6) return;
 
 	uint8_t* addr1 = raw.data() + rt_len + 4;
 	uint8_t* addr2 = raw.data() + rt_len + 10;  // SA

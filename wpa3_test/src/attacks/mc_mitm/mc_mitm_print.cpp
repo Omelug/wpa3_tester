@@ -94,6 +94,10 @@ void McMitm::display_traffic(const PDU &pdu, const string &prefix, const string 
 
 	const auto level = is_eapol(pdu) || (dot11->type() == Dot11::DATA && !is_null) ? LogLevel::INFO : LogLevel::DEBUG;
 
-	print_rx(level, prefix, *dot11, suffix);
+	const int eapol_msg = is_eapol(pdu) ? get_eapol_msg_num(pdu) : -2;
+	const string eap = eapol_msg == -2 ? ""
+		: eapol_msg == -1 ? " [" + eap_description(pdu) + "]"
+		: " [EAPOL " + to_string(eapol_msg) + "/4]";
+	print_rx(level, prefix, *dot11, eap + suffix);
 }
 }

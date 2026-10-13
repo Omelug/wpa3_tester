@@ -77,6 +77,9 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const s
 	if(dot11->find_pdu<Dot11AssocResponse>() || dot11->find_pdu<Dot11ReAssocResponse>()
 	   || dot11->find_pdu<Dot11Authentication>()) return;
 
+	// Don't relay deauth/disassoc from real AP - would disconnect client from rogue AP
+	if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) return;
+
 	if(addr1 == sta.get(SK::mac) || addr2 == ap.get(SK::mac)) {
 		// This is traffic involving the real AP
 		display_traffic(*pdu, "Real channel", " -- MitM'ing");

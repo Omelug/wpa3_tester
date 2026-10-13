@@ -151,7 +151,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	p2.seq_num(31);
 	run(
 		p2,
-		[](const vector<uint8_t> &raw) {
+		[](const frame_raw_t &raw) {
 			try {
 				const RadioTap rt(raw.data(), raw.size());
 				const auto *d = rt.find_pdu<Dot11Data>();
@@ -168,7 +168,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	p3.frag_num(1);
 	run(
 		p3,
-		[](const vector<uint8_t> &raw) {
+		[](const frame_raw_t &raw) {
 			try {
 				const RadioTap rt(raw.data(), raw.size());
 				const auto *d = rt.find_pdu<Dot11Data>();
@@ -185,7 +185,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	p4.qos_control(2);
 	run(
 		p4,
-		[](const vector<uint8_t> &raw) {
+		[](const frame_raw_t &raw) {
 			try {
 				const RadioTap rt(raw.data(), raw.size());
 				const auto *q = rt.find_pdu<Dot11QoSData>();
@@ -202,7 +202,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	p5.qos_control(2 | 0x80); // TODO magic numebr
 	run(
 		p5,
-		[](const vector<uint8_t> &raw) {
+		[](const frame_raw_t &raw) {
 			try {
 				const RadioTap rt(raw.data(), raw.size());
 				const auto *q = rt.find_pdu<Dot11QoSData>();

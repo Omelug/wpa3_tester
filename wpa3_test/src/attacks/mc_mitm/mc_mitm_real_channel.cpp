@@ -15,7 +15,7 @@ void McMitm::send_to_real(PDU &pdu) const {
 	sock_real->send(pdu, netconfig.real_channel);
 }
 
-void McMitm::send_to_real(const vector<uint8_t> &raw) const{
+void McMitm::send_to_real(const frame_raw_t &raw) const{
 	sock_real->send(raw, netconfig.real_channel);
 }
 
@@ -146,7 +146,7 @@ void McMitm::power_mgmt_response_real(HWAddress<6> addr2, const Dot11 &dot11) co
 	}
 }
 
-void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw){
+void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const frame_raw_t &raw){
 	auto *dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return;
 

@@ -34,18 +34,17 @@ public:
 
 	void run(RunStatus &rs, int timeout_sec) override;
 	void send_to_rogue(Tins::PDU &pdu) const override;
-	void send_to_rogue(const std::vector<unsigned char> &raw) const override;
-	FrameProcess handle_eapol_real(
-		Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const std::vector<unsigned char> &raw) const;
+	void send_to_rogue(const frame_raw_t &raw) const override;
+	FrameProcess handle_eapol_real(Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const frame_raw_t &raw) const;
 	[[nodiscard]] FrameProcess handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const override;
-	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw) override;
+	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const frame_raw_t &raw) override;
 	void send_to_real(Tins::PDU &pdu) const override;
-	void send_to_real(const std::vector<unsigned char> &raw) const override;
+	void send_to_real(const frame_raw_t &raw) const override;
 	FrameProcess handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11) override;
-	FrameProcess handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11, const std::vector<uint8_t> &raw) const;
-	FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const std::vector<uint8_t> &raw) const;
-	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11, const std::vector<uint8_t> &raw);
-	void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const std::vector<unsigned char> &raw) override;
+	FrameProcess handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11) override;
+	FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const frame_raw_t &raw) const;
+	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11, const frame_raw_t &raw);
+	void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const frame_raw_t &raw) override;
 
 };
 }

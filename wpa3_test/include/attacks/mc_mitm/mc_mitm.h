@@ -61,9 +61,9 @@ public:
 	time_point last_print_rogue_chan;
 
 	virtual void send_to_real(Tins::PDU &pdu) const;
-	virtual void send_to_real(const std::vector<uint8_t> &raw) const;
+	virtual void send_to_real(const frame_raw_t &raw) const;
 	virtual void send_to_rogue(Tins::PDU &pdu) const;
-	virtual void send_to_rogue(const std::vector<uint8_t> &raw) const;
+	virtual void send_to_rogue(const frame_raw_t &raw) const;
 
 	//TODO protected + fixture
 	// for handle function: STOP = frame consumed, CONTINUE = pass to next handler

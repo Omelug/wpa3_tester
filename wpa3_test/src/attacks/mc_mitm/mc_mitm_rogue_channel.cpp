@@ -14,7 +14,7 @@ using namespace Tins;
 
 void McMitm::send_to_rogue(PDU &pdu) const { sock_rogue->send(pdu, netconfig.rogue_channel); }
 
-void McMitm::send_to_rogue(const vector<uint8_t> &raw) const { sock_rogue->send(raw, netconfig.rogue_channel); }
+void McMitm::send_to_rogue(const frame_raw_t &raw) const { sock_rogue->send(raw, netconfig.rogue_channel); }
 
 FrameProcess McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) {
 	if(dot11.find_pdu<Dot11ProbeRequest>()) {
@@ -139,7 +139,7 @@ void McMitm::power_mgmt_response_rogue(HWAddress<6> addr2, Dot11 &dot11) const {
 	send_to_rogue(null_frame);
 }
 
-void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const vector<uint8_t> &raw) {
+void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const frame_raw_t &raw) {
 	auto *dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return;
 

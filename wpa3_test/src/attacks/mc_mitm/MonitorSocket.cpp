@@ -79,8 +79,8 @@ void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	pcap_inject(sniffer_->get_pcap_handle(), bytes.data(), bytes.size());
 }
 
-vector<uint8_t> MonitorSocket::build_inject_frame(
-	const vector<uint8_t> &raw, const Channel &) {
+frame_raw_t MonitorSocket::build_inject_frame(
+	const frame_raw_t &raw, const Channel &) {
 	if(raw.size() < 4) return {};
 
 	const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;

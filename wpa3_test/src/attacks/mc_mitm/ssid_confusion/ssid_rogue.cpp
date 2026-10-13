@@ -12,7 +12,7 @@ void SsidConfusion::send_to_real(PDU &pdu) const {
     send_to_real(raw);
 }
 
-void SsidConfusion::send_to_real(const vector<uint8_t> &raw) const{
+void SsidConfusion::send_to_real(const frame_raw_t &raw) const{
 	auto translated = ensure_radiotap(raw);
 	translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac), false);
 	sock_real->send(translated, netconfig.real_channel);
@@ -59,7 +59,7 @@ FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &d
 	return CONTINUE;
 }
 
-FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, const PDU &pdu, const vector<uint8_t> &raw) const {
+FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr2, const PDU &pdu, const frame_raw_t &raw) const {
 	// EAPOL STA -> AP
 	if(addr2 == sta.get(SK::mac) && is_eapol(pdu)) {
 		const int msg = get_eapol_msg_num(pdu);
@@ -142,7 +142,7 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 	return STOP;
 }
 
-void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const std::vector<uint8_t> &raw) {
+void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const frame_raw_t &raw) {
 	auto *dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return;
 

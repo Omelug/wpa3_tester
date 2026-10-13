@@ -20,7 +20,7 @@ string get_ssid(const Dot11Beacon &beacon) {
 	return { opt->data_ptr(), opt->data_ptr() + opt->data_size() };
 }
 
-Dot11Addrs get_addrs(const PDU &pdu, const vector<uint8_t> &raw) {
+Dot11Addrs get_addrs(const PDU &pdu, const frame_raw_t &raw) {
 	const auto *dot11 = pdu.find_pdu<Dot11>();
 	if(!dot11) return {};
 
@@ -158,7 +158,7 @@ string eap_description(const PDU &pdu) {
 	return "EAP code=" + to_string(code);
 }
 
-vector<uint8_t> ensure_radiotap(const vector<uint8_t> &raw) {
+vector<uint8_t> ensure_radiotap(const frame_raw_t &raw) {
 	if(raw.size() < 4) throw run_err("ensure_radiotap: frame too short ({} bytes)", raw.size());
 	const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
 	if(raw[0] == 0 && rt_len >= 8 && raw.size() >= rt_len) return raw;
@@ -311,7 +311,7 @@ void stop_ap(const string &iface, const optional<string> &netns) {
 	hw_capabilities::run_cmd({ "iw", "dev", iface, "del" }, netns, true);
 }
 
-void rewrite_ssid_in_frame(vector<uint8_t> &raw, const string &new_ssid) {
+void rewrite_ssid_in_frame(frame_raw_t &raw, const string &new_ssid) {
 	if(raw.size() < 6) return;
 	const uint16_t rt_len_raw = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
 	const size_t rt_len = (raw[0] == 0 && rt_len_raw >= 8 && raw.size() >= rt_len_raw) ? rt_len_raw : 0;

@@ -48,9 +48,7 @@ void run_attack(RunStatus &rs) {
 
 	SsidConfusion attack(rogue_client, rogue_ap, client, ap, rs.run_folder(), confused_ssid, beacon_ms, beacon_warn_s );
 
-	rs.process_manager.write_log_all(ATTACK_START_tag);
 	attack.run(rs, rs.config().at("attack_config").at("attack_time_sec").get<int>());
-	//rs.process_manager.write_log_all(ATTACK_STOP_tag); //Already in attack run , change?
 }
 
 void stats_attack(const RunStatus &rs) {

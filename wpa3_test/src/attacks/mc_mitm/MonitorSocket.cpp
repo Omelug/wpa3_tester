@@ -57,7 +57,9 @@ static void write_to_inject_channel(const ssh_channel ch, const vector<uint8_t> 
 	ssh_channel_write(ch, bytes.data(), static_cast<uint32_t>(bytes.size()));
 }
 
-// Send with RadioTap TXFlags=ORDER (matches Python MonitorSocket.send)
+// Send with RadioTap TXFlags=NOACK|ORDER.
+// NOACK: spoofed src addr means hardware never gets an ACK; without it the driver retransmits.
+// ORDER: prevent TX queue reordering, critical for handshake frame sequencing.
 void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
 
@@ -67,11 +69,11 @@ void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	vector<uint8_t> bytes;
 	if(!pdu.find_pdu<RadioTap>()) {
 		RadioTap rt{};
-		rt.tx_flags(0x28); // DONT_REORDER //FIXME NOACK?
+		rt.tx_flags(0x28); // NOACK | ORDER
 		rt.inner_pdu(RawPDU(pdu.serialize()));
 		bytes = rt.serialize();
 	} else {
-		pdu.find_pdu<RadioTap>()->tx_flags(0x28); //FIXME NOACK?
+		pdu.find_pdu<RadioTap>()->tx_flags(0x28); // NOACK | ORDER
 		bytes = pdu.serialize();
 	}
 	if(tx_ch_) {

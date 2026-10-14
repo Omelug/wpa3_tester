@@ -47,8 +47,6 @@ FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &d
 
 			send_to_rogue(resp);
 			display_traffic(dot11, "Rogue channel", " -- Replied");
-			// real-channel auth is handled by nic_client_ack hostapd, not by forwarding
-			//send_to_real(dot11);
 			client_state.update_state(ClientState::Authenticated);
 
 			return STOP;

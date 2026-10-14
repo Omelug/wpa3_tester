@@ -345,6 +345,16 @@ void rewrite_ssid_in_frame(frame_raw_t &raw, const string &new_ssid) {
 	}
 }
 
+void rewrite_bssid_in_frame(frame_raw_t &raw, const HWAddress<6> &bssid) {
+	if(raw.size() < 4) return;
+	const uint16_t rt_len = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
+	const size_t hdr = (raw[0] == 0 && rt_len >= 8 && raw.size() >= rt_len) ? rt_len : 0;
+	// management frame: addr2 at hdr+10, addr3 at hdr+16
+	if(hdr + 22 > raw.size()) return;
+	ranges::copy(bssid, raw.begin() + static_cast<ptrdiff_t>(hdr + 10));
+	ranges::copy(bssid, raw.begin() + static_cast<ptrdiff_t>(hdr + 16));
+}
+
 Dot11AssocRequest make_real_ssid_assoc_req(const Dot11AssocRequest &assoc, const string &real_ssid) {
 	auto req = Dot11AssocRequest(assoc.addr1(), assoc.addr2());
 	req.addr3(assoc.addr3());

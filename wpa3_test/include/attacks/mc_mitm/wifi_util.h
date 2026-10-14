@@ -41,6 +41,7 @@ void start_ap_hostapd(RunStatus &rs, const std::string &ap_iface, const ActorPtr
 void stop_ap(const std::string &iface, const std::optional<std::string> &netns);
 
 void rewrite_ssid_in_frame(frame_raw_t &raw, const std::string &new_ssid);
+void rewrite_bssid_in_frame(frame_raw_t &raw, const Tins::HWAddress<6> &bssid);
 Tins::Dot11AssocRequest make_real_ssid_assoc_req(const Tins::Dot11AssocRequest &assoc, const std::string &real_ssid);
 
 }

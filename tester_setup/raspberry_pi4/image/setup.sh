@@ -20,7 +20,7 @@ printf 'options rtw88_core disable_lps_deep=y debug_mask=0xff\noptions rtw88_usb
     > /etc/modprobe.d/rtw88.conf
 printf 'options rtw89_core disable_lps_deep=y debug_mask=0xff\noptions rtw89_usb disable_lps_deep=y\n' \
     > /etc/modprobe.d/rtw89.conf
-printf 'options mt76_usb disable_usb_sg=1\n# blacklist + install: belt-and-suspenders to suppress in-kernel mt76x2u/mt76x2e\n# (shadowed by mt76x2u_git/mt76x2e_git from updates/; symbol CRC mismatch otherwise)\nblacklist mt76x2u\nblacklist mt76x2e\ninstall mt76x2u /bin/false\ninstall mt76x2e /bin/false\n' \
+printf 'options mt76_usb disable_usb_sg=1\noptions mt76_usb_git disable_usb_sg=1\n# blacklist + install: belt-and-suspenders to suppress in-kernel mt76x2u/mt76x2e\n# (shadowed by mt76x2u_git/mt76x2e_git from updates/; symbol CRC mismatch otherwise)\nblacklist mt76x2u\nblacklist mt76x2e\ninstall mt76x2u /bin/false\ninstall mt76x2e /bin/false\n' \
     > /etc/modprobe.d/mt76.conf
 # rtl8xxxu handles RTL8192CU; staging rtl8192cu has known EAPOL delivery bug
 echo "blacklist rtl8192cu" > /etc/modprobe.d/blacklist-rtl8192cu.conf

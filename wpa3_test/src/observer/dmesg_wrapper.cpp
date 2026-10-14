@@ -46,4 +46,15 @@ vector<string> grep_log(const path &log_file, const string &pattern) {
 		if (line.find(pattern) != string::npos) matches.push_back(line);
 	return matches;
 }
+
+vector<string> grep_log(const path &log_file, const string &pattern, TimeWindow window) {
+	vector<string> matches;
+	ifstream f(log_file);
+	string line;
+	while (getline(f, line)) {
+		if (line.find(pattern) == string::npos) continue;
+		if (window.contains(log_time_to_epoch_ns(line))) matches.push_back(line);
+	}
+	return matches;
+}
 }

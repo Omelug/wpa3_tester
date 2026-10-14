@@ -1,13 +1,16 @@
 #include "attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.h"
 
+#include <nlohmann/json.hpp>
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/components/setup_connections.h"
 #include "attacks/mc_mitm/mc_mitm_attack.h"
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "config/RunStatus.h"
+#include "logger/log_util.h"
 #include "observer/dmesg_wrapper.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
+#include "visual/result_helper.h"
 
 using namespace std;
 using namespace Tins;
@@ -53,6 +56,21 @@ void run_attack(RunStatus &rs) {
 
 void stats_attack(const RunStatus &rs) {
 	mc_mitm::stats(rs); //TODO move or delete
+
+	const string mac_str = rs.get_actor("client").get(SK::mac);
+	const auto window = visual::helper::get_run_window(rs);
+
+	// client connected to confused SSID (from wpa_supplicant log)
+	const bool client_connected = !get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED", window).empty();
+
+	// MitM state reached GotMitm (from client_state log)
+	const auto state_log = rs.run_folder() / "observer" / "client_state" / (mac_str + "_state.log");
+	const bool got_mitm = !observer::dmesg::grep_log(state_log, "GotMitm", window).empty();
+
+	nlohmann::json result{};
+	result["client_connected"] = client_connected;
+	result["got_mitm"] = got_mitm;
+	rs.save_result(result);
 }
 
 }

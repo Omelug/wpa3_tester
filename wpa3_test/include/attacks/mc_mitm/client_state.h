@@ -55,7 +55,7 @@ public:
 		log_folder(log_folder) {}
 
 	void update_state(const State s) {
-		log(LogLevel::DEBUG, "Client {} moved to state {}", macaddr, state2str(s));
+		//log(LogLevel::DEBUG, "Client {} moved to state {}", macaddr, state2str(s));
 		if(log_folder) {
 			const auto path = *log_folder / (macaddr.to_string() + "_state.log");
 			const bool is_new = !std::filesystem::exists(path);

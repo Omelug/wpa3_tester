@@ -94,7 +94,7 @@ frame_raw_t MonitorSocket::build_inject_frame(
 	if(rt_len >= with_rt.size()) return {};
 
 	RadioTap rt{};
-	rt.tx_flags(0x20); //NO ORDER CHANGE| NOACK
+	rt.tx_flags(0x28); // NOACK | ORDER
 	rt.inner_pdu(RawPDU(with_rt.data() + rt_len, with_rt.size() - rt_len));
 	return rt.serialize();
 }
@@ -140,7 +140,7 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 								const RadioTap rt2(frame.data(), rt_len);
 								if(rt2.present() & RadioTap::FLAGS && (rt2.flags() & RadioTap::FCS)) strip = 4;
 							} catch(...) {}
-							log(LogLevel::DEBUG, "SNAP/EAPOL inner PDU");
+							log(LogLevel::DEBUG, "SNAP/EAPOL inner PDU, type=0x{:02x}", trunc < frame.size() ? frame[trunc + 1] : 0xFF);
 							return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };
 						} catch(...) {
 							log(LogLevel::ERROR, "parse_frame: SNAP/EAPOL inner PDU");

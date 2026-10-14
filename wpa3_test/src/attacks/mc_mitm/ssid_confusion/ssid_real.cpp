@@ -126,7 +126,7 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 	if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) return;
 
 	if(addr1 == sta.get(SK::mac) || addr2 == ap.get(SK::mac)) {
-		// implicitly forward rest of frames
+		// implicitly forward rest of frames STA -> AP
 		display_traffic(*pdu, "Real channel", " -- MitM'ing");
 		send_to_rogue(raw);
 	}

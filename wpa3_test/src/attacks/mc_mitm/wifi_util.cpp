@@ -1,6 +1,8 @@
 #include "attacks/mc_mitm/wifi_util.h"
 
 #include <fstream>
+#include <iomanip>
+#include <sstream>
 
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "interrupt.h"
@@ -270,8 +272,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	//hw_capabilities::run_cmd({"iw", "dev", ap_iface, "set", "power_save", "off"}, netns); //TODO disable for test ?
 }
 
-void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
-	optional<HWAddress<6>> mac, int beacon_int, bool hidden_ssid, const Dot11Beacon *beacon_template) {
+void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel) {
 	if(ap_iface.size() > 15)
 		throw std::runtime_error("start_ap_hostapd: iface name '" + ap_iface + "' is " +
 			std::to_string(ap_iface.size()) + " chars, exceeds IFNAMSIZ-1=15");

@@ -7,3 +7,4 @@ add_doctest_exe(run_monitor_socket_tests SOURCES test_MonitorSocket.cpp TEST_NAM
 add_doctest_exe(run_wifi_utils SOURCES test_wifi_utils.cpp TEST_NAME WiFiUtilsTests LIBS ${MC_MITM_LIBS})
 add_doctest_exe(run_real_channel_tests SOURCES test_real_channel.cpp TEST_NAME RealChannelTests LIBS ${MC_MITM_LIBS})
 add_doctest_exe(run_rogue_channel_tests SOURCES test_rogue_channel.cpp TEST_NAME RogueChannelTests LIBS ${MC_MITM_LIBS})
+add_doctest_exe(run_ssid_confusion_send_tests SOURCES test_ssid_confusion_send.cpp TEST_NAME SsidConfusionSendTests LIBS ${MC_MITM_LIBS})

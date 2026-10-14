@@ -290,7 +290,7 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 	hw_capabilities::set_iface_down(ap_iface, netns);
 	base_actor->set_iface_up();
 
-	const string hw_mode = channel.ch_num <= 14 ? "g" : "a";
+	const string hw_mode = channel.ch_num <= 14 ? "g" : "a"; //TODO no for 6GHZ
 	const auto conf = rs.run_folder() / ("hostapd_" + ap_iface + ".conf");
 	{
 		ofstream f(conf);

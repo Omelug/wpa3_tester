@@ -67,7 +67,9 @@ public:
 				ss << state2str(state) << " -> " << state2str(s);
 				f << ss.str();
 				f << std::endl;
-				log(LogLevel::INFO, ss.str());
+				if(s != state) {
+					log(LogLevel::INFO, ss.str());
+				}
 			}
 		}
 		state = s;

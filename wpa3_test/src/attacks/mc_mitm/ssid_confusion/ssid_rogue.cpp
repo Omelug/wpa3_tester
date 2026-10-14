@@ -23,14 +23,12 @@ FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pd
 		const bool directed = dot11.addr1() == HWAddress<6>(ap.get(SK::mac));
 		const bool wildcard = dot11.addr1() == HWAddress<6>::broadcast;
 		if(!directed && !wildcard) return STOP;
-		//client_state.update_state(ClientState::Finding);
 		probe_resp->addr1(addr2);
-
 		const unique_ptr<Dot11ProbeResponse> resp(probe_resp->clone());
 		resp->addr1(addr2);
-		send_to_rogue(*resp); // all, because MAC randomization
-		//client_state.update_state(ClientState::Finding);
+		send_to_rogue(*resp);
 		display_traffic(*pdu, "Rogue channel", " -- Replied");
+		client_state.update_state(ClientState::Finding);
 		return STOP;
 	}
 	if(dot11.find_pdu<Dot11ProbeResponse>()) return STOP;

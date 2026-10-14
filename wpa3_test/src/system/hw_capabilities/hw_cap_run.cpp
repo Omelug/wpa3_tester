@@ -64,6 +64,9 @@ int hw_capabilities::run_cmd(const vector<string> &argv, const optional<string> 
 		options.redirect.parent = true;
 		options.redirect.out.type = reproc::redirect::parent;
 		options.redirect.err.type = reproc::redirect::parent;
+	} else {
+		options.redirect.out.type = reproc::redirect::discard;
+		options.redirect.err.type = reproc::redirect::discard;
 	}
 	if(const error_code ec = proc.start(full_argv, options)){
 		if(print) log(LogLevel::ERROR, "Failed to start {} {}", full_argv[0], ec.message());

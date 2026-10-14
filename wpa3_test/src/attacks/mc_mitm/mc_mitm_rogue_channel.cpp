@@ -49,7 +49,7 @@ FrameProcess McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 			send_to_rogue(resp);
 			display_traffic(dot11, "Rogue channel", " -- Replied");
 
-			send_to_real(dot11);
+			send_to_real(dot11); //FIXME má to být tady?
 			client_state.update_state(ClientState::Authenticated);
 			return STOP;
 		}

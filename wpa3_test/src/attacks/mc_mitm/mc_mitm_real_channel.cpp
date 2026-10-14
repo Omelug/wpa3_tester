@@ -43,11 +43,9 @@ FrameProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, cons
 	if(addr1 != ap.get(SK::mac)) return CONTINUE;
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
 		const auto client_addr = auth->addr2();
-		display_traffic(dot11, "Real channel");
 
 		if(client_state.get_mac() == client_addr) {
-			log(LogLevel::WARNING, "Client {} is connecting on real channel, injecting CSA beacon to try to correct.",
-				client_addr);
+			display_traffic(dot11, "Real channel, injecting CSA beacon to try to correct");
 
 			send_csa_beacon(1, client_addr);
 			send_csa_beacon();

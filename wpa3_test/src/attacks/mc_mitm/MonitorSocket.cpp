@@ -118,13 +118,12 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 		auto pdu = make_unique<RadioTap>(frame.data(), frame.size() - strip);
 		return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };
 	} catch(const std::exception &e) {
-		//TODO
 		// Data frames: libtins throws when building SNAP/EAPOL inner PDU.
 		// Parse just the 802.11 header (no inner PDU) so addr extraction and relay still work.
-		// Return full raw bytes so the frame can be forwarded verbatim.
 		if(frame.size() >= 4) {
 			const uint16_t rt_len = frame[2] | static_cast<uint16_t>(frame[3]) << 8;
-			if(static_cast<size_t>(rt_len) + 2 <= frame.size()) {
+			// rt_len >= 8: minimum valid RT header; guards frame[rt_len] from reading inside RT hdr
+			if(rt_len >= 8 && static_cast<size_t>(rt_len) + 2 <= frame.size()) {
 				const uint8_t fc0 = frame[rt_len];
 				const uint8_t fc1 = frame[rt_len + 1];
 				if(((fc0 >> 2) & 0x03) == 2) { // DATA frame type
@@ -135,8 +134,14 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 					if(trunc <= frame.size()) {
 						try {
 							auto pdu = make_unique<RadioTap>(frame.data(), trunc);
+							// Re-parse RT header only to check FCS flag (libtins threw on inner PDU, not RT).
+							uint32_t strip = 0;
+							try {
+								const RadioTap rt2(frame.data(), rt_len);
+								if(rt2.present() & RadioTap::FLAGS && (rt2.flags() & RadioTap::FCS)) strip = 4;
+							} catch(...) {}
 							log(LogLevel::DEBUG, "SNAP/EAPOL inner PDU");
-							return { std::move(pdu), vector(frame.begin(), frame.end()) };
+							return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };
 						} catch(...) {
 							log(LogLevel::ERROR, "parse_frame: SNAP/EAPOL inner PDU");
 							return {};

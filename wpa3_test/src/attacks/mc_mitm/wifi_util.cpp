@@ -272,7 +272,7 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 	//hw_capabilities::run_cmd({"iw", "dev", ap_iface, "set", "power_save", "off"}, netns); //TODO disable for test ?
 }
 
-void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel) {
+void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel, optional<HWAddress<6>> bssid) {
 	if(ap_iface.size() > 15)
 		throw std::runtime_error("start_ap_hostapd: iface name '" + ap_iface + "' is " +
 			std::to_string(ap_iface.size()) + " chars, exceeds IFNAMSIZ-1=15");
@@ -299,7 +299,7 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 		  << "ssid=start_ap_hostapd\n"
 		  << "channel=" << static_cast<int>(channel.ch_num) << "\n"
 		  << "hw_mode=" << hw_mode << "\n";
-		if(mac) f << "bssid=" << mac->to_string() << "\n";
+		if(bssid) f << "bssid=" << bssid->to_string() << "\n";
 	}
 	set_public_perms(conf);
 

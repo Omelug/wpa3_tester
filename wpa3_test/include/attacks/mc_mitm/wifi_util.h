@@ -37,7 +37,7 @@ void start_ap(RunStatus &rs, const std::string &ap_iface, const ActorPtr &base_a
 	const Tins::Dot11Beacon &beacon, std::optional<Tins::HWAddress<6>> mac = std::nullopt, int interval = 100,
 	int dtim_period = 1);
 void start_ap_hostapd(RunStatus &rs, const std::string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
-	std::optional<Tins::HWAddress<6>> mac = std::nullopt);
+	std::optional<Tins::HWAddress<6>> bssid = std::nullopt);
 void stop_ap(const std::string &iface, const std::optional<std::string> &netns);
 
 void rewrite_ssid_in_frame(frame_raw_t &raw, const std::string &new_ssid);

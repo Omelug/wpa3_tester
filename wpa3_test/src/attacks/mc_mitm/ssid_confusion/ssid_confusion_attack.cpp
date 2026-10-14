@@ -49,7 +49,7 @@ void run_attack(RunStatus &rs) {
 }
 
 void stats_attack(const RunStatus &rs) {
-	//TODO
+	mc_mitm::stats(rs); //TODO move or delete
 }
 
 }

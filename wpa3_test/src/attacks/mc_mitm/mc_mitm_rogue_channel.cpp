@@ -128,14 +128,14 @@ FrameProcess McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddres
 }
 
 void McMitm::power_mgmt_response_rogue(HWAddress<6> addr2, Dot11 &dot11) const {
-	if(dot11.addr1() != ap.get(SK::mac)) return;
+	if(dot11.addr1() != rogue_ap.get(SK::mac)) return;
 	if(!dot11.power_mgmt() || client_state.get_mac() != addr2) return;
 
 	log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. Removing sleep bit.", addr2);
 	dot11.power_mgmt(0);
-	Dot11Data null_frame(addr2, HWAddress<6>(ap.get(SK::mac)));
+	Dot11Data null_frame(addr2, HWAddress<6>(rogue_ap.get(SK::mac)));
 	null_frame.subtype(Dot11::DATA_NULL);
-	null_frame.addr3(HWAddress<6>(ap.get(SK::mac)));
+	null_frame.addr3(HWAddress<6>(rogue_ap.get(SK::mac)));
 	send_to_rogue(null_frame);
 }
 

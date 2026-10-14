@@ -36,7 +36,7 @@ public:
 	void send_to_rogue(Tins::PDU &pdu) const override;
 	void send_to_rogue(const frame_raw_t &raw) const override;
 	FrameProcess handle_eapol_real(Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const frame_raw_t &raw) const;
-	[[nodiscard]] FrameProcess handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const override;
+	[[nodiscard]] FrameProcess handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11);
 	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const frame_raw_t &raw) override;
 	void send_to_real(Tins::PDU &pdu) const override;
 	void send_to_real(const frame_raw_t &raw) const override;

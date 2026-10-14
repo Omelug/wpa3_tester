@@ -123,6 +123,8 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 	}
 	const auto [addr1, addr2] = get_addrs(*pdu, raw);
 
+	power_mgmt_response_rogue(addr2, *dot11);
+
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
 	SOLVE_OR_CONTINUE(handle_probe(addr2, pdu.get(), *dot11))

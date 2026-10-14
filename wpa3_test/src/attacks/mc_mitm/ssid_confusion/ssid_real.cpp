@@ -76,7 +76,7 @@ FrameProcess SsidConfusion::handle_eapol_real(
 	return CONTINUE;
 }
 
-FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const {
+FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) {
 	if(dot11.find_pdu<Dot11ProbeRequest>() || dot11.find_pdu<Dot11ProbeResponse>()){
 		if(addr2 == sta.get(SK::mac)){
 			display_traffic(dot11, "Real channel", " -- send CSA");

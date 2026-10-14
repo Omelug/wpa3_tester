@@ -2,6 +2,7 @@
 
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/components/setup_connections.h"
+#include "attacks/mc_mitm/mc_mitm_attack.h"
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "config/RunStatus.h"
 #include "observer/dmesg_wrapper.h"
@@ -22,11 +23,15 @@ void setup_attack(RunStatus &rs) {
         const auto src = cfg_dir / f;
         if(exists(src)) copy_f(src, rs.run_folder() / f);
     }
-	rs.get_actor("rogue_ap")->set_mac_address(rs.get_actor("ap").get(SK::permanent_mac));
+
+	components::client_ap_setup_t(rs); //TODO FIX wtf, why this need to be before setup of fake MAC adresses?
+
+	const auto rogue_ap = rs.get_actor("rogue_ap");
+	rogue_ap->set_mac_address(rs.get_actor("ap").get(SK::permanent_mac));
+	rogue_ap->set_iface_up();
     const auto rogue_client = rs.get_actor("rogue_client");
 	rogue_client->set_mac_address(rs.get_actor("client").get(SK::mac));
     rogue_client->set_iface_up();
-    components::client_ap_setup_t(rs);
 }
 
 // Topology: WrongNet AP (ch 11) <-> rogue_client (ch 11) <-> rogue_ap (ch 1, fake SafeNet) <-> client

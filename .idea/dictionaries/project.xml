@@ -147,6 +147,7 @@
       <w>ifla</w>
       <w>ifname</w>
       <w>ifnames</w>
+      <w>ifnamsiz</w>
       <w>iftype</w>
       <w>iftypes</w>
       <w>igtk</w>
@@ -156,6 +157,7 @@
       <w>iwlwifi</w>
       <w>journalctl</w>
       <w>jsonfilter</w>
+      <w>kdlen</w>
       <w>keydatalen</w>
       <w>keydes</w>
       <w>keyver</w>
@@ -249,6 +251,7 @@
       <w>pipefd</w>
       <w>pkgs</w>
       <w>pkname</w>
+      <w>pktlen</w>
       <w>plotcmd</w>
       <w>pmkid</w>
       <w>pmksa</w>

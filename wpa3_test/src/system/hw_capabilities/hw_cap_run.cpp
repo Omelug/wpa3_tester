@@ -33,7 +33,7 @@ void hw_capabilities::run_in(const string &cmd, const path &cwd = current_path()
 		throw run_err("Command failed (exit " + to_string(WEXITSTATUS(ret)) + "): " + cmd + "\n" + out);
 }
 
-vector<string> wrap_with_netns(const vector<string> &argv, const optional<string> &netns){
+vector<string> wrap_with_netns(const vector<string> &argv, const optional<string> &netns){ //TODO use on more places where exec is used
 	if(!netns.has_value()){
 		return argv;
 	}

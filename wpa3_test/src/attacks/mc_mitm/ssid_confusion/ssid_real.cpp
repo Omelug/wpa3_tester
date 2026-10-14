@@ -26,7 +26,7 @@ static bool strip_pmkid_kde(frame_raw_t &raw) {
     static constexpr uint8_t pmkid_kde[] = {0xdd, 0x14, 0x00, 0x0f, 0xac, 0x04};
     const auto kde_start = raw.begin() + static_cast<ptrdiff_t>(eapol_off + 99);
     const auto kde_end   = kde_start + kdlen;
-    auto kde = std::search(kde_start, kde_end, std::begin(pmkid_kde), std::end(pmkid_kde));
+	const auto kde = std::search(kde_start, kde_end, std::begin(pmkid_kde), std::end(pmkid_kde));
     if(kde == kde_end) return false;
 
     raw.erase(kde, kde + 22);

@@ -101,7 +101,7 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 		return CONTINUE;
 	}
 
-	display_traffic(dot11, "Rogue channel", " -- Replied and MitMing with WrongNe"); //TODO hardcoded name
+	display_traffic(dot11, "Rogue channel", " -- Replied and MitMing");
 
 	auto translated = ensure_radiotap(raw);
 	rewrite_ssid_in_frame(translated, "WrongNet"); //TODO hardcoded

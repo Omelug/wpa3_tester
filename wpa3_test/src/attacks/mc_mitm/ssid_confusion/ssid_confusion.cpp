@@ -58,7 +58,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     rs.start_observers(ObserverRunPolicy::SKIP);
     rs.process_manager.write_log_all(ATTACK_START_tag);
 
-    // Initial CSA burst: spoof WrongNet MAC, push client ch 11 → ch 1
+    // Initial CSA burst: spoof WrongNet MAC, push client ch 11 -> ch 1
     for(int pass = 0; pass < 3; ++pass) {
         for(int cnt = CSA_attack::CHANNEL_SWITCH_MAX; cnt >= 0; --cnt) {
             RadioTap csa = CSA_attack::get_CSA_beacon(

@@ -271,7 +271,10 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 }
 
 void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
-	optional<HWAddress<6>> mac) {
+	optional<HWAddress<6>> mac, int beacon_int, bool hidden_ssid, const Dot11Beacon *beacon_template) {
+	if(ap_iface.size() > 15)
+		throw std::runtime_error("start_ap_hostapd: iface name '" + ap_iface + "' is " +
+			std::to_string(ap_iface.size()) + " chars, exceeds IFNAMSIZ-1=15");
 	const optional<string> &netns = base_actor[SK::netns];
 
 	netlink_helper::NetlinkRegistry::get_fd(netns);

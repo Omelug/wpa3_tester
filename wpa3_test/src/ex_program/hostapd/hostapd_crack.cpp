@@ -95,7 +95,7 @@ PtkCtx make_ptk_ctx(const WpaHashEntry &h, const string &psk) {
 //TODO sources from IEEE
 
 // WPA2-PSK (AKM 2): WPA-PRF-384 (HMAC-SHA1), MIC = HMAC-SHA1(KCK, eapol)[0:16]
-// PRF iter: HMAC-SHA1(pmk, label || 0x00 || ctx || i8), i=0,1,2 → 60 bytes, take 48
+// PRF iter: HMAC-SHA1(pmk, label || 0x00 || ctx || i8), i=0,1,2 -> 60 bytes, take 48
 bool verify_sha1_mic(const WpaHashEntry &h, const string &psk) {
 	const auto [pmk, ctx, snonce] = make_ptk_ctx(h, psk);
 	static constexpr string_view label = "Pairwise key expansion";
@@ -119,7 +119,7 @@ bool verify_sha1_mic(const WpaHashEntry &h, const string &psk) {
 }
 
 // WPA-PSK-SHA256 (AKM 6): PTK via SHA256-PRF-384, MIC = HMAC-SHA256(KCK, eapol)[0:16]
-// PRF iter: HMAC-SHA256(pmk, LE16(i) || label || ctx || LE16(384)), i=1,2 → 64 bytes, take 48
+// PRF iter: HMAC-SHA256(pmk, LE16(i) || label || ctx || LE16(384)), i=1,2 -> 64 bytes, take 48
 // matches wpa_supplicant sha256_prf_bits: no 0x00 separator between label and context
 bool verify_sha256_mic(const WpaHashEntry &h, const string &psk) {
 	const auto [pmk, ctx, snonce] = make_ptk_ctx(h, psk);

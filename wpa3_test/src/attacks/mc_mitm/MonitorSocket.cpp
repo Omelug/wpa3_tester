@@ -67,11 +67,11 @@ void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	vector<uint8_t> bytes;
 	if(!pdu.find_pdu<RadioTap>()) {
 		RadioTap rt{};
-		rt.tx_flags(0x20); // DONT_REORDER //FIXME NOACK?
+		rt.tx_flags(0x28); // DONT_REORDER //FIXME NOACK?
 		rt.inner_pdu(RawPDU(pdu.serialize()));
 		bytes = rt.serialize();
 	} else {
-		pdu.find_pdu<RadioTap>()->tx_flags(0x20); //FIXME NOACK?
+		pdu.find_pdu<RadioTap>()->tx_flags(0x28); //FIXME NOACK?
 		bytes = pdu.serialize();
 	}
 	if(tx_ch_) {
@@ -92,7 +92,7 @@ frame_raw_t MonitorSocket::build_inject_frame(
 	if(rt_len >= with_rt.size()) return {};
 
 	RadioTap rt{};
-	rt.tx_flags(0x28); //NO ORDER CHANGE| NOACK
+	rt.tx_flags(0x20); //NO ORDER CHANGE| NOACK
 	rt.inner_pdu(RawPDU(with_rt.data() + rt_len, with_rt.size() - rt_len));
 	return rt.serialize();
 }
@@ -116,35 +116,36 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 		auto pdu = make_unique<RadioTap>(frame.data(), frame.size() - strip);
 		return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };
 	} catch(const std::exception &e) {
-		log(LogLevel::DEBUG, "parse_frame: {}", e.what());
-	} catch(...) {
-		log(LogLevel::DEBUG, "parse_frame: unknown exception");
-	}
-	//TODO
-	// Data frames: libtins throws when building SNAP/EAPOL inner PDU.
-	// Parse just the 802.11 header (no inner PDU) so addr extraction and relay still work.
-	// Return full raw bytes so the frame can be forwarded verbatim.
-	if(frame.size() >= 4) {
-		const uint16_t rt_len = frame[2] | static_cast<uint16_t>(frame[3]) << 8;
-		if(rt_len + 2 <= frame.size()) {
-			const uint8_t fc0 = frame[rt_len];
-			const uint8_t fc1 = frame[rt_len + 1];
-			if(((fc0 >> 2) & 0x03) == 2) { // DATA frame type
-				const bool qos = (fc0 & 0x80) != 0;
-				const bool has_4addr = (fc1 & 0x03) == 0x03;
-				const size_t hdr = 24u + (qos ? 2u : 0u) + (has_4addr ? 6u : 0u);
-				const size_t trunc = rt_len + hdr;
-				if(trunc <= frame.size()) {
-					try {
-						auto pdu = make_unique<RadioTap>(frame.data(), trunc);
-						log(LogLevel::DEBUG, "SNAP/EAPOL inner PDU");
-						return { std::move(pdu), vector(frame.begin(), frame.end()) };
-					} catch(...) {
-						log(LogLevel::ERROR, "parse_frame: SNAP/EAPOL inner PDU");
+		//TODO
+		// Data frames: libtins throws when building SNAP/EAPOL inner PDU.
+		// Parse just the 802.11 header (no inner PDU) so addr extraction and relay still work.
+		// Return full raw bytes so the frame can be forwarded verbatim.
+		if(frame.size() >= 4) {
+			const uint16_t rt_len = frame[2] | static_cast<uint16_t>(frame[3]) << 8;
+			if(static_cast<size_t>(rt_len) + 2 <= frame.size()) {
+				const uint8_t fc0 = frame[rt_len];
+				const uint8_t fc1 = frame[rt_len + 1];
+				if(((fc0 >> 2) & 0x03) == 2) { // DATA frame type
+					const bool qos = (fc0 & 0x80) != 0;
+					const bool has_4addr = (fc1 & 0x03) == 0x03;
+					const size_t hdr = 24u + (qos ? 2u : 0u) + (has_4addr ? 6u : 0u);
+					const size_t trunc = rt_len + hdr;
+					if(trunc <= frame.size()) {
+						try {
+							auto pdu = make_unique<RadioTap>(frame.data(), trunc);
+							log(LogLevel::DEBUG, "SNAP/EAPOL inner PDU");
+							return { std::move(pdu), vector(frame.begin(), frame.end()) };
+						} catch(...) {
+							log(LogLevel::ERROR, "parse_frame: SNAP/EAPOL inner PDU");
+							return {};
+						}
 					}
 				}
 			}
 		}
+		log(LogLevel::DEBUG, "parse_frame: {}", e.what());
+	} catch(...) {
+		log(LogLevel::DEBUG, "parse_frame: unknown exception");
 	}
 	return {};
 }

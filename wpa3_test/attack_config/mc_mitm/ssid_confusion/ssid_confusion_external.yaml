@@ -36,7 +36,7 @@ actors:
       program: wpa_supplicant
       program_config:
         other_options: "-d"
-        # SafeNet has higher priority → client prefers SafeNet over WrongNet
+        # SafeNet has higher priority -> client prefers SafeNet over WrongNet
         wpa_supplicant_path: "./config/SafeNet_WrongNet.conf"
     netns: sta
     ip_addr: "172.16.100.2"

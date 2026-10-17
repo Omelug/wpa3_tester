@@ -114,13 +114,10 @@ fi
 echo "dtoverlay=disable-usb3" >> "$BOOT/config.txt"
 
 # Pin internal WiFi (brcmfmac, RPi4 built-in) to wlan0 regardless of enumeration order
-mkdir -p "$ROOT/etc/systemd/network"
-cat > "$ROOT/etc/systemd/network/10-internal-wifi.link" << 'EOF'
-[Match]
-Driver=brcmfmac
-
-[Link]
-Name=wlan0
+# fe300000.mmcnr is the RPi4 SDIO controller - USB adapters never match this path
+mkdir -p "$ROOT/etc/udev/rules.d"
+cat > "$ROOT/etc/udev/rules.d/70-wifi.rules" << 'EOF'
+SUBSYSTEM=="net", ACTION=="add", DEVPATH=="*/fe300000.mmcnr/*", NAME="wlan0"
 EOF
 
 # NetworkManager - leave all WiFi interfaces unmanaged

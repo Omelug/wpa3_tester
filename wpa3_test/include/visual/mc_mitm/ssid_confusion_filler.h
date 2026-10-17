@@ -23,6 +23,8 @@ struct SsidConfusionEntry {
 	std::string confused_ssid;
 	bool strip_rsn = false;
 	std::optional<bool> mitm_achieved;
+	std::optional<bool> client_connected;
+	std::optional<bool> got_mitm;
 	std::filesystem::path rel_path;
 
 	static SsidConfusionEntry parse(const std::filesystem::path &test_folder);

@@ -35,7 +35,7 @@ void setup_suite(const RunSuiteStatus &rss) {
 }
 
 SsidConfusionEntry SsidConfusionEntry::parse(const path &test_folder) {
-	SsidConfusionEntry e;
+	auto e = helper::load_result_default<SsidConfusionEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
 
 	const auto rs = helper::load_test_rs(test_folder);
@@ -85,7 +85,8 @@ void SsidConfusionEntry::render_table(
 				 col("Real SSID", &SsidConfusionEntry::real_ssid);
 				 col("Confused SSID", &SsidConfusionEntry::confused_ssid);
 				 COL("Strip RSN", e.strip_rsn);
-				 COL("MitM achieved", e.mitm_achieved);
+				 COL("Client connected", e.client_connected);
+				 COL("Got MitM", e.got_mitm);
 			 })->render();
 #undef COL
 		});

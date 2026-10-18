@@ -8,5 +8,9 @@ tests:
   all_openssl_102f:
     type: actor_filler
     config: ./invalid_curve_ap_openssl_1.0.2f.yaml
+  all_hostapd_ap_openssl_102f:
+    type: actor_filler
+    config: ./invalid_curve_ap_hostapd_2_8_openssl_1.0.2f.yaml
+
 delete_old: true
 rewrite: errors

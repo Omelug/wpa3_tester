@@ -4,7 +4,6 @@
 # args: <image.img> <user> <password> <hostname> <ssh_pubkey_path>
 
 # Must be run as root
-
 set -euo pipefail
 
 IMAGE=$1
@@ -70,8 +69,8 @@ echo "enable_uart=1" >> "$BOOT/config.txt"
 echo "dtoverlay=pstore" >> "$BOOT/config.txt"
 
 # --- Root partition
-
 echo "$PI_HOSTNAME" > "$ROOT/etc/hostname"
+
 # Update /etc/hosts (may not exist in minimal image - ignore failure)
 sed -i "s/raspberrypi/$PI_HOSTNAME/g" "$ROOT/etc/hosts" 2>/dev/null || true
 
@@ -134,7 +133,7 @@ echo "REGDOMAIN=CZ" > "$ROOT/etc/default/crda"
 ln -sf /usr/share/zoneinfo/Europe/Prague "$ROOT/etc/localtime"
 echo "Europe/Prague" > "$ROOT/etc/timezone"
 
-# ensure /usr/sbin (iptables, etc.) is in PATH for all sessions
+# ensure /usr/sbin is in PATH for all sessions
 echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' > "$ROOT/etc/environment"
 
 # Passwordless sudo (dev/test machine only)

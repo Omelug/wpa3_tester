@@ -13,6 +13,8 @@ f: disconnnected usb reset?/home/nixos/CLionProjects/wpa3_tester/tester_setup/ra
 ssid_confusion:
     ?: try on ath without debug -> slow down ?
 
++:  invalid curve from AP to client (rogue AP)
+
 CSA:
     +: option for openwrt OCV / wpa3 disable for external client
 mc_mitm:

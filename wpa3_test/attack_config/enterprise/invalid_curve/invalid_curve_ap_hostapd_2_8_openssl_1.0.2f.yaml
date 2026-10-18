@@ -1,0 +1,8 @@
+name: invalid_curve_2_8_openssl_1_0_2f
+attacker_module: invalid_curve
+$extends: ./invalid_curve_ap_openssl_1.0.2f.yaml
+actors:
+  ap:
+    setup:
+      program_config:
+        version: 2_8

@@ -157,7 +157,7 @@ bool RunStatus::config_requirement(const std::vector<std::string> &disabled_test
 	}
 
 	cleanup_all_namespaces();
-	reset_usb_ifaces();
+	if(!_rssi_checked) reset_usb_ifaces();
 
 	parse_requirements();
 	log_actor_map("Actors: ", actors);

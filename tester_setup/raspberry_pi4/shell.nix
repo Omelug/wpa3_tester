@@ -15,6 +15,7 @@ in pkgs.mkShell {
     pkgs.python3
     pkgs.rsync
     pkgs.git
+    pkgs.iptables
   ];
   shellHook = ''
     export CROSS_COMPILE=aarch64-unknown-linux-gnu-

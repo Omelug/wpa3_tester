@@ -35,7 +35,7 @@ pkgs.mkShell {
     git clang gnumake pkg-config flex bison
 
     # Tools
-    iproute2 iw hostapd-mana
+    iproute2 iw hostapd-mana iptables
     netsniff-ng tcpdump wireshark-cli gnuplot hcxtools
     trace-cmd
     bmaptool

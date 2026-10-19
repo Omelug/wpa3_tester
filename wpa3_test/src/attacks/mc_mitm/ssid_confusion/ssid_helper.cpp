@@ -74,4 +74,5 @@ Dot11ProbeResponse SsidConfusion::make_confused_probe_resp(
 	}
 	return resp;
 }
+
 }

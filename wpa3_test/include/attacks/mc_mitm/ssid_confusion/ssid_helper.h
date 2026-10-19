@@ -21,7 +21,6 @@ public:
 	static Tins::Dot11ProbeResponse make_confused_probe_resp(
 		const Tins::Dot11ProbeResponse &real, const std::string &confused_ssid, bool strip_rsn);
 
-
 	SsidConfusion(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &sta, const ActorPtr &ap,
 		const std::optional<std::filesystem::path> &run_folder, const std::string & confused_ssid, const int beacon_ms,
 		const int beacon_warn_sec):

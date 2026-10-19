@@ -27,7 +27,7 @@ using namespace Tins;
 // mac80211 then fires "AP appears to change mode (expected VHT, found legacy)"
 // - disconnects (on 2_4GHz)
 // - on 5GHz disconnect without similar log
-static Dot11Beacon build_legacy_beacon(const Dot11Beacon &src) {
+Dot11Beacon build_legacy_beacon(const Dot11Beacon &src) {
 	Dot11Beacon result(src.addr1(), src.addr2());
 	result.addr3(src.addr3());
 	result.interval(src.interval());

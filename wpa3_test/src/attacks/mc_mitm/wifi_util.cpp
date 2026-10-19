@@ -345,6 +345,43 @@ void rewrite_ssid_in_frame(frame_raw_t &raw, const string &new_ssid) {
 	}
 }
 
+// Strip PMKID list from RSN IE (tag 0x30) in a raw management frame.
+// Zeroes PMKID Count and removes the 16-byte entries; fixes IE length field.
+void strip_pmkid_from_rsn_ie(frame_raw_t &raw) {
+	if(raw.size() < 6) return;
+	const uint16_t rt_len_raw = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
+	const size_t rt_len = (raw[0] == 0 && rt_len_raw >= 8 && raw.size() >= rt_len_raw) ? rt_len_raw : 0;
+
+	const uint8_t subtype = raw[rt_len] >> 4 & 0x0F;
+	const size_t fixed = (subtype == 2) ? 10 : (subtype == 5 || subtype == 8) ? 12 : 4;
+	const size_t ie_start = rt_len + 24 + fixed;
+	if(raw.size() < ie_start + 2) return;
+
+	for(size_t i = ie_start; i + 1 < raw.size();) {
+		const uint8_t ie_len = raw[i + 1];
+		if(i + 2 + ie_len > raw.size()) break;
+		if(raw[i] == 0x30) { // RSN IE
+			// version(2)+group(4)+pw_count(2)+pw(4n)+akm_count(2)+akm(4n)+caps(2)+pmkid_count(2)
+			size_t off = 6; // skip version + group cipher
+			if(off + 2 > ie_len) return;
+			off += 2 + (static_cast<uint16_t>(raw[i+2+off]) | (static_cast<uint16_t>(raw[i+2+off+1]) << 8)) * 4u;
+			if(off + 2 > ie_len) return;
+			off += 2 + (static_cast<uint16_t>(raw[i+2+off]) | (static_cast<uint16_t>(raw[i+2+off+1]) << 8)) * 4u;
+			off += 2; // RSN caps
+			if(off + 2 > ie_len) return; // no PMKID count field
+			const uint16_t pmkid_cnt = static_cast<uint16_t>(raw[i+2+off]) | (static_cast<uint16_t>(raw[i+2+off+1]) << 8);
+			if(pmkid_cnt == 0) return;
+			raw[i+2+off] = 0; raw[i+2+off+1] = 0;
+			const size_t pmkid_bytes = pmkid_cnt * 16u;
+			raw.erase(raw.begin() + static_cast<ptrdiff_t>(i+2+off+2),
+			          raw.begin() + static_cast<ptrdiff_t>(i+2+off+2+pmkid_bytes));
+			raw[i+1] = static_cast<uint8_t>(ie_len - pmkid_bytes);
+			return;
+		}
+		i += 2 + ie_len;
+	}
+}
+
 void rewrite_bssid_in_frame(frame_raw_t &raw, const HWAddress<6> &bssid) {
 	if(raw.size() < 4) return;
 	const uint16_t rt_len = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);

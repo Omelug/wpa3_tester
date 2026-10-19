@@ -20,6 +20,7 @@ public:
 	ActorPtr rogue_sta, rogue_ap, sta, ap;
 	bool only_to_mitm = false;
 	bool stop_mitm = false;
+	bool strip_pmkid_in_assoc = false;
 
 	// AP <-> rogue_sta <-> rogue AP <-> client
 	McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, ActorPtr ap,

@@ -11,7 +11,7 @@ using namespace filesystem;
 using namespace wpa3_tester;
 
 // Real captures from test_wpa3_tester network, password "password123".
-// key_info 0x010a → version bits = 2 (WPA2-PSK, HMAC-SHA1 MIC)
+// key_info 0x010a -> version bits = 2 (WPA2-PSK, HMAC-SHA1 MIC)
 static const string SHA1_HASH =
 	"WPA*02"
 	"*8da6894cd5ddb2d1214109ea409879e5"
@@ -24,7 +24,7 @@ static const string SHA1_HASH =
 	"100000fac028000010047c84c3e04bbeddfd7215ad84f489d73"
 	"*00";
 
-// key_info 0x010b → version bits = 3 (WPA-PSK-SHA256, HMAC-SHA256 MIC)
+// key_info 0x010b -> version bits = 3 (WPA-PSK-SHA256, HMAC-SHA256 MIC)
 static const string SHA256_HASH =
 	"WPA*02"
 	"*74b6914bde1ae5727031af130fde91eb"

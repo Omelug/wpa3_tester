@@ -80,7 +80,6 @@ TEST_CASE("change_filler_hash - no-op without filler suffix in config_path") {
 	ActorMap m;
 	m["sta"] = make_actor("aa:bb:cc:dd:ee:ff");
 
-	// ponytail: not calling methods that touch filesystem — only checking early-return path
 	REQUIRE_NOTHROW(rs.change_filler_hash(m));
 	CHECK_EQ(rs.config()["name"].get<string>(), "test_deadbeef"); // unchanged
 }

@@ -72,7 +72,7 @@ void stats_attack(const RunStatus &rs){
 	//TODO
 	// addd ctrl_iface first
 	// sudo wpa_cli list_networks
-	// wpa_cli network_status <id_sítě>;
+	// wpa_cli network_status <network_id>;
 
 	const path client_graph = observer::tshark::tshark_graph(rs, "client", elements);
 	const path rogue_graph = observer::tshark::tshark_graph(rs, "rogue_ap", elements);

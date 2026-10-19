@@ -9,7 +9,6 @@
 namespace wpa3_tester::observer::tshark {
 
 // RSN Capabilities field bitmasks (802.11-2020 Table 9-258)
-//TODO uint 8 je moc malý? bude maska fungovat i na uint 32 ?
 constexpr uint16_t RSN_CAP_MFPR = 0x0040; // bit 6  – Management Frame Protection Required
 constexpr uint16_t RSN_CAP_MFPC = 0x0080; // bit 7  – Management Frame Protection Capable
 constexpr uint16_t RSN_CAP_PBAC = 0x1000; // bit 12 – Protected Block Ack Agreement Capable
@@ -38,17 +37,21 @@ void pcap_events(const RunStatus &rs, G_elms &elements,
 
 // --------- SPECIFIC HELPERS -----------
 
-// extract the negotiated AKM from a pcap file (reads wlan.rsn.akms.type via tshark)
-// returns e.g. "00-0F-AC:8(WPA3)", "00-0F-AC:2(WPA2)", empty string if not found
+// extract wlan.rsn.akms.type via tshark
+// returns "00-0F-AC:8(WPA3)", "00-0F-AC:2(WPA2)"..., empty string if not found
 std::string akm_from_pcap(const std::filesystem::path &pcap_path);
-// extract OCV (RSN_CAP_OCVC bit of RSN Capabilities) from client frames (Probe Req / Assoc Req) in pcap
-// returns true if OCVC set, false if frame found but bit unset, nullopt if no relevant frame exists
-std::optional<bool> client_ocv_from_pcap(const std::filesystem::path &pcap_path);
-// extract OCV (RSN_CAP_OCVC bit of RSN Capabilities) from AP frames (Beacon / Probe Resp)
-// ap_mac: filter by BSSID (empty = all APs, picks up neighbors too)
-std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path, const std::string &ap_mac = {});
 
-// detect client scanning via Probe Requests in pcap_path within [start_time, end_time]
+// extract OCV (RSN_CAP_OCVC bit of RSN Capabilities)
+// from client frames (Probe Req / Assoc Req) in pcap
+// returns if OCVC set, nullopt if no relevant frame exists
+std::optional<bool> client_ocv_from_pcap(const std::filesystem::path &pcap_path);
+
+// extract OCV (RSN_CAP_OCVC bit of RSN Capabilities)
+// from AP frames (Beacon / Probe Resp)
+// ap_mac: filter by BSSID (empty = all APs, picks up neighbors too)
+std::optional<bool> ap_ocv_from_pcap(const std::filesystem::path &pcap_path, const std::string &ap_mac);
+
+// detect client scanning via Probe Requests in pcap_path within window
 // return "ch: X Y" (unique channels from wlan.ds.current_channel / radiotap),
 // return "yes" if probe requests found but no channel info
 // return empty string if no scanning detected
@@ -56,18 +59,22 @@ std::string client_scanning_from_pcap(
 	const std::filesystem::path &pcap_path, const std::string &client_mac, TimeWindow window = {});
 
 // detect ADDBA Request/Response (Block Ack action cat=3, action=0/1) in pcap
-// returns true if seen, false if pcap exists but none found, nullopt if pcap missing
+// return true if seen, false if pcap exists but none found
+// return nullopt if pcap missing
 std::optional<bool> addba_seen_from_pcap(const std::filesystem::path &pcap_path);
 
-// Transition Disable element (IE 255, ext tag 35) in Beacon/Probe Response — no decryption needed
+// Transition Disable element (IE 255, ext tag 35) in Beacon/Probe Response
 // bit0=WPA3-Personal, bit1=SAE-PK, bit2=WPA3-Enterprise, bit3=Enhanced Open (802.11-2020 / WPA3 spec)
 // returns decimal bitmap string (e.g. "1"), empty if element absent or pcap missing
+// return decimal bitmap string (e.g. "1")
+// return empty if element absent or pcap missing
 std::string ap_trans_disable_from_beacon_pcap(const std::filesystem::path &pcap_path,
     const std::string &ap_mac = {}, TimeWindow window = {});
 
 // Transition Disable KDE (OUI 50:6f:9a type 0x20) from EAPOL Message 3 key data
-// M3 is identified by keyinfo.install=1 && keyinfo.key_ack=1; key data is encrypted with PTK so password required
-// returns hex bitmap string (e.g. "0x01"), empty if not found or decryption fails
+// M3 is identified by keyinfo.install=1 && keyinfo.key_ack=1
+// key data is encrypted with PTK so password required
+// return hex bitmap string (e.g. "0x01"), empty if not found or decryption fails
 std::string ap_trans_disable_from_eapol_pcap(const std::filesystem::path &pcap_path,
     const std::string &ssid, const std::string &password, const std::string &ap_mac = {}, TimeWindow window = {});
 

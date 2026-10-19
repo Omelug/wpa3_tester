@@ -232,13 +232,16 @@ described_bool get_ap_disconnected(const RunStatus &rs, const string &client_mac
 	return ap_disconnected;
 }
 
+// transition_disable=0xNN bitmask (802.11-2020 / WPA3 spec)
+//  Bit 0: WPA3-Personal - client must not fall back to PSK after seeing this
+//  Bit 1: SAE-PK
+//  Bit 2: WPA3-Enterprise
+//  Bit 3: Enhanced Open
 described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
 										TimeWindow time_window, string password) {
 	assert(rs.actor("ap"));
 	described_str result;
-	// transition_disable=0xNN bitmask (802.11-2020 / WPA3 spec)
-	//  Bit 0: WPA3-Personal — client must not fall back to PSK after seeing this
-	//  Bit 1: SAE-PK, Bit 2: WPA3-Enterprise, Bit 3: Enhanced Open
+
 	const path config = rs.run_folder() / "ap_hostapd.conf";
 	if (exists(config)) {
 		const string val = hostapd::get_conf_value(config, {"transition_disable"});
@@ -260,11 +263,11 @@ described_str get_ap_wpa3_trans_disable(const RunStatus &rs,
 	const string ap_mac = rs.get_actor("ap").get(SK::mac);
 
 	// Beacon / Probe Response
-	// Transition Disable element (IE 255 ext 35) — unencrypted, no password needed
+	// Transition Disable element (IE 255 ext 35) - unencrypted, no password needed
 	if (const string val = observer::tshark::ap_trans_disable_from_beacon_pcap(pcap, ap_mac, time_window); !val.empty())
 		result += {val, "pcap (beacon/probe req)"};
 
-	// EAPOL M3 key data: Transition Disable KDE (50:6f:9a:20) — encrypted with PTK, password required
+	// EAPOL M3 key data: Transition Disable KDE (50:6f:9a:20) - encrypted with PTK, password required
 	if (!password.empty()) {
 		const string ssid = hostapd::get_ssid(rs, "ap");
 		if (const string val = observer::tshark::ap_trans_disable_from_eapol_pcap(pcap, ssid, password, ap_mac, time_window); !val.empty())

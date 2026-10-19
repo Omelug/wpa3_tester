@@ -15,14 +15,14 @@ TEST_CASE("data_unchanged") {
 	create_directories(page_dir);
 	create_directories(data_dir);
 
-	SUBCASE("no data → false") { CHECK_FALSE(data_unchanged(page_dir, data_dir)); }
+	SUBCASE("no data -> false") { CHECK_FALSE(data_unchanged(page_dir, data_dir)); }
 
-	SUBCASE("data but no index.html → false") {
+	SUBCASE("data but no index.html -> false") {
 		std::ofstream(data_dir / "result.json") << "{}";
 		CHECK_FALSE(data_unchanged(page_dir, data_dir));
 	}
 
-	SUBCASE("index.html newer than data → true") {
+	SUBCASE("index.html newer than data -> true") {
 		std::ofstream(data_dir / "result.json") << "{}";
 		std::ofstream(page_dir / "index.html") << "<html/>";
 		// touch index.html to ensure it's newer
@@ -30,7 +30,7 @@ TEST_CASE("data_unchanged") {
 		CHECK(data_unchanged(page_dir, data_dir));
 	}
 
-	SUBCASE("index.html older than data → false") {
+	SUBCASE("index.html older than data -> false") {
 		std::ofstream(page_dir / "index.html") << "<html/>";
 		last_write_time(page_dir / "index.html", file_time_type::clock::now() - std::chrono::seconds(5));
 		std::ofstream(data_dir / "result.json") << "{}";

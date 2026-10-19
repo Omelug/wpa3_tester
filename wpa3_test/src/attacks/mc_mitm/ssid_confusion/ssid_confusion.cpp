@@ -20,7 +20,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     const HWAddress<6> client_perm(sta.get(SK::permanent_mac));
 
     // Scan for WrongNet beacon on ch 11.
-    // beacon stays as WrongNet — send_csa_beacon() uses it as CSA template on real channel.
+    // beacon stays as WrongNet - send_csa_beacon() uses it as CSA template on real channel.
 	setup_real_AP_RSN_frames();
 
     // Build confused beacon separately: rogue_ap_mac BSSID + SafeNet SSID, ch IEs patched to rogue channel.

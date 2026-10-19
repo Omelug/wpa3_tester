@@ -57,7 +57,7 @@ static size_t registry_index(const string &mod) {
 	return registry.size();
 }
 
-// <suite>/{attack_dir}/{test_dir}/test_config.yaml — sorted by registry order
+// <suite>/{attack_dir}/{test_dir}/test_config.yaml - sorted by registry order
 static vector<path> collect_test_folders(const path &run_dir) {
 	if(!is_directory(run_dir)) return {};
 	vector<pair<path, size_t>> indexed;

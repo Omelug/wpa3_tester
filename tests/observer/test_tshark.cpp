@@ -305,6 +305,6 @@ TEST_CASE("ap_trans_disable_from_eapol_pcap - eapol1 has only M1, no M3, returns
 	}
 	const path pcap = path(TEST_PCAP_DIR) / "eapol1.pcapng";
 	REQUIRE(exists(pcap));
-	// eapol1.pcapng contains EAPOL Message 1 only — M3 (install=1 && key_ack=1) is absent
+	// eapol1.pcapng contains EAPOL Message 1 only - M3 (install=1 && key_ack=1) is absent
 	CHECK_EQ(ap_trans_disable_from_eapol_pcap(pcap, "test_ssid", "password123"), "");
 }

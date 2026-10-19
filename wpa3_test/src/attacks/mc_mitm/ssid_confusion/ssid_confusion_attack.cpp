@@ -1,5 +1,6 @@
 #include "attacks/mc_mitm/ssid_confusion/ssid_confusion_attack.h"
 
+#include <fstream>
 #include <nlohmann/json.hpp>
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/components/setup_connections.h"

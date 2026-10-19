@@ -138,7 +138,7 @@ vector<string> DetailedSchemaErrorHandler::extract_deep_errors(
 	tmp_validator.validate(prop_value, ceh);
 
 	for(const auto &e : ceh.errors){
-		if(e.ptr.empty()) continue; // root-level (allOf/oneOf failures) — covered by allOf scan below
+		if(e.ptr.empty()) continue; // root-level (allOf/oneOf failures) - covered by allOf scan below
 		results.push_back("In '" + prop_name + "' at " + e.ptr.to_string() + ": " + e.message);
 	}
 

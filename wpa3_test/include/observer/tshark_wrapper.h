@@ -65,7 +65,6 @@ std::optional<bool> addba_seen_from_pcap(const std::filesystem::path &pcap_path)
 
 // Transition Disable element (IE 255, ext tag 35) in Beacon/Probe Response
 // bit0=WPA3-Personal, bit1=SAE-PK, bit2=WPA3-Enterprise, bit3=Enhanced Open (802.11-2020 / WPA3 spec)
-// returns decimal bitmap string (e.g. "1"), empty if element absent or pcap missing
 // return decimal bitmap string (e.g. "1")
 // return empty if element absent or pcap missing
 std::string ap_trans_disable_from_beacon_pcap(const std::filesystem::path &pcap_path,

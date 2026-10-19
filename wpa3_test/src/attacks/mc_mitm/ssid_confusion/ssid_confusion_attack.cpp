@@ -64,7 +64,6 @@ void stats_attack(const RunStatus &rs) {
 	// client connected to confused SSID (from wpa_supplicant log)
 	const bool client_connected = !get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED", window).empty();
 
-	// MitM state reached GotMitm (from client_state log)
 	const auto state_log = rs.run_folder() / "observer" / "client_state" / (mac_str + "_state.log");
 	const bool got_mitm = !observer::dmesg::grep_log(state_log, "GotMitm", window).empty();
 

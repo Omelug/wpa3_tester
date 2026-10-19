@@ -375,12 +375,13 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 	}
 
 	rs.process_manager.run(actor_name, command, rs.run_folder());
-	// ponytail: capture &rs not paths — change_filler_hash renames run_folder after this closure is registered
+
 	rs.process_manager.after_stop(actor_name, [&rs, actor_name](){
 		const path log_path = rs.run_folder() / "logger" / (actor_name + ".log");
 		const path output_path = rs.run_folder() / "captured_hashes.txt";
 		ofstream out(output_path);
 		set<string> seen;
+
 		// dedup by AP+STA+SSID: same credentials produce multiple EAPOL replays with distinct MICs
 		auto identity = [](const string &h) -> string {
 			size_t p = 0;

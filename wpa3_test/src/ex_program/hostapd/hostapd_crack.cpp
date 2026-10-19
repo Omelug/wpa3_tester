@@ -65,9 +65,9 @@ optional<WpaHashEntry> parse_wpa_hash(const string &line) {
 		return nullopt;
 
 	// EAPOL[5:6] = key_info (big-endian); bits 0-2 = key descriptor version
-	// ver 0: modern wpa_supplicant (>=2.10) for AKM 5/6 — MIC = HMAC-SHA256
-	// ver 3: older wpa_supplicant (<2.10) for AKM 5/6 with CCMP — MIC = AES-128-CMAC
-	// ver 2: WPA2-PSK (AKM 2) — MIC = HMAC-SHA1
+	// ver 0: modern wpa_supplicant (>=2.10) for AKM 5/6 - MIC = HMAC-SHA256
+	// ver 3: older wpa_supplicant (<2.10) for AKM 5/6 with CCMP - MIC = AES-128-CMAC
+	// ver 2: WPA2-PSK (AKM 2) - MIC = HMAC-SHA1
 	const uint16_t key_info = static_cast<uint16_t>(h.eapol[5]) << 8 | h.eapol[6];
 	h.ver = key_info & 0x07;
 	h.is_sha256 = h.ver == 0 || h.ver == 3;

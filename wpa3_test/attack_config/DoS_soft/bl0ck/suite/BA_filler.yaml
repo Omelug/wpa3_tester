@@ -5,7 +5,7 @@ tests:
   all_actors:
     type: actor_filler
     config: ../bl0ck_BA.yaml
-  random:
+  random_MAC:
     type: actor_filler
     config: ./random/bl0ck_random_BA.yaml
   #BA_rogue:

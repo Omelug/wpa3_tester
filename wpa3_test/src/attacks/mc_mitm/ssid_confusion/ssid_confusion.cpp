@@ -72,6 +72,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     const auto start      = steady_clock::now();
     auto next_beacon      = steady_clock::now();
     int csa_cnt           = CSA_attack::CHANNEL_SWITCH_MAX;
+    const uint64_t confused_beacon_ts0 = confused_beacon->timestamp();
 
     while(true) {
         if(steady_clock::now() > start + seconds(timeout_sec)) {
@@ -101,6 +102,8 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     	}
 
 		if(next_beacon <= steady_clock::now()) {
+            confused_beacon->timestamp(confused_beacon_ts0 +
+                static_cast<uint64_t>(duration_cast<microseconds>(steady_clock::now() - start).count()));
             send_to_rogue(*confused_beacon);
             if(client_state.get_state() < ClientState::GotMitm) {
                 send_to_real(legacy_beacon);

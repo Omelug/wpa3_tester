@@ -37,7 +37,7 @@ actors:
         eap_user_file: hostapd.eap_user
         pwd_group: 19
         own_ip_addr: "127.0.0.1"
-        #TODO do configu
+        #TODO do configu, do visualizeru
         okc: 0
         disable_pmksa_caching: 1
     ip_addr: "172.16.100.1"
@@ -120,7 +120,7 @@ observers:
 
 attack_config:
   confused_ssid: SafeNet
-  attack_time_sec: 150
+  attack_time_sec: 50
   beacon_interval_ms: 100
   beacon_warning_sec: 2
   only_to_mitm: false

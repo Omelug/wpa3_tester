@@ -44,7 +44,7 @@ void generate_ssid_confusion(const path &output_dir, const path &data_dir) {
 			<li> client that auto-connects to SSID-B ends up associated with a network it did not intend to join,  believing it is on a trusted network.</li>
 		  </ul>
 	    </p>
-        <p><b>Success:</b> client associates with the rogue AP advertising the confused SSID (ClientState == GotMitm)</p>
+        <p><b>Success:</b> client associates with the rogue AP advertising the confused SSID (confused SSID in wpa_cli with CONNECTED state)</p>
     </div>
 
     <div class="card">

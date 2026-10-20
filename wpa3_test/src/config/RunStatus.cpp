@@ -486,13 +486,13 @@ void RunStatus::load_actor_interface_mapping() {
 void RunStatus::write_done() const {
 	const path done_file = run_folder() / DONE_FILE;
 	ofstream done_log(done_file, ios::out | ios::trunc);
-	if(done_log.is_open()) {
-		done_log << "commit: " << GIT_COMMIT_HASH << "\n";
-		done_log << "date:   " << current_timestamp() << "\n";
-		done_log << "kernel: " << kernel_version() << "\n";
-		done_log.close();
-		set_public_perms(done_file);
-	}
+	if(!done_log.is_open()) throw run_err("Cannot write {}: {}", DONE_FILE, strerror(errno));
+	done_log << "commit: " << GIT_COMMIT_HASH << "\n";
+	done_log << "date:   " << current_timestamp() << "\n";
+	done_log << "kernel: " << kernel_version() << "\n";
+	done_log.close();
+	if(!done_log.good()) throw run_err("Failed to write {}: {}", DONE_FILE, strerror(errno));
+	set_public_perms(done_file);
 }
 
 void RunStatus::save_result(const nlohmann::json &j) const {
@@ -501,6 +501,7 @@ void RunStatus::save_result(const nlohmann::json &j) const {
 	if(!f.is_open()) { throw stats_err("Cannot write {}", RESULT_NAME); }
 	f << j.dump(2) << "\n";
 	f.close();
+	if(!f.good()) throw stats_err("Failed to write {}: {}", RESULT_NAME, strerror(errno));
 	set_public_perms(p);
 }
 

@@ -202,6 +202,7 @@ path extract_pcap_to_csv(const string &actor_name, const path &real_folder, cons
 	if(!csv_file.is_open()) { throw run_err("Failed to write CSV: {}", csv_path.string()); }
 	csv_file << csv_output;
 	csv_file.close();
+	if(!csv_file.good()) throw run_err("Failed to write CSV {}: {}", csv_path.string(), strerror(errno));
 	set_public_perms(csv_path);
 
 	return csv_path;
@@ -235,7 +236,8 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 	if(csv_file.is_open()) {
 		csv_file << csv_output;
 		csv_file.close();
-		set_public_perms(csv_path);
+		if(!csv_file.good()) log(LogLevel::ERROR, "Failed to write {}: {}", csv_path.string(), strerror(errno));
+		else set_public_perms(csv_path);
 	}
 
 	istringstream stream(csv_output);

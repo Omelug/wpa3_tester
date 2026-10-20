@@ -100,9 +100,6 @@ void run_attack(RunStatus &rs) {
 		rs, attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 	if(!sae.has_value()) throw run_err("Failed to capture SAE commit values");
 
-	attacker->set_monitor_mode();
-	attacker->set_iface_up();
-
 	const auto &att_cfg = rs.config().at("attack_config");
 	const string config_path = rs.run_folder() / "config.yaml";
 	write_run_config(config_path,

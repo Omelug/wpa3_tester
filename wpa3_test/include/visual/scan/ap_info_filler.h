@@ -17,7 +17,6 @@ struct ApInfoWpa3TestEntry {
 	std::string mac;
 	std::string ssid;
 	std::string mfp;
-	std::string client_mac;
 	std::vector<std::string> akm;
 	std::optional<bool> beacon_found;
 	std::optional<bool> acm_triggered;

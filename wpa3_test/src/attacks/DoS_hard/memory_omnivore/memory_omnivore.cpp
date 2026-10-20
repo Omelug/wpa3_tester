@@ -59,9 +59,6 @@ void run_attack(RunStatus &rs) {
 
 	if(!sae_params.has_value()) throw run_err("Failed to capture SAE commit values");
 
-	attacker->set_monitor_mode();
-	attacker->set_iface_up();
-
 	log(LogLevel::INFO, "Setup done, group_id=%u, scalar size={}", sae_params->group_id, sae_params->scalar.size());
 
 	const auto &att_cfg = rs.config().at("attack_config");
@@ -76,7 +73,7 @@ void run_attack(RunStatus &rs) {
 
 	const vector<HWAddress<6>> mac_pool = build_mac_pool(rs, pool_size, use_conn_stas);
 
-	PacketSender sender(attacker.get(SK::iface));
+	PacketSender sender(attacker.get_mon_iface());
 	mt19937 rng(random_device{}());
 	uniform_int_distribution<size_t> group_dist(0, N_DH_GROUPS - 1);
 

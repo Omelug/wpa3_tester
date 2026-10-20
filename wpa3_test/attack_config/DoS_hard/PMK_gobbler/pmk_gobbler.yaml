@@ -50,9 +50,10 @@ observers:
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 30
+  attack_time_sec: 150
   acm_pause_millisec: 5
   acm_trigger_count: 2560
   burst_size: 32
   frames_per_second_limit: 128
   cookie_wait_ms: 50
+rewrite: errors

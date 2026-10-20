@@ -27,9 +27,6 @@ ApInfoWpa3TestEntry ApInfoWpa3TestEntry::parse(const path &test_folder) {
 	rs.run_folder(test_folder);
 	rs.load_actor_interface_mapping();
 
-	const auto client = rs.get_actor("client");
-	e.client_mac = client->get(SK::mac);
-
 	return e;
 }
 

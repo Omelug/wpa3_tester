@@ -38,3 +38,4 @@ attack_config:
   attack_time_sec: 40
   burst_size: 512
   frames_per_second_limit: 50
+rewrite: errors

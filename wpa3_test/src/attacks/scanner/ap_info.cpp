@@ -99,7 +99,7 @@ void run_attack(RunStatus &rs){
 			log(LogLevel::ERROR, "ACM trigger: failed to obtain SAE commit values, skipping");
 		} else {
 				const auto [cookie, count] =
-					pmk_gobbler::trigger_acm(scanner.get_mon_iface(), scanner.get(SK::mac),
+					pmk_gobbler::trigger_acm(scanner.get(SK::iface), scanner.get_mon_iface(), scanner.get(SK::mac),
 																	target_ap.get(SK::mac),
 																	att_cfg.at("acm_pause_millisec").get<int>(),
 																	att_cfg.at("acm_trigger_count").get<int>(),

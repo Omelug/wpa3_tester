@@ -27,3 +27,4 @@ attack_config:
   acm_threshold: 5 # defualt openwrt value
   random_dh_groups: true
   use_connected_stas: true
+rewrite: errors

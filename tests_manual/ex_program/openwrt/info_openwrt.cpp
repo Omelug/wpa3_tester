@@ -123,7 +123,7 @@ TEST_CASE("Tcpdump OpenWrt") {
 		rs.actors.emplace(actor.get(SK::actor_name), actor);
 		actor->set(SK::iface, chosen_iface);
 
-		observer::start_tcpdump_remote(rs, actor.get(SK::actor_name), "");
+		observer::start_tcpdump_remote(rs, actor.get(SK::actor_name));
 		interruptible_sleep(chrono::seconds(1));
 
 		const string ps_output = conn->exec("ps w | grep tcpdump | grep -v grep");

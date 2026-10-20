@@ -44,11 +44,8 @@ void run_attack(RunStatus &rs) {
 	log(LogLevel::INFO, "SAE Commit captured");
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	const int duration = att_cfg.at("attack_time_sec").get<int>();
-	// change to monitor mode
-	attacker->set_monitor_mode();
-	attacker->set_iface_up();
 	rs.process_manager.write_log_all(ATTACK_START_tag);
-	check_vuln(attacker.get(SK::iface),
+	check_vuln(attacker.get_mon_iface(),
 		ap.get(SK::mac),
 		duration,
 		sae_params.value(),

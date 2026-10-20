@@ -103,7 +103,7 @@ target_compile_definitions(wpa3_deps INTERFACE
 )
 
 target_compile_features(wpa3_deps INTERFACE cxx_std_23)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_link_libraries(wpa3_deps INTERFACE stdc++exp)
 endif ()
 target_precompile_headers(wpa3_deps INTERFACE

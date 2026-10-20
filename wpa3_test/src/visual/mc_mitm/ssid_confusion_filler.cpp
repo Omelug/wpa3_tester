@@ -1,4 +1,5 @@
 #include "visual/mc_mitm/ssid_confusion_filler.h"
+#include "visual/mc_mitm/mc_mitm_filler.h"
 
 #include <filesystem>
 #include <fstream>
@@ -15,17 +16,6 @@
 namespace wpa3_tester::visual::ssid_confusion_filler {
 using namespace std;
 using namespace filesystem;
-
-static optional<bool> read_mitm_achieved(const path &test_folder, const string &client_mac) {
-	const path state_log = test_folder / "observer" / "client_state" / (client_mac + "_state.log");
-	if(!exists(state_log)) return nullopt;
-	ifstream f(state_log);
-	string line;
-	while(getline(f, line)) {
-		if(line.find("GotMitm") != string::npos) return true;
-	}
-	return false;
-}
 
 void setup_suite(const RunSuiteStatus &rss) {
 	const auto config_dir = rss.run_folder() / TEST_SUITE_CONFIG_DIR / "all_actors" / "config";
@@ -57,7 +47,7 @@ SsidConfusionEntry SsidConfusionEntry::parse(const path &test_folder) {
 	e.confused_ssid = att_cfg.value("confused_ssid", e.real_ssid);
 	e.strip_rsn = att_cfg.value("strip_rsn", false);
 
-	e.mitm_achieved = read_mitm_achieved(test_folder, e.client_mac);
+	e.mitm_achieved = mc_mitm_filler::read_mitm_achieved(test_folder, e.client_mac);
 
 	return e;
 }

@@ -38,12 +38,17 @@ void generate_mc_mitm(const path &output_dir, const path &data_dir) {
             Once the client associates with the rogue AP, traffic is forwarded through the attacker,
             achieving a transparent MitM position without breaking connectivity.</p>
         <p><b>Success:</b> client associates with the rogue AP (ClientState == GotMitm)</p>
+
+		<img src="../../../images/mc_mitm.svg" alt="CSA attack diagram" style="max-width:60%; margin-top:12px; display:block; margin-left:auto; margin-right:auto;">
+
+
     </div>
+
+
 )html";
 
     McMitmEntry::render_table(f, "mc-mitm",
-							  data_dir / DATA_SUITE / "mc_mitm" / "mc_mitm" /
-								  "mc_mitm_filler",
+							  data_dir / DATA_SUITE / "mc_mitm" / "mc_mitm_filler",
 							  page_dir, "mc_mitm_filler");
 
     f << "</body></html>";

@@ -16,7 +16,7 @@ namespace wpa3_tester::visual::mc_mitm_filler {
 using namespace std;
 using namespace filesystem;
 
-static optional<bool> read_mitm_achieved(const path &test_folder, const string &client_mac) {
+optional<bool> read_mitm_achieved(const path &test_folder, const string &client_mac) {
 	const path state_log = test_folder / "observer" / "client_state" / (client_mac + "_state.log");
 	if(!exists(state_log)) return nullopt;
 	ifstream f(state_log);

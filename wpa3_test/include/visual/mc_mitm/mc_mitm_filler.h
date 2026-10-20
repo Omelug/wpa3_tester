@@ -11,6 +11,8 @@ struct HtmlGuard;
 
 namespace wpa3_tester::visual::mc_mitm_filler {
 
+std::optional<bool> read_mitm_achieved(const std::filesystem::path &test_folder, const std::string &client_mac);
+
 struct McMitmEntry {
 	std::string test_name;
 	std::string ap_mac;

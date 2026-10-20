@@ -4,7 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version  v 0.0.0.0:
-
+f: github se zasekne v kompilaci testu
 +: add test to check if TX_flags in RadiTab are respected
 +:  invalid curve from AP to client (rogue AP)
 

@@ -55,14 +55,35 @@ void run_attack(RunStatus &rs) {
 	attack.run(rs, rs.config().at("attack_config").at("attack_time_sec").get<int>());
 }
 
+// return if wpa_supplicant connected to the confused SSID
+static bool client_connected_to_confused(const RunStatus &rs, const string &confused_ssid,
+                                          optional<TimeWindow> window) {
+	const path clog = rs.run_folder() / "logger" / "client.log";
+	string net_id;
+	{ // resolve the wpa_supplicant network ID
+		ifstream f(clog);
+		const string needle = "ssid='" + confused_ssid + "'";
+		for(string line; getline(f, line); ) {
+			if(!line.contains(needle)) continue;
+			const auto p = line.find("id=");
+			if(p == string::npos) continue;
+			size_t i = p + 3;
+			while(i < line.size() && isdigit(line[i])) net_id += line[i++];
+			if(!net_id.empty()) break;
+		}
+	}
+	return !net_id.empty() &&
+		!get_time_logs(rs, "client", "completed [id=" + net_id + " id_str=", window).empty();
+}
+
 void stats_attack(const RunStatus &rs) {
-	mc_mitm::stats(rs); //TODO move or delete
+	mc_mitm::stats(rs);
 
 	const string mac_str = rs.get_actor("client").get(SK::mac);
 	const auto window = visual::helper::get_run_window(rs);
+	const string confused_ssid = rs.config().at("attack_config").at("confused_ssid");
 
-	// client connected to confused SSID (from wpa_supplicant log)
-	const bool client_connected = !get_time_logs(rs, "client", "CTRL-EVENT-CONNECTED", window).empty();
+	const bool client_connected = client_connected_to_confused(rs, confused_ssid, window);
 
 	const auto state_log = rs.run_folder() / "observer" / "client_state" / (mac_str + "_state.log");
 	const bool got_mitm = !observer::dmesg::grep_log(state_log, "GotMitm", window).empty();

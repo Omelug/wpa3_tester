@@ -1,6 +1,5 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 
-#include <chrono>
 #include <tins/tins.h>
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
@@ -21,7 +20,10 @@ FrameProcess McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, cons
 		const bool directed = dot11.addr1() == HWAddress<6>(ap.get(SK::mac));
 		const bool wildcard = dot11.addr1() == HWAddress<6>::broadcast;
 		if(!directed && !wildcard) return STOP;
-		client_state.update_state(ClientState::Finding);
+
+		if(addr2 == client_state.get_mac() && client_state.get_state() == ClientState::Sent_to_rogue)
+			client_state.update_state(ClientState::Finding);
+
 		probe_resp->addr1(addr2);
 
 		const unique_ptr<Dot11ProbeResponse> resp(probe_resp->clone());
@@ -156,7 +158,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const frame_raw_t 
 		log(LogLevel::DEBUG, "Rogue_cannel: Unknown frame type");
 		return;
 	}
-
+	if(dot11->find_pdu<Dot11Beacon>()) return;
 	power_mgmt_response_rogue(addr2, *dot11);
 
 #define SOLVE_OR_CONTINUE(handle_fun)                                                                                  \
@@ -171,12 +173,6 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const frame_raw_t 
 
 	//TODO if(handle_action_rogue(addr2, *pdu, *dot11)) return;
 	if(addr2 == ap.get(SK::mac)) { // AP ->
-		if(const auto *b = dot11->find_pdu<Dot11Beacon>()) {
-			const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
-			if(ch_ie && ch_ie->data_size() >= 1 && ch_ie->data_ptr()[0] == netconfig.rogue_channel.ch_num)
-				last_rogue_beacon = steady_clock::now();
-			return;
-		}
 		if(client_state.get_mac() == dot11->addr1() || client_state.get_state() > ClientState::Target_disconnected) {
 			display_traffic(*pdu, "Rogue channel");
 		}

@@ -50,9 +50,7 @@ void generate_active_monitor_overview(const path &output_dir, const path &data_d
 			COL("Client MAC (source)", overview::device(e.rx_mac, page_dir) << " (" << e.rx_driver << ")" );
 			col("Acked",      &ActiveTestEntry::acked);
 			col("Not Acked",  &ActiveTestEntry::not_acked);
-			col("Result", [](const ActiveTestEntry &e) -> string {
-				return e.success ? "<span class=\"it-pass\">PASS</span>" : "<span class=\"it-fail\">FAIL</span>";
-			});
+			col("Success", &ActiveTestEntry::success);
 		})->render({ "Test" });
 	}
 #undef COL

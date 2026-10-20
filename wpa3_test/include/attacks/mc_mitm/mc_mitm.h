@@ -33,7 +33,6 @@ public:
 
 	void send_csa_beacon(int numpairs = 1, const std::optional<Tins::HWAddress<6>> &target = std::nullopt,
 		int beacon_interval_ms = 100) const;
-	[[nodiscard]] bool should_check_rogue_beacons() const;
 
 	virtual void setup_real_AP_RSN_frames(int beacon_timeout_sec);
 	virtual void run(RunStatus &rs, int timeout_sec);
@@ -54,10 +53,6 @@ public:
 	std::unique_ptr<MonitorSocket> sock_rogue;
 
 	using time_point = std::chrono::steady_clock::time_point;
-	time_point last_real_beacon;
-	time_point last_rogue_beacon;
-	time_point last_print_real_chan;
-	time_point last_print_rogue_chan;
 
 	virtual void send_to_real(Tins::PDU &pdu) const;
 	virtual void send_to_real(const frame_raw_t &raw) const;
@@ -73,7 +68,6 @@ public:
 	FrameProcess handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
 	FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu);
 
-	[[nodiscard]] virtual FrameProcess handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
 	FrameProcess handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
 	FrameProcess handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, const std::vector<unsigned char> &raw,
 		const Tins::Dot11 &dot11) const;

@@ -8,10 +8,8 @@
 namespace wpa3_tester::ssid_confusion {
 
 class SsidConfusion: public McMitm {
-private:
 	std::string confused_ssid;
 	int beacon_ms;
-	int beacon_warn_sec;
 public:
 	// input have to have
 	static void translate_data_mac(frame_raw_t& raw,
@@ -22,13 +20,11 @@ public:
 		const Tins::Dot11ProbeResponse &real, const std::string &confused_ssid, bool strip_rsn);
 
 	SsidConfusion(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &sta, const ActorPtr &ap,
-		const std::optional<std::filesystem::path> &run_folder, const std::string & confused_ssid, const int beacon_ms,
-		const int beacon_warn_sec):
+		const std::optional<std::filesystem::path> &run_folder, const std::string & confused_ssid, const int beacon_ms):
 	McMitm(rogue_sta, rogue_ap, sta, ap, run_folder, false) {
 		this->confused_ssid = confused_ssid;
 		this->beacon_ms     = beacon_ms;
-		this->beacon_warn_sec = beacon_warn_sec;
-		//this->netconfig.ssid = rogue_ap->get)(); //TODO needed?
+		this->only_to_mitm = false; // have no effect
 	}
 
 	void run(RunStatus &rs, int timeout_sec) override;

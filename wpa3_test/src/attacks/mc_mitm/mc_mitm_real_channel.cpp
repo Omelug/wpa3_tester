@@ -1,10 +1,9 @@
+#include <tins/tins.h>
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
-#include <chrono>
-#include <tins/tins.h>
 
 namespace wpa3_tester{
 using namespace std;
@@ -17,23 +16,6 @@ void McMitm::send_to_real(PDU &pdu) const {
 
 void McMitm::send_to_real(const frame_raw_t &raw) const{
 	sock_real->send(raw, netconfig.real_channel);
-}
-
-FrameProcess McMitm::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
-	// TODO needed ?
-	/*if(dot11.find_pdu<Dot11ProbeRequest>()){
-		probe_resp->addr1(addr2);
-		RadioTap rt;
-		rt.inner_pdu(probe_resp->clone());
-		send_to_real(rt);
-		display_traffic(dot11, "Real channel", " -- Replied");
-		return STOP;
-	}
-	if(dot11.find_pdu<Dot11ProbeResponse>()){
-		if(addr2 == ap.get(SK::mac)) display_traffic(dot11, "Real channel");
-		return STOP;
-	}*/
-	return CONTINUE;
 }
 
 //FIXME change bool to PProcess::continue; PProcess::stop (with change to bool for
@@ -103,19 +85,13 @@ FrameProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress
 }
 
 void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11, const HWAddress<6> &addr1){
-	// Beacon from real AP - update timestamp, don't forward
-	if(const auto *b = dot11.find_pdu<Dot11Beacon>()){
-		const auto *ch_ie = b->search_option(Dot11ManagementFrame::DS_SET);
-		if(ch_ie && ch_ie->data_size() != 0 && ch_ie->data_ptr()[0] == netconfig.real_channel.ch_num)
-			last_real_beacon = steady_clock::now();
-		return;
-	}
 
 	// Forward na rogue channel
 	if(client_state.get_mac() == addr1){
 		if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>()){
 			display_traffic(dot11, "Real channel", client_state.get_mac() == addr1 ? " -- MitM'ing" : "");
-			client_state.update_state(ClientState::Target_disconnected);
+			if(client_state.get_state() < ClientState::GotMitm)
+				client_state.update_state(ClientState::Target_disconnected);
 		}
 
 		// Auth(seq=2) from real AP must NOT be forwarded
@@ -157,15 +133,16 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const frame_raw_t &
 
 	const auto [addr1, addr2] = get_addrs(*pdu, raw);
 	if(addr2 == HWAddress<6>() && dot11->type() != Dot11::CONTROL){
-		log(LogLevel::DEBUG, "Real channel: Unknown frame type");
+		display_traffic(*pdu, "Real channel", "- CONTROL -- Ignore");
 		return;
 	}
+
+	if(dot11->find_pdu<Dot11ProbeRequest>() || dot11->find_pdu<Dot11Beacon>()) return;
 
 	power_mgmt_response_real(addr2, *dot11);
 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
-	//SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
 	//TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
 	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))
@@ -174,10 +151,10 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const frame_raw_t &
 	if(dot11->addr1() == ap.get(SK::mac)){ // -> AP
 		if(client_state.get_mac() == addr2) display_traffic(*dot11, "Real channel");
 		// STA -> AP
-		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
+		if((dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) &&
+			client_state.get_state() < ClientState::GotMitm)
 			client_state.update_state(ClientState::Target_disconnected);
 	} else if(addr2 == ap.get(SK::mac)){ // AP ->
-		//TODO FIXME refactirion
 		handle_from_ap_real(pdu, *dot11, addr1);
 	}
 }

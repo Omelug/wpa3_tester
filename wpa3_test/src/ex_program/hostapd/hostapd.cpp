@@ -170,7 +170,7 @@ static const set<string> wpa_global_keys = {"sae_pwe", "okc", "pmf", "ctrl_inter
 static const set<string> wpa_quoted_keys = {"ssid", "sae_password", "psk", "identity", "password"};
 static const set<string> wpa_skip_keys = {"wpa_supplicant_path", "version", "other_options"};
 
-static string wpa_network_fmt(const string &key, const json &val){
+static string wpa_network_format(const string &key, const json &val){
 	if(val.is_string() && !wpa_quoted_keys.contains(key)) return val.get<string>();
 	return val.dump();
 }
@@ -178,7 +178,7 @@ static string wpa_network_fmt(const string &key, const json &val){
 static void write_wpa_global_kv(ofstream &out, const json &setup){
 	for (const auto& [key, val] : setup.items()) {
 		if(!wpa_global_keys.contains(key)) continue;
-		out << key << "=" << val.dump() << "\n";
+		out << key << "=" << wpa_network_format(key, val) << "\n";
 	}
 }
 
@@ -187,7 +187,7 @@ static void write_wpa_network_block(ofstream &out, const json &setup){
 	for (const auto& [key, val] : setup.items()) {
 		if(wpa_skip_keys.contains(key)) continue;
 		if(wpa_global_keys.contains(key)) continue;
-		out << "\t" << key << "=" << wpa_network_fmt(key, val) << "\n";
+		out << "\t" << key << "=" << wpa_network_format(key, val) << "\n";
 	}
 	out << "}\n";
 }
@@ -196,8 +196,8 @@ void apply_wpa_overrides(const path &cfg, const json &overrides){
 	map<string,string> global_ov, network_ov;
 	for (const auto& [key, val] : overrides.items()) {
 		if(wpa_skip_keys.contains(key)) continue;
-		if(wpa_global_keys.contains(key)) global_ov[key] = val.dump();
-		else network_ov[key] = wpa_network_fmt(key, val);
+		if(wpa_global_keys.contains(key)) global_ov[key] = wpa_network_format(key, val);
+		else network_ov[key] = wpa_network_format(key, val);
 	}
 	if(global_ov.empty() && network_ov.empty()) return;
 

@@ -47,9 +47,6 @@ void run_attack(RunStatus &rs) {
 	rogue_client->set_iface_up();
 	rogue_ap->set_iface_up();
 
-	//TODO move to constructor
-	attack.netconfig.ssid = ap_ssid;
-
 	//needed for check GotMitm if not disconnected -> no EAPOL
 	rs.get_observer("sta_ap_iperf3").start(rs);
 	interruptible_sleep(seconds(10)); //TODO before time in config

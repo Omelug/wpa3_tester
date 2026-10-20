@@ -7,7 +7,6 @@
 
 namespace wpa3_tester {
 struct NetworkConfig {
-	std::string ssid;
 	Channel real_channel = {};
 	Channel rogue_channel = {};
 };

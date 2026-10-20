@@ -44,13 +44,14 @@ actors:
       #TODO driver: rtw_8821cu save BSSID in formware -> not reset on test start
       #permanent_mac: 90:de:80:de:ff:7b
       #permanent_mac: "24:ec:99:bf:c7:cf"
-      driver: ath9k_htc
+      #driver: ath9k_htc
       channel: 11
     setup:
       program: wpa_supplicant
       program_config:
         version: 2_11
         other_options: -d #d
+        ctrl_interface: /var/run/wpa_supplicant
         group: CCMP
         ieee80211w: 2
         key_mgmt: SAE
@@ -82,6 +83,11 @@ observers: #(allow start_observers if used )
     program: iperf3
     program_config:
       target_actor: ap
+  watch_client:
+    actor: client
+    program: wpa_cli
+    program_config:
+      interval: 2
   #client_mausezahn:
   #  actor: client
   #  program: mausezahn

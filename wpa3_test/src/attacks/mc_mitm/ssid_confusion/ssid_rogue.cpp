@@ -1,7 +1,6 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "attacks/mc_mitm/wifi_util.h"
-#include "logger/error_log.h"
 #include "system/hw_capabilities.h"
 namespace wpa3_tester::ssid_confusion {
 using namespace Tins;
@@ -69,7 +68,7 @@ FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr2, const P
 	}
 	return CONTINUE;
 }
-FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot11, const frame_raw_t &raw) {
+FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &, Dot11 &dot11, const frame_raw_t &raw) {
 	if(!dot11.find_pdu<Dot11AssocRequest>() && !dot11.find_pdu<Dot11ReAssocRequest>())
 		return CONTINUE;
 

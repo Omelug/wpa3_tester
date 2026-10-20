@@ -38,7 +38,7 @@ public:
 	FrameProcess handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11) override;
 	FrameProcess handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11) override;
 	FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const frame_raw_t &raw) const;
-	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11, const frame_raw_t &raw);
+	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &, Tins::Dot11 &dot11, const frame_raw_t &raw);
 	void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const frame_raw_t &raw) override;
 
 };

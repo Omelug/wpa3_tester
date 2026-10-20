@@ -48,10 +48,8 @@ void run_attack(RunStatus &rs) {
     const auto &att_cfg        = rs.config().at("attack_config");
     const string confused_ssid = att_cfg.at("confused_ssid");
     const int    beacon_ms     = att_cfg.at("beacon_interval_ms");
-    const int    beacon_warn_s = att_cfg.at("beacon_warning_sec");
 
-	SsidConfusion attack(rogue_client, rogue_ap, client, ap, rs.run_folder(), confused_ssid, beacon_ms, beacon_warn_s );
-
+	SsidConfusion attack(rogue_client, rogue_ap, client, ap, rs.run_folder(), confused_ssid, beacon_ms);
 	attack.run(rs, rs.config().at("attack_config").at("attack_time_sec").get<int>());
 }
 

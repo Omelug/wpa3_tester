@@ -80,7 +80,7 @@ FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Do
 	if(dot11.find_pdu<Dot11ProbeRequest>() || dot11.find_pdu<Dot11ProbeResponse>()){
 		// only if not associated, to not disconnect of background scanning
 		if(addr2 == sta.get(SK::mac) && client_state.get_state() < ClientState::Associated){
-			display_traffic(dot11, "Real channel", " -- send CSA"); //TODO dont reset state, backgroud scanning?
+			display_traffic(dot11, "Real channel", " -- send CSA"); //TODO dont reset state, background scanning?
 			client_state.update_state(ClientState::Sent_to_rogue);
 		}
 		return STOP;

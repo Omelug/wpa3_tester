@@ -37,9 +37,6 @@ actors:
         eap_user_file: hostapd.eap_user
         pwd_group: 19
         own_ip_addr: "127.0.0.1"
-        #TODO do configu, do visualizeru
-        okc: 0
-        disable_pmksa_caching: 1
     ip_addr: "172.16.100.1"
     netns: ap
 
@@ -58,9 +55,6 @@ actors:
         other_options: "-d"
         # SafeNet has higher priority -> client prefers SafeNet over WrongNet
         wpa_supplicant_path: "./config/SafeNet_WrongNet.conf"
-        ##TODO do configu
-        #okc: 0
-        #disable_pmksa_caching: 1
     netns: sta
     ip_addr: "172.16.100.2"
 

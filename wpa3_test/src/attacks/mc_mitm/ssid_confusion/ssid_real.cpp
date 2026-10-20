@@ -78,7 +78,8 @@ FrameProcess SsidConfusion::handle_eapol_real(
 
 FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) {
 	if(dot11.find_pdu<Dot11ProbeRequest>() || dot11.find_pdu<Dot11ProbeResponse>()){
-		if(addr2 == sta.get(SK::mac)){
+		// only if not associated, to not disconnect of background scanning
+		if(addr2 == sta.get(SK::mac) && client_state.get_state() < ClientState::Associated){
 			display_traffic(dot11, "Real channel", " -- send CSA");
 			client_state.update_state(ClientState::Sent_to_rogue);
 		}

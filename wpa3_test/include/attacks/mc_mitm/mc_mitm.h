@@ -33,8 +33,6 @@ public:
 
 	void send_csa_beacon(int numpairs = 1, const std::optional<Tins::HWAddress<6>> &target = std::nullopt,
 		int beacon_interval_ms = 100) const;
-	void send_disas(const Tins::HWAddress<6> &macaddr) const;
-	void send_deauth_as_ap() const;
 	[[nodiscard]] bool should_check_rogue_beacons() const;
 
 	virtual void setup_real_AP_RSN_frames(int beacon_timeout_sec);

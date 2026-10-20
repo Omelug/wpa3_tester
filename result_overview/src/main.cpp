@@ -15,6 +15,7 @@
 #include "attacks/enterprise/reflection_attack.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion.h"
+#include "attacks/two_iface/active_monitor_overview.h"
 #include "attacks/two_iface/injection_overview.h"
 #include "default.h"
 #include "devices.h"
@@ -102,6 +103,7 @@ static string html_page() {
 
 		<h3>two_iface</h3>
 		<ul>
+			<li><a href="attacks/two_iface/active_monitor/index.html">active_monitor</a></li>
 			<li><a href="attacks/two_iface/injection/index.html">two_iface - injection test cache</a></li>
 		</ul>
 
@@ -172,6 +174,7 @@ int main(int argc, char *argv[]) {
 	wpa3_tester::overview::generate_targets(output_dir, data_dir);
 	wpa3_tester::overview::generate_invalid_curve_attack(output_dir, data_dir);
 	wpa3_tester::overview::generate_reflection_attack(output_dir, data_dir);
+	wpa3_tester::overview::generate_active_monitor_overview(output_dir, data_dir);
 	wpa3_tester::overview::generate_injection_overview(output_dir, data_dir);
 	wpa3_tester::overview::generate_mc_mitm(output_dir, data_dir);
 	wpa3_tester::overview::generate_ssid_confusion(output_dir, data_dir);

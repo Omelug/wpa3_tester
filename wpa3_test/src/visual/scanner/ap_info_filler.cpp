@@ -21,6 +21,15 @@ ApInfoWpa3TestEntry ApInfoWpa3TestEntry::parse(const path &test_folder) {
 		(*result)["akm"] = nlohmann::json::array({ (*result)["akm"].get<string>() });
 	auto e = result ? helper::load_result_default<ApInfoWpa3TestEntry>(*result) : ApInfoWpa3TestEntry{};
 	e.test_name = test_folder.filename().string();
+
+	RunStatus rs{};
+	rs.config_path(test_folder / TEST_CONFIG_NAME);
+	rs.run_folder(test_folder);
+	rs.load_actor_interface_mapping();
+
+	const auto client = rs.get_actor("client");
+	e.client_mac = client->get(SK::mac);
+
 	return e;
 }
 

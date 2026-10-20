@@ -2,8 +2,8 @@ actors:
   receiver:
     selection:
       condition: [ active_monitor, 2_4GHz ]
-      driver: [ mt76x2u, mt76x2u_git ]
-      permanent_mac: 00:c0:ca:b7:69:2a
+      #driver: [ mt76x2u, mt76x2u_git ]
+      #permanent_mac: 00:c0:ca:b7:69:2a
       channel: 11
     source: internal
   transceiver:
@@ -18,3 +18,9 @@ attacker_module: active_test
 name: active_test_example
 rewrite: all
 delete_old: true
+attack_config:
+  burst: 50
+  frame_interval_ms: 500
+  sleep_before_ms: 200
+  sleep_after_ms: 200
+  ack_threshold_pct: 80

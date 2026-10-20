@@ -9,6 +9,7 @@ struct ActiveTestEntry {
 	std::string test_name;
 	std::string tx_driver;
 	std::string rx_driver;
+	std::string rx_mac;
 	//result params
 	int acked;
 	int not_acked;

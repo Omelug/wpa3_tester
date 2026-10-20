@@ -27,7 +27,7 @@ struct DeviceCaps {
 	optional<bool> AP, STA, monitor;
 	optional<bool> ghz2_4, ghz5, ghz6;
 	optional<bool> n80211n, n80211ac, n80211ax;
-	optional<bool> netns_change, beacon_prot, PBAC, CSA, OCV, MFP, WPA_PSK, WPA3_SAE, OWE;
+	optional<bool> netns_change, active_monitor, beacon_prot, PBAC, CSA, OCV, MFP, WPA_PSK, WPA3_SAE, OWE;
 };
 
 struct UsbInfo {
@@ -103,6 +103,7 @@ static optional<DeviceInfo> parse_device_file(const path &p, const string &mac){
 	d.caps.n80211n  = json_bool(caps, "80211n");
 	d.caps.n80211ac = json_bool(caps, "80211ac");
 	d.caps.n80211ax = json_bool(caps, "80211ax");
+	d.caps.active_monitor = json_bool(caps, "active_monitor");
 	d.caps.WPA_PSK  = json_bool(caps, "WPA-PSK");
 	d.caps.WPA3_SAE = json_bool(caps, "WPA3-SAE");
 	d.caps.OWE      = json_bool(caps, "OWE");
@@ -373,6 +374,7 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices,
 		COL("ac",          d.caps.n80211ac);
 		COL("ax",          d.caps.n80211ax);
 		COL("netns change",d.caps.netns_change);
+		COL("active_monitor",d.caps.active_monitor);
 		COL("Beacon prot", d.caps.beacon_prot);
 		COL("PBAC prot",   d.caps.PBAC);
 		COL("CSA",         d.caps.CSA);

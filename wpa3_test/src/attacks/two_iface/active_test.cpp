@@ -21,14 +21,18 @@ using namespace Tins;
 using namespace chrono;
 using nlohmann::json;
 
-static constexpr int BURST = 50;
-
 void run_attack(RunStatus &rs){
+	const auto &att_cfg = rs.config().at("attack_config");
+	const int burst             = att_cfg.at("burst").get<int>();
+	const int frame_interval_ms = att_cfg.at("frame_interval_ms").get<int>();
+	const int sleep_before_ms   = att_cfg.at("sleep_before_ms").get<int>();
+	const int sleep_after_ms    = att_cfg.at("sleep_after_ms").get<int>();
+	const int ack_threshold_pct = att_cfg.at("ack_threshold_pct").get<int>();
+
 	auto &actor_tx = rs.get_actor("transceiver");
 	auto &actor_rx = rs.get_actor("receiver");
 
 	const auto netns1 = actor_tx[SK::netns];
-
 	const HWAddress<6> tx_mac(actor_tx.get(SK::mac));
 
 	// Sniff ACK frames on the transceiver interface
@@ -56,26 +60,25 @@ void run_attack(RunStatus &rs){
 	Dot11Data frame(actor_rx.get(SK::mac), tx_mac);
 	frame.addr3(tx_mac); // BSSID
 	frame.subtype(4);    // null data
-	rt /= frame;
+	rt.inner_pdu(frame);
 
 	PacketSender sender(actor_tx.get(SK::iface));
-	interruptible_sleep(milliseconds(200)); // let sniffer thread start
+	interruptible_sleep(milliseconds(sleep_before_ms));
 
-	for(int i = 0; i < BURST; ++i){
+	for(int i = 0; i < burst; ++i){
 		sender.send(rt);
-		interruptible_sleep(milliseconds(10));
+		interruptible_sleep(milliseconds(frame_interval_ms));
 	}
 
-	interruptible_sleep(milliseconds(200));
+	interruptible_sleep(milliseconds(sleep_after_ms));
 	stop = true;
 	sniffer.stop_sniff();
 	sniffer_thread.join();
 
 	const int acked = ack_count.load();
-	const int not_acked = BURST - acked;
+	const int not_acked = burst - acked;
 
-	//FIXME hardcoded threashold
-	const json result = {{"acked", acked}, {"not_acked", not_acked}, {"success", acked >= BURST * 95 / 100},};
+	const json result = {{"acked", acked}, {"not_acked", not_acked}, {"success", acked >= burst * ack_threshold_pct / 100},};
 
 	rs.save_result(result);
 }

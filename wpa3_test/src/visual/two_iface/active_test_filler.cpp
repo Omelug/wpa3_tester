@@ -22,6 +22,8 @@ ActiveTestEntry ActiveTestEntry::parse(const path &test_folder) {
 	const auto rs = helper::load_test_rs(test_folder);
 	e.tx_driver = rs->get_actor("transceiver").get(SK::driver_name);
 	e.rx_driver = rs->get_actor("receiver").get(SK::driver_name);
+	e.rx_mac = rs->get_actor("receiver")->get(SK::mac);
+
 	return e;
 }
 

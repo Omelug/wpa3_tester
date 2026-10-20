@@ -63,6 +63,7 @@ attack_config:
   only_to_mitm: true #FIXME
   beacon_interval_ms: 100
   beacon_warning_sec: 2
+  beacon_timeout_sec: 10
 
 delete_old: true
 rewrite: all

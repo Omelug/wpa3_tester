@@ -1,4 +1,4 @@
-<svg viewBox="0 0 700 540" xmlns="http://www.w3.org/2000/svg" style="background-color:white">
+<svg viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg" style="background-color:white">
     <defs>
         <symbol id="s-laptop" viewBox="0 0 100 68">
             <rect x="10" y="5" width="80" height="50" rx="4" fill="currentColor"/>
@@ -27,46 +27,51 @@
     </text>
 
     <!-- L-arrows: exit sides of mc_MitM, one right-angle turn down to panel tops -->
-    <path d="M265 51 L183 51 L183 158" fill="none" stroke="#2D3748" stroke-width="2" marker-end="url(#arr)"/>
-    <path d="M435 51 L517 51 L517 158" fill="none" stroke="#2D3748" stroke-width="2" marker-end="url(#arr)"/>
+    <path d="M265 51 L183 51 L183 108" fill="none" stroke="#2D3748" stroke-width="2" marker-end="url(#arr)"/>
+    <path d="M435 51 L517 51 L517 108" fill="none" stroke="#2D3748" stroke-width="2" marker-end="url(#arr)"/>
 
     <!-- left panel -->
-    <rect x="45" y="158" width="275" height="360" rx="8" fill="white" stroke="#2D3748" stroke-width="2.5"/>
+    <rect x="45" y="108" width="275" height="360" rx="8" fill="white" stroke="#2D3748" stroke-width="2.5"/>
+    <text x="183" y="130" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="black">real_channel</text>
+    <line x1="45" y1="139" x2="320" y2="139" stroke="black" stroke-width="1"/>
 
     <!-- rogue client (red laptop) -->
-    <use href="#s-laptop" x="128" y="178" width="110" height="75" color="#E53E3E"/>
-    <text x="183" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue
+    <use href="#s-laptop" x="128" y="148" width="110" height="75" color="#E53E3E"/>
+    <text x="183" y="238" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue
         client
+    </text>
+    <text x="183" y="256" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096"> client mac
     </text>
 
     <!-- rogue client<-> ap -->
-    <line x1="183" y1="278" x2="183" y2="340" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)"
+    <line x1="183" y1="268" x2="183" y2="310" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)"
           marker-end="url(#arr)"/>
 
     <!-- ap (dark wifi) -->
-    <use href="#s-wifi" x="133" y="350" width="100" height="75" color="#2D3748"/>
-    <text x="183" y="438" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">ap</text>
-    <text x="183" y="456" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096">ssid =
+    <use href="#s-wifi" x="133" y="320" width="100" height="75" color="#2D3748"/>
+    <text x="183" y="408" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">ap</text>
+    <text x="183" y="426" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096">ssid =
         wrongAP
     </text>
 
     <!-- right panel -->
-    <rect x="380" y="158" width="275" height="360" rx="8" fill="white" stroke="#2D3748" stroke-width="2.5"/>
+    <rect x="380" y="108" width="275" height="360" rx="8" fill="white" stroke="#2D3748" stroke-width="2.5"/>
+    <text x="517" y="130" text-anchor="middle" font-family="Arial,sans-serif" font-size="13">rogue_channel</text>
+    <line x1="380" y1="139" x2="655" y2="139" stroke="black" stroke-width="1"/>
 
     <!-- rogue ap (red wifi) -->
-    <use href="#s-wifi" x="467" y="178" width="100" height="75" color="#E53E3E"/>
-    <text x="517" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue ap
+    <use href="#s-wifi" x="467" y="148" width="100" height="75" color="#E53E3E"/>
+    <text x="517" y="238" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">rogue ap
     </text>
-    <text x="517" y="286" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096">ssid =
-        TrustAP
+    <text x="517" y="256" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#718096">ap mac
     </text>
 
     <!-- rogue ap<-> client -->
-    <line x1="517" y1="296" x2="517" y2="342" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)"
+    <line x1="517" y1="266" x2="517" y2="312" stroke="#2D3748" stroke-width="1.5" marker-start="url(#arr)"
           marker-end="url(#arr)"/>
 
     <!-- client (dark laptop) -->
-    <use href="#s-laptop" x="462" y="352" width="110" height="75" color="#2D3748"/>
-    <text x="517" y="442" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">client
+    <use href="#s-laptop" x="462" y="322" width="110" height="75" color="#2D3748"/>
+    <text x="517" y="412" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#2D3748">client
     </text>
 </svg>

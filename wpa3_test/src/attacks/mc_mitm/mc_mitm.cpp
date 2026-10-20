@@ -80,13 +80,14 @@ bool McMitm::should_check_rogue_beacons() const {
 	} catch(const config_err &) { return false; }
 }
 
-void McMitm::setup_real_AP_RSN_frames() {
+void McMitm::setup_real_AP_RSN_frames(int beacon_timeout_sec) {
 	rogue_sta->set_iface_up();
 	rogue_sta->set_channel(netconfig.real_channel);
 
 	// get real AP beacon
+	log(LogLevel::DEBUG, "Scanning beacon for {} seconds", beacon_timeout_sec);
 	beacon = scan::RSN_scan(rogue_sta.get(SK::iface),
-		20, //TODO hardcoded timeouts
+		beacon_timeout_sec,
 		ap.get(SK::permanent_mac),
 		std::nullopt,
 		rogue_sta[SK::netns]);
@@ -115,10 +116,9 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	const int beacon_interval_ms = att_cfg.at("beacon_interval_ms");
 	const int beacon_warning_sec = att_cfg.at("beacon_warning_sec");
 
-	const bool check_rogue_beacons = should_check_rogue_beacons();
 	log(LogLevel::INFO,
 		"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
-	setup_real_AP_RSN_frames();
+	setup_real_AP_RSN_frames(att_cfg.at("beacon_timeout_sec"));
 
 	log(LogLevel::INFO,
 		"Will use {} to create rogue AP on channel {}",
@@ -231,7 +231,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 			last_real_beacon = steady_clock::now();
 		}
 
-		if(check_rogue_beacons && last_rogue_beacon + seconds(beacon_warning_sec) < steady_clock::now()) {
+		if(should_check_rogue_beacons() && last_rogue_beacon + seconds(beacon_warning_sec) < steady_clock::now()) {
 			log(LogLevel::WARNING, "Didn't receive beacon from rogue AP for two seconds");
 			last_rogue_beacon = steady_clock::now();
 		}

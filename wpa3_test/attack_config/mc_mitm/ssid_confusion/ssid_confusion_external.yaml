@@ -83,5 +83,6 @@ attack_config:
   beacon_interval_ms: 100
   beacon_warning_sec: 2
   only_to_mitm: false     # keep running after GotMitm to collect traffic evidence
+  beacon_timeout_sec: 10
 
 rewrite: errors

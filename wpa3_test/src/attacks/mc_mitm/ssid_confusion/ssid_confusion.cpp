@@ -21,7 +21,8 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 
     // Scan for WrongNet beacon on ch 11.
     // beacon stays as WrongNet - send_csa_beacon() uses it as CSA template on real channel.
-	setup_real_AP_RSN_frames();
+	const auto &att_cfg = rs.config().at("attack_config");
+	setup_real_AP_RSN_frames(att_cfg.at("beacon_timeout_sec"));
 
     // Build confused beacon separately: rogue_ap_mac BSSID + SafeNet SSID, ch IEs patched to rogue channel.
     // Using rogue_ap_mac avoids wpa_supplicant's 10s ignore-list that fires after CSA disconnect.

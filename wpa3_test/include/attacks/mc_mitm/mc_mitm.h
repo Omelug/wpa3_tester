@@ -37,7 +37,7 @@ public:
 	void send_deauth_as_ap() const;
 	[[nodiscard]] bool should_check_rogue_beacons() const;
 
-	virtual void setup_real_AP_RSN_frames();
+	virtual void setup_real_AP_RSN_frames(int beacon_timeout_sec);
 	virtual void run(RunStatus &rs, int timeout_sec);
 	void stop();
 

@@ -106,6 +106,6 @@ attack_config:
   attack_time: 150
   only_to_mitm: true
   ssid: test_mc_mitm
-  beacon_interval_ms: 10
+  beacon_interval_ms: 100
   beacon_warning_sec: 2
 rewrite: errors

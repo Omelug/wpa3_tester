@@ -6,8 +6,8 @@
 #include "config/RunStatus.h"
 
 namespace wpa3_tester::sae_helper {
-std::string bytes_to_hex(const std::vector<uint8_t> &bytes);
-std::string bytes_to_hex_plain(const std::vector<uint8_t> &bytes);
+std::string bytes_to_hex(const frame_raw_t &bytes);
+std::string bytes_to_hex_plain(const frame_raw_t &bytes);
 
 struct SAEPair {
 	uint16_t status = 0;

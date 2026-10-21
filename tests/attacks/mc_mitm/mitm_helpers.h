@@ -18,8 +18,8 @@ public:
 	mutable int real_send_count = 0;
 	mutable int rogue_send_count = 0;
 
-	mutable std::vector<std::vector<uint8_t>> real_sent_frames;
-	mutable std::vector<std::vector<uint8_t>> rogue_sent_frames;
+	mutable std::vector<frame_raw_t> real_sent_frames;
+	mutable std::vector<frame_raw_t> rogue_sent_frames;
 
 	std::string real_pcap_path = "/tmp/mc_mitm_.pcap";
 	std::string rogue_pcap_path = "/tmp/mc_mitm_test_rogue.pcap";

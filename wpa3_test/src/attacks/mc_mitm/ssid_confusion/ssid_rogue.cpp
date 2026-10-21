@@ -7,7 +7,7 @@ using namespace Tins;
 using namespace std;
 
 void SsidConfusion::send_to_real(PDU &pdu) const {
-	const std::vector<uint8_t> raw = pdu.serialize();
+	const frame_raw_t raw = pdu.serialize();
     send_to_real(raw);
 }
 

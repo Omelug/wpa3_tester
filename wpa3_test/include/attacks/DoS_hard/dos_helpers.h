@@ -39,5 +39,5 @@ void timed_burst(Tins::PacketSender &sender, const int attack_time_sec, const si
 }
 
 std::vector<Tins::HWAddress<6>> get_connected_stas(RunStatus &rs);
-bool check_fcs_present(const std::vector<uint8_t> &frame);
+bool check_fcs_present(const frame_raw_t &frame);
 }

@@ -14,7 +14,7 @@ vector<frame_raw_t> read_all_frames(const string &path){
 	pcap_t *handle = pcap_open_offline(path.c_str(), errbuf);
 	if(!handle) throw run_err("pcap_open_offline failed: " + string(errbuf));
 
-	vector<vector<uint8_t>> frames;
+	vector<frame_raw_t> frames;
 	pcap_pkthdr *hdr;
 	const u_char *data;
 	while(pcap_next_ex(handle, &hdr, &data) == 1) frames.emplace_back(data, data + hdr->caplen);
@@ -42,7 +42,7 @@ frame_raw_t read_one_frame(const string &path){
 }
 
 // read one frame from single pcap file
-vector<uint8_t> read_pcap_file(const string &filename){
+frame_raw_t read_pcap_file(const string &filename){
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_t *handle = pcap_open_offline(filename.c_str(), errbuf);
 	if(!handle) throw run_err("pcap_open_offline failed: " + string(errbuf));
@@ -56,7 +56,7 @@ vector<uint8_t> read_pcap_file(const string &filename){
 }
 
 // Helper: load a pcap frame and deserialize as RadioTap
-pair<RadioTap, vector<uint8_t>> load_frame(const char *path) {
+pair<RadioTap, frame_raw_t> load_frame(const char *path) {
 	frame_raw_t raw = read_one_frame(path);
 	RadioTap rt(raw.data(), static_cast<uint32_t>(raw.size()));
 	return {rt, raw};

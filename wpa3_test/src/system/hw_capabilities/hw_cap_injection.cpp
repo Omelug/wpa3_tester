@@ -26,7 +26,7 @@ static vector<uint8_t> make_label() {
 	return label;
 }
 
-vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
+vector<frame_raw_t> hw_capabilities::inject_and_capture(
 	const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu, const Channel &ch, const int count, const int retries) {
 	const auto label = make_label();
 
@@ -36,7 +36,7 @@ vector<vector<uint8_t>> hw_capabilities::inject_and_capture(
 	const auto *d11 = pdu.find_pdu<Dot11>();
 	const bool has_mf = d11 && d11->more_frag();
 
-	vector<vector<uint8_t>> captured;
+	vector<frame_raw_t> captured;
 	int attempt = 0;
 	while(true) {
 		sout.send(*frame, ch);
@@ -109,7 +109,7 @@ InjectionTestResult hw_capabilities::test_injection_more_fragments(
 }
 
 InjectionTestResult hw_capabilities::test_packet_injection(const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
-	const function<bool(const vector<uint8_t> &)> &test_func, const string &name, const string &msgfail,
+	const function<bool(const frame_raw_t &)> &test_func, const string &name, const string &msgfail,
 	const Channel &ch) {
 	const auto frames = inject_and_capture(sout, sin, pdu, ch, 1);
 	if(frames.empty()) return { name, NOCAPTURE, "no capture" };
@@ -131,7 +131,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	string failed;
 
 	auto run =
-		[&](auto &pdu, const function<bool(const vector<uint8_t> &)> &fn, const string &name, const string &msg) {
+		[&](auto &pdu, const function<bool(const frame_raw_t &)> &fn, const string &name, const string &msg) {
 			const auto r = test_packet_injection(sout, sin, pdu, fn, name, msg, ch);
 			if(r.result() != PASSED) {
 				if(result == PASSED) result = r.result();
@@ -143,7 +143,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	Dot11Data p1;
 	apply(p1);
 	p1.seq_num(30);
-	run(p1, [](const vector<uint8_t> &) { return true; }, "eapol", "not captured");
+	run(p1, [](const frame_raw_t &) { return true; }, "eapol", "not captured");
 
 	// seq num preserved
 	Dot11Data p2;

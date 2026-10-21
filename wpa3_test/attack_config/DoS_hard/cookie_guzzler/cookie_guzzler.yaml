@@ -35,7 +35,8 @@ actors:
   #    filter: ""
 $extends: [ ../observers_DoS.comp.yaml ]
 attack_config:
-  attack_time_sec: 40
-  burst_size: 512
-  frames_per_second_limit: 50
+  # limits from 2022_How is your Wi-Fi connection today_DoS attacks on WPA3-SAE.pdf
+  attack_time_sec: 120
+  burst_size: 128
+  frames_per_second_limit: 1000
 rewrite: errors

@@ -141,7 +141,7 @@ static vector<uint8_t> make_assoc_req_raw(const string &ssid) {
 	return req.serialize();
 }
 
-static string ssid_from_raw(const vector<uint8_t> &raw) {
+static string ssid_from_raw(const frame_raw_t &raw) {
 	const uint16_t rt_len_raw = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
 	const size_t rt_off = (raw[0] == 0 && rt_len_raw >= 8 && raw.size() >= rt_len_raw) ? rt_len_raw : 0;
 	const Dot11AssocRequest req(raw.data() + rt_off, raw.size() - rt_off);
@@ -150,7 +150,7 @@ static string ssid_from_raw(const vector<uint8_t> &raw) {
 	return { reinterpret_cast<const char *>(opt->data_ptr()), opt->data_size() };
 }
 
-static vector<uint8_t> make_beacon_raw(const string &ssid) {
+static frame_raw_t make_beacon_raw(const string &ssid) {
 	Dot11Beacon beacon;
 	beacon.addr1(HWAddress<6>("ff:ff:ff:ff:ff:ff"));
 	beacon.addr2(HWAddress<6>("aa:bb:cc:dd:ee:ff"));
@@ -160,7 +160,7 @@ static vector<uint8_t> make_beacon_raw(const string &ssid) {
 	return beacon.serialize();
 }
 
-static string ssid_from_beacon_raw(const vector<uint8_t> &raw) {
+static string ssid_from_beacon_raw(const frame_raw_t &raw) {
 	const Dot11Beacon b(raw.data(), raw.size());
 	const auto *opt = b.search_option(Dot11::SSID);
 	if(!opt) return "";

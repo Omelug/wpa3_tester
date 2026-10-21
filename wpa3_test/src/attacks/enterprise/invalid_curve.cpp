@@ -93,7 +93,7 @@ static array<uint8_t, 32> pwd_confirm(const array<uint8_t, 32> &k_x, const array
 }
 
 // Build EAPOL-EAP response: EAPOL header + EAP code/id/len + TYPE_PWD | opcode | payload
-static vector<uint8_t> make_pwd_eapol(
+static frame_raw_t make_pwd_eapol(
 	const uint8_t eap_id, const uint8_t opcode, const uint8_t *payload, const size_t len) {
 	const auto eap_body = static_cast<uint16_t>(2 + len); // TYPE_PWD + opcode + payload
 	const auto eap_len = static_cast<uint16_t>(4 + eap_body);

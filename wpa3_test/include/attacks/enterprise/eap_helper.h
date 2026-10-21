@@ -33,15 +33,15 @@ struct EAP_Att {
 };
 
 // ---------- parse helpers ----------
-std::optional<EapPwdFrame> parse_eap_pwd(const std::vector<uint8_t> &eapol);
-bool is_identity_request(const std::vector<uint8_t> &eapol, uint8_t &out_eap_id);
-bool is_eap_success(const std::vector<uint8_t> &eapol);
+std::optional<EapPwdFrame> parse_eap_pwd(const frame_raw_t &eapol);
+bool is_identity_request(const frame_raw_t &eapol, uint8_t &out_eap_id);
+bool is_eap_success(const frame_raw_t &eapol);
 
 // ---------- build helpers ----------
-std::vector<uint8_t> build_identity_response(uint8_t eap_id, std::string_view identity);
-std::vector<uint8_t> build_pwd_id_response(const EapPwdFrame &request, std::string_view peer_identity);
-std::vector<uint8_t> reflect_commit(const EapPwdFrame &request);
-std::vector<uint8_t> reflect_confirm(const EapPwdFrame &request);
+frame_raw_t build_identity_response(uint8_t eap_id, std::string_view identity);
+frame_raw_t build_pwd_id_response(const EapPwdFrame &request, std::string_view peer_identity);
+frame_raw_t reflect_commit(const EapPwdFrame &request);
+frame_raw_t reflect_confirm(const EapPwdFrame &request);
 
 // ---------  EAP-pwd connect ---------
 // handle and send another phase packet
@@ -54,12 +54,12 @@ bool eap_pwd_wait_for_success(EAP_Att &eap_att);
 // ---------- 802.11 helpers ----------
 bool do_auth(EAP_Att &eap_att);
 bool do_assoc(EAP_Att &eap_att);
-void send_eapol(const EAP_Att &eap_att, const std::vector<uint8_t> &eapol);
+void send_eapol(const EAP_Att &eap_att, const frame_raw_t &eapol);
 
 std::vector<uint8_t> extract_eapol(const frame_raw_t &p, const Tins::HWAddress<6> &our_mac);
 
 inline auto get_frame(std::optional<EapPwdFrame> &frame, eap::PwdOpcode opcode) {
-	return [&frame, opcode](const std::vector<uint8_t> &v) -> bool {
+	return [&frame, opcode](const frame_raw_t &v) -> bool {
 		const auto f = parse_eap_pwd(v);
 		if(f && f->opcode == opcode) {
 			frame = f;
@@ -71,15 +71,15 @@ inline auto get_frame(std::optional<EapPwdFrame> &frame, eap::PwdOpcode opcode) 
 
 // definition must be in the header
 // auto pred is not know -> function is template
-std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, auto pred) {
+std::optional<frame_raw_t> wait_eapol(EAP_Att &eap_att, auto pred) {
 	const auto start_time = std::chrono::steady_clock::now();
-	std::optional<std::vector<uint8_t>> result = std::nullopt;
+	std::optional<frame_raw_t> result = std::nullopt;
 	(void)components::poll_sniffer<bool>(
 		eap_att.sock.get_pcap_handle(), eap_att.timeout, [&](const frame_raw_t &p) -> std::optional<bool> {
 			auto eapol = extract_eapol(p, eap_att.att_mac);
 			if(eapol.empty()) return std::nullopt;
 			if(is_eap_success(eapol)) {
-				result = std::vector<uint8_t>{}; //have to be empty vector
+				result = frame_raw_t{}; //have to be empty vector
 				return true;
 			}
 			if(!pred(eapol)) return std::nullopt;
@@ -90,7 +90,7 @@ std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, auto pred) {
 	return result;
 }
 
-inline std::optional<std::vector<uint8_t>> wait_eapol(EAP_Att &eap_att, bool) {
-	return wait_eapol(eap_att, [](const std::vector<uint8_t> &) { return true; });
+inline std::optional<frame_raw_t> wait_eapol(EAP_Att &eap_att, bool) {
+	return wait_eapol(eap_att, [](const frame_raw_t &) { return true; });
 }
 }

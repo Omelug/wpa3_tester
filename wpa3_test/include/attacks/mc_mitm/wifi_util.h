@@ -27,7 +27,7 @@ std::string eap_description(const Tins::PDU &pdu);
 // return raw bytes guaranteed to start with a RadioTap header
 // idempotent: if RT is already present, returns the input unchanged
 // throw run_err if bytes are not a valid 802.11 frame (not valid after add of radiotap)
-std::vector<uint8_t> ensure_radiotap(const frame_raw_t &raw);
+frame_raw_t ensure_radiotap(const frame_raw_t &raw);
 Tins::Dot11Beacon append_csa(const Tins::Dot11Beacon &beacon, const Channel &new_channel, uint8_t count = 1);
 
 // EAPOL helpers

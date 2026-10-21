@@ -51,7 +51,7 @@ MonitorSocket::MonitorSocket(MonitorSocket &&o) noexcept:
 	pcap_hdr_done_(o.pcap_hdr_done_),
 	mf_workaround(o.mf_workaround) {}
 
-static void write_to_inject_channel(const ssh_channel ch, const vector<uint8_t> &bytes) {
+static void write_to_inject_channel(const ssh_channel ch, const frame_raw_t &bytes) {
 	const uint16_t len_be = htons(static_cast<uint16_t>(bytes.size()));
 	ssh_channel_write(ch, &len_be, 2);
 	ssh_channel_write(ch, bytes.data(), static_cast<uint32_t>(bytes.size()));

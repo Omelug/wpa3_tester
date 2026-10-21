@@ -116,7 +116,7 @@ public:
 	void clean();
 	void execute();
 	static void solve_new_pdu(Tins::PDU &pdu, ActorMACMap &seen, AssocMap &assoc);
-	static void solve_new_pdu(const std::vector<uint8_t> &frame, ActorMACMap &seen, AssocMap &assoc);
+	static void solve_new_pdu(const frame_raw_t &frame, ActorMACMap &seen, AssocMap &assoc);
 	static bool should_skip(const std::filesystem::path &p);
 	static std::unordered_map<std::string, std::string> scan_attack_configs(CONFIG_TYPE ct = TEST);
 
@@ -138,7 +138,7 @@ public:
 	// get external options
 	// For manual testing / wizards
 	static std::vector<EntityInfo> list_external_entities(
-		const std::string &iface, size_t timeout_sec, const std::vector<unsigned char> &channels);
+		const std::string &iface, size_t timeout_sec, const frame_raw_t &channels);
 	// ----------- log_events
 	void log_events(G_elms &elements,
 		std::initializer_list<std::tuple<actor_name_t, pattern_t, label_t, color_t>> event_d,

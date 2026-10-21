@@ -62,7 +62,7 @@ static constexpr size_t EAP_TYPE_OFF = EAPOL_HDR + EAP_HDR; // offset of EAP typ
 static constexpr size_t PWD_EXCH_OFF = EAP_TYPE_OFF + 1;	// offset of PWD-Exch byte
 static constexpr size_t PWD_DATA_OFF = PWD_EXCH_OFF + 1;	// offset of PWD payload
 
-optional<EapPwdFrame> parse_eap_pwd(const vector<uint8_t> &eapol) {
+optional<EapPwdFrame> parse_eap_pwd(const frame_raw_t &eapol) {
 	if(eapol.size() <= PWD_EXCH_OFF) return nullopt;
 	if(eapol[1] != 0x00) return nullopt; // not EAP packet
 	if(eapol[EAPOL_HDR] != CODE_REQUEST) return nullopt;
@@ -80,7 +80,7 @@ optional<EapPwdFrame> parse_eap_pwd(const vector<uint8_t> &eapol) {
 	return f;
 }
 
-bool is_identity_request(const vector<uint8_t> &eapol, uint8_t &out_eap_id) {
+bool is_identity_request(const frame_raw_t &eapol, uint8_t &out_eap_id) {
 	if(eapol.size() < EAP_TYPE_OFF + 1) return false;
 	if(eapol[1] != 0x00) return false;
 	if(eapol[EAPOL_HDR] != CODE_REQUEST) return false;
@@ -89,18 +89,18 @@ bool is_identity_request(const vector<uint8_t> &eapol, uint8_t &out_eap_id) {
 	return true;
 }
 
-bool is_eap_success(const vector<uint8_t> &eapol) {
+bool is_eap_success(const frame_raw_t &eapol) {
 	if(eapol.size() < EAPOL_HDR + EAP_HDR) return false;
 	if(eapol[1] != 0x00) return false;
 	return eapol[EAPOL_HDR] == CODE_SUCCESS;
 }
 
-static vector<uint8_t> build_eapol_eap(const uint8_t eap_id, const vector<uint8_t> &eap_body) {
+static frame_raw_t build_eapol_eap(const uint8_t eap_id, const vector<uint8_t> &eap_body) {
 	// eap_body = everything after code/id/length (type byte onwards)
 	const auto eap_len = static_cast<uint16_t>(EAP_HDR + eap_body.size());
 	const uint16_t eapol_len = eap_len;
 
-	vector<uint8_t> out;
+	frame_raw_t out;
 	out.reserve(EAPOL_HDR + eap_len);
 	out.push_back(0x01); // EAPOL version
 	out.push_back(0x00); // EAPOL type: EAP
@@ -114,14 +114,14 @@ static vector<uint8_t> build_eapol_eap(const uint8_t eap_id, const vector<uint8_
 	return out;
 }
 
-vector<uint8_t> build_identity_response(const uint8_t eap_id, const string_view identity) {
+frame_raw_t build_identity_response(const uint8_t eap_id, const string_view identity) {
 	vector<uint8_t> body;
 	body.push_back(TYPE_IDENTITY);
 	body.insert(body.end(), identity.begin(), identity.end());
 	return build_eapol_eap(eap_id, body);
 }
 
-vector<uint8_t> build_pwd_id_response(const EapPwdFrame &request, const string_view peer_identity) {
+frame_raw_t build_pwd_id_response(const EapPwdFrame &request, const string_view peer_identity) {
 	// PWD-ID data: Group(2) + RF(1) + PRF(1) + Token(4) + Prep(1) = 9 bytes fixed prefix
 	constexpr size_t FIXED = 9;
 	vector<uint8_t> body;
@@ -136,7 +136,7 @@ vector<uint8_t> build_pwd_id_response(const EapPwdFrame &request, const string_v
 }
 
 // shared helper for commit and confirm: both just flip code to Response, keep data.
-static vector<uint8_t> reflect_pwd_frame(const EapPwdFrame &request, const uint8_t opcode) {
+static frame_raw_t reflect_pwd_frame(const EapPwdFrame &request, const uint8_t opcode) {
 	vector<uint8_t> body;
 	body.push_back(TYPE_PWD);
 	body.push_back(opcode); // same opcode, no L/M bits
@@ -144,12 +144,12 @@ static vector<uint8_t> reflect_pwd_frame(const EapPwdFrame &request, const uint8
 	return build_eapol_eap(request.eap_id, body);
 }
 
-vector<uint8_t> reflect_commit(const EapPwdFrame &request) {
+frame_raw_t reflect_commit(const EapPwdFrame &request) {
 	// group 19 (P-256): scalar(32) + element(64) = 96 bytes - just reflect verbatim
 	return reflect_pwd_frame(request, PWD_OPCODE_COMMIT);
 }
 
-vector<uint8_t> reflect_confirm(const EapPwdFrame &request) {
+frame_raw_t reflect_confirm(const EapPwdFrame &request) {
 	// group 19: confirm(32) - reflect verbatim
 	return reflect_pwd_frame(request, PWD_OPCODE_CONFIRM);
 }
@@ -157,7 +157,7 @@ vector<uint8_t> reflect_confirm(const EapPwdFrame &request) {
 bool send_eap_normal_EAP(EAP_Att &eap_att) {
 	// EAP-Identity
 	uint8_t eap_id = 0;
-	const auto eapol = wait_eapol(eap_att, [&](const vector<uint8_t> &e) { return is_identity_request(e, eap_id); });
+	const auto eapol = wait_eapol(eap_att, [&](const frame_raw_t &e) { return is_identity_request(e, eap_id); });
 	if(!eapol) {
 		log(LogLevel::WARNING, "No EAP-Identity request");
 		return true;
@@ -297,7 +297,7 @@ bool do_assoc(EAP_Att &eap_att) {
 	return false;
 }
 
-void send_eapol(const EAP_Att &eap_att, const vector<uint8_t> &eapol) {
+void send_eapol(const EAP_Att &eap_att, const frame_raw_t &eapol) {
 	// SNAP OUI(3) + EtherType(2)
 	vector<uint8_t> snap_eapol = { 0x00, 0x00, 0x00, 0x88, 0x8e };
 	snap_eapol.insert(snap_eapol.end(), eapol.begin(), eapol.end());

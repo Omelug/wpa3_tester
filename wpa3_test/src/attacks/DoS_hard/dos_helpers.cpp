@@ -36,7 +36,7 @@ vector<HWAddress<6>> get_connected_stas(RunStatus &rs) {
 	return result;
 }
 
-bool check_fcs_present(const vector<uint8_t> &frame) {
+bool check_fcs_present(const frame_raw_t &frame) {
 	ieee80211_radiotap_iterator it{};
 
 	if(ieee80211_radiotap_iterator_init(&it,

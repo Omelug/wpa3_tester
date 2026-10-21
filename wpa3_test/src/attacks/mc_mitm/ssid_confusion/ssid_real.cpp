@@ -43,7 +43,7 @@ static bool strip_pmkid_kde(frame_raw_t &raw) {
 }
 
 void SsidConfusion::send_to_rogue(PDU &pdu) const {
-	const std::vector<uint8_t> raw = pdu.serialize();
+	const frame_raw_t raw = pdu.serialize();
 	send_to_rogue(raw);
 }
 

@@ -24,14 +24,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: ./.github/actions/setup-deps
-        with:
-          cache-suffix: unused
 
       - name: Configure
         env:
           CC: clang-18
           CXX: clang++-18
-        run: cmake -S wpa3_test -B build -G Ninja
+        run: cmake -S . -B build -G Ninja
 
       - name: Build validation tests
         run: cmake --build build --target run_validation_tests -j$(nproc)

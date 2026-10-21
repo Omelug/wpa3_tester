@@ -48,4 +48,4 @@ jobs:
           ")
 
           REPO_ROOT=$(git rev-parse --show-toplevel)
-          run-clang-tidy-18 -p build -checks="$CHECKS" -header-filter="$REPO_ROOT/(wpa3_test|result_overview|tests|tests_manual)/" "$FILTER"
+          run-clang-tidy-18 -p build -j$(nproc) -checks="$CHECKS" -header-filter="$REPO_ROOT/(wpa3_test|result_overview|tests|tests_manual)/" "$FILTER"

@@ -3,7 +3,7 @@
 
 namespace wpa3_tester::eap {
 
-// EAP codes (RFC 3748 §4)
+// EAP codes (RFC 3748, section 4)
 enum EapCode : uint8_t {
 	CODE_REQUEST = 1,
 	CODE_RESPONSE = 2,
@@ -32,7 +32,7 @@ enum EapType : uint8_t {
 	TYPE_EXPANDED = 254,
 };
 
-// EAP-PWD opcodes (RFC 5931 §3.1, PWD-Exch)
+// EAP-PWD opcodes (RFC 5931, section 3.1, PWD-Exch)
 enum PwdOpcode : uint8_t {
 	PWD_OPCODE_ID = 1,
 	PWD_OPCODE_COMMIT = 2,

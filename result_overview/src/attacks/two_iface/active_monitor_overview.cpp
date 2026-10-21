@@ -33,7 +33,7 @@ void generate_active_monitor_overview(const path &output_dir, const path &data_d
 	<div class="card">
 		<p>Tests whether a monitor-mode interface (transceiver) can inject frames
 		   and receive ACKs via an active-monitor interface (receiver).</p>
-		<p><b>Success:</b> ≥ threshold% of injected frames acknowledged.</p>
+		<p><b>Success:</b> more than percentage threshold of injected frames acknowledged.</p>
 	</div>
 	<div class="card">
 )html";

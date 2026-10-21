@@ -46,7 +46,7 @@ void stats_attack(const RunStatus &rs){
 	vector<unique_ptr<GraphElements>> elements;
 	rs.log_events(elements, {DISCONNECT, CONNECT, TESTER_TAGS});
 	rs.log_events(elements, {
-					{"client", "key_mgmt=WPA-PSK", "WPA2-DOWNGRADE", "red"},  //FIXME wtf, to fakt píše DOWNGRADE, není to TYPO?
+					{"client", "key_mgmt=WPA-PSK", "WPA2-DOWNGRADE", "red"},
 					{"rogue_ap", "AP-STA-CONNECTED", "ROGUE-CONN", "purple"},
 					{"rogue_ap", "EAPOL-4WAY-HS-COMPLETED", "ROGUE-4WAY", "orange"},
 				});

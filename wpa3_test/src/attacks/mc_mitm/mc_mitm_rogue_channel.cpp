@@ -45,13 +45,13 @@ FrameProcess McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 			Dot11Authentication resp(addr2, ap.get(SK::mac)); // client <- rogue AP
 			resp.addr3(ap.get(SK::mac));
 			resp.auth_seq_number(2); // auth response
-			resp.auth_algorithm(0);	 // Open System
-			resp.status_code(0);	 // success
+			resp.auth_algorithm(0); // Open System
+			resp.status_code(0); // success
 
 			send_to_rogue(resp);
 			display_traffic(dot11, "Rogue channel", " -- Replied");
 
-			send_to_real(dot11); //FIXME má to být tady?
+			send_to_real(dot11); //TODO  need to be here?
 			client_state.update_state(ClientState::Authenticated);
 			return STOP;
 		}
@@ -92,7 +92,7 @@ FrameProcess McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot1
 	}
 	client_state.update_state(ClientState::Associated);
 	display_traffic(dot11, "Rogue channel", " -- Replied");
-	//FIXME, proč nestačí send_to_real(pdu); ?
+	//FIXME, why continue, not just send_to_real(pdu); ?
 	return CONTINUE;
 }
 

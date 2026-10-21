@@ -90,7 +90,7 @@ void stats_attack(const RunStatus &rs) {
 
 	generate_report(rs);
 
-	nlohmann::json result; // TODO přesunout do parse funkce Entry?
+	nlohmann::json result;
 	const auto window = visual::helper::get_run_window(rs);
 	result["client_disconnected"] = visual::helper::get_client_disconnected(rs, window);
 	// AP-STA-DISCONNECTED fires if AP properly deauths client; INTERFACE-DISABLED fires if

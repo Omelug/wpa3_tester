@@ -76,8 +76,8 @@ pair<ACMCookie, int> trigger_acm(const string &iface, const string &sniff_iface,
 
 		auto result = components::poll_sniffer<ACMCookie>(sniffer.get_pcap_handle(),
 			milliseconds(acm_pause_millisec),
-			[&](const frame_raw_t &frame) -> optional<ACMCookie> {
-				if(auto cookie = parse_acm_response(frame)) {
+			[&](const frame_raw_t &res_frame) -> optional<ACMCookie> {
+				if(auto cookie = parse_acm_response(res_frame)) {
 					if(!cookie->token.empty()) return cookie;
 				}
 				return nullopt;

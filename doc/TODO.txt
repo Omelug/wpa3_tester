@@ -8,6 +8,8 @@ f: github se zasekne v kompilaci testu
 +: add test to check if TX_flags in RadiTab are respected
 +:  invalid curve from AP to client (rogue AP)
 
++: pokud nepůjde cookie_guzzler, zkusit v ath_masker forku 3 bytes a přespsat ath_masker v pdf o rotaci
+
 v PMKID je STA mac -> nejde v ssid_confusion obejít PMKSA přes to, že rogue_sta bude mít svojí mac a mac adresy se budou modifikovat přes forward?
 CSA:
     +: option for openwrt OCV / wpa3 disable for external client
@@ -19,7 +21,7 @@ bl0ck:
 
 DoS_hard:
      +: observer for new_valid client (wpa_cli ? )
-     +: add possibility DoS on 2_4/5Ghz (2 adapters ) - is attacker accept radar checks? - US/CZ?
+     +: add possibility DoS on 2_4/5Ghz (2 adapters ) - is attacker accept radar checks in monitpr mode ? - US/CZ?
 
 r: první reflexion attack v 2_8 se nepřipojí, nevalidní ukončení předchozího testu?, bčžící hostapd ?
 

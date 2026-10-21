@@ -154,7 +154,7 @@ protected: // external BB
 	static bool process_single_pdu(const frame_raw_t &frame, ActorMACMap &seen, AssocMap &assoc,
 		std::set<Tins::HWAddress<6>> &reported, const ActorMap &actors,
 		const std::vector<std::pair<std::string, std::string>> &conn_conds,
-		std::vector<std::string> disabled_tests_hash_filler = {});
+		const std::vector<std::string> &disabled_tests_hash_filler = {});
 	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
 		const ActorMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {},
 		std::vector<std::string> disabled_tests_hash_filler = {});

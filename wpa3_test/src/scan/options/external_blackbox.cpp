@@ -235,7 +235,7 @@ bool RunStatus::process_single_pdu(
 	const frame_raw_t &frame,
 	ActorMACMap &seen, AssocMap &assoc, set<HWAddress<6>> &reported,
 	const ActorMap &actors, const vector<pair<string,string>> &conn_conds,
-	std::vector<std::string> disabled_tests_hash_filler
+	const std::vector<std::string> &disabled_tests_hash_filler
 ) {
 	const size_t before_seen = seen.size();
 	const size_t before_assoc = assoc.size();
@@ -305,7 +305,7 @@ vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<u
 		interruptible_sleep(chrono::milliseconds(200)); //TODO hardcoded timers
 		const auto result = components::poll_sniffer<bool>(handle, chrono::seconds(2), on_frame); //FIXME hardcoded time
 		if(!holds_alternative<StopReason>(result)) break;  // found
-		if(get<StopReason>(result) == StopReason::Interrupted) break; //TODO INterruped je tu asi zbytečné, kdyžtak jen chytnout error?
+		if(get<StopReason>(result) == StopReason::Interrupted) break; //TODO Interrupted is useless, catch error?
 	}
 	return seen | views::values | ranges::to<vector<ActorPtr>>();
 }

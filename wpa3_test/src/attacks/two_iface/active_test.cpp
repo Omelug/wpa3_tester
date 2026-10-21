@@ -40,7 +40,6 @@ void run_attack(RunStatus &rs){
 	atomic stop{false};
 
 	SnifferConfiguration sniff_cfg;
-	sniff_cfg.set_promisc_mode(true);
 	sniff_cfg.set_immediate_mode(true);
 	sniff_cfg.set_filter("wlan addr1 " + tx_mac.to_string());
 

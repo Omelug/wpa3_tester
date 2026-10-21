@@ -41,7 +41,6 @@ void run_attack(RunStatus &rs){
 	atomic stop_sniff{false};
 
 	SnifferConfiguration sniff_cfg;
-	sniff_cfg.set_promisc_mode(true);
 	sniff_cfg.set_immediate_mode(true);
 	sniff_cfg.set_filter("wlan type mgt subtype probe-req and wlan src " + sta_mac_str);
 

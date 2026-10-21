@@ -5,7 +5,6 @@
 #include <fstream>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"

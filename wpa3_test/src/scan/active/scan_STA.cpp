@@ -72,9 +72,8 @@ bool station_frame_parse(PDU &pdu, ScanAP &scan_ap){
 void station_scan(ScanAP &scan_ap, const string &interface, const int timeout_sec, const filesystem::path &stations_pcap
 ){
 	SnifferConfiguration sniff_config;
-	sniff_config.set_snap_len(2000);
+	sniff_config.set_snap_len(2000); //TODO magic numbers
 	sniff_config.set_timeout(1000);
-	sniff_config.set_rfmon(true);
 
 	// addr1 = receiver, addr2 = transmitter, addr3 = bssid
 	const string filter = "wlan addr1 " + scan_ap.bssid.to_string() + " or wlan addr2 " + scan_ap.bssid.to_string();

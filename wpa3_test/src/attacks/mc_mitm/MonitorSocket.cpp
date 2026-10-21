@@ -201,9 +201,8 @@ void MonitorSocket::set_filter(const string &bpf) const {
 
 SnifferConfiguration MonitorSocket::make_sniff_cfg() {
 	SnifferConfiguration cfg;
-	cfg.set_immediate_mode(true);
-	cfg.set_timeout(1); //FIXME prej bug, neblokující nastaveno v pcap_setnonblock
-	//cfg.set_promisc_mode(true);
+	cfg.set_immediate_mode(true); // deliver each packet immediately, timeout is irrelevant
+	cfg.set_timeout(10); // immediate_mode dont works on really old kernels (< 3.2), for sure
 	return cfg;
 }
 
@@ -217,7 +216,7 @@ void MonitorSocket::fill_rx_buf() {
 MonitorSocket::RecvResult MonitorSocket::parse_remote_recv() {
 	const uint8_t *buf = rx_buf_.data() + rx_head_;
 	size_t avail = rx_buf_.size() - rx_head_;
-
+	//TODO remove magic numbers
 	if(!pcap_hdr_done_) {
 		if(avail < 24) return {};
 		rx_head_ += 24;

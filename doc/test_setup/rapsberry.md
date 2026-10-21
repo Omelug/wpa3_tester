@@ -4,7 +4,7 @@
 - customize image with [customize.sh](../../tester_setup/raspberry_pi4/image/customize.sh)
 - firstboot (run once after first boot [firstboot.sh](../../tester_setup/raspberry_pi4/image/firstboot.sh))
 - bootsrap for other changes during run [bootstrap.sh](../../tester_setup/raspberry_pi4/bootstrap.sh)
-- some  [drivers.sh](../../tester_setup/raspberry_pi4/image/drivers.sh)
+- some  [drivers.conf](../../tester_setup/raspberry_pi4/image/drivers.conf)
 
 make image download raspbian and add dome flags for debugging
 in [debug.config](../../tester_setup/raspberry_pi4/kernel/debug.config)
@@ -25,7 +25,7 @@ use test suite at the start of [deploy.mk](../../tester_setup/raspberry_pi4/mk/d
 
 With multiple adapters, raspberry can be unstable and end
 in [usb_helper.cpp](../../wpa3_test/src/setup/usb_helper.cpp)
-(Ok, I ma not sure now, it maybe only because I used bad adapter for usb hub) #FIXME try
+(Ok, I am not sure now, it is maybe only because I used bad adapter for usb hub) #FIXME try
 
 ```
 [25188.466800] usb usb2-port1: over-current change #9105

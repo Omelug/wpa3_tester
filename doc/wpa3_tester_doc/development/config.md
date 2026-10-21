@@ -3,7 +3,7 @@
 - object with one process, one interface
 - ActorPtr is wrapper (use this, except of tests)
 - some hardware capabilities links for change Actor_Config status are
-  in [ActorCofig_iface_func.cpp](../../../wpa3_test/src/system/ActorCofig_iface_func.cpp)
+  in [ActorCofig_iface_func.cpp](../../../wpa3_test/src/system/ActorConfig_iface_func.cpp)
 - have subclasses Actor_Config for [_external](../../../wpa3_test/src/config/Actor_Config/Actor_Config_external.cpp)
 
 #### add new param to Actor_Config?

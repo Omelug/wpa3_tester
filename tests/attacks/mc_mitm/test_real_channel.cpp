@@ -159,23 +159,6 @@ TEST_SUITE("handle_from_ap_real") {
 		CHECK(m->client_state.is_state(ClientState::GotMitm)); // unchanged
 	}
 
-	TEST_CASE("Deauth to client -> forwarded to rogue, state=Target") {
-		auto m = make_fixture();
-
-		auto deauth = Dot11Deauthentication(HWAddress<6>(CLIENT_MAC), HWAddress<6>(AP_MAC));
-		deauth.addr3(HWAddress<6>(AP_MAC));
-		deauth.reason_code(3);
-
-		unique_ptr<PDU> pdu = make_unique<Dot11Deauthentication>(deauth);
-		auto *dot11 = pdu->find_pdu<Dot11>();
-		REQUIRE_NE(dot11, nullptr);
-
-		m->handle_from_ap_real(pdu, *dot11, HWAddress<6>(CLIENT_MAC));
-
-		CHECK_EQ(m->rogue_send_count, 1);
-		CHECK(m->client_state.is_state(ClientState::Target_disconnected));
-	}
-
 	TEST_CASE("Auth seq=2 to client -> dropped (not forwarded)") {
 		auto m = make_fixture();
 

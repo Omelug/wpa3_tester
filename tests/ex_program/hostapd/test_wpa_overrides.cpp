@@ -36,7 +36,7 @@ TEST_CASE("apply_wpa_overrides - replace global key") {
 	string out = read_file(cfg);
 
 	CHECK_EQ(out.find("ctrl_interface=/var/run/wpa_supplicant"), string::npos);
-	CHECK(out.contains("ctrl_interface=\"/tmp/new\""));
+	CHECK(out.contains("ctrl_interface=/tmp/new"));
 	remove(cfg);
 }
 

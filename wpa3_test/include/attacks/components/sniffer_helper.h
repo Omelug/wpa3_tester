@@ -63,7 +63,7 @@ template<typename T, typename Handler>
 std::variant<T, StopReason> poll_sniffer_pdu(Handler &&on_frame, const std::string &interface,
 	const std::string &filter = "", const std::optional<std::chrono::milliseconds> timeout = std::nullopt) {
 	Tins::SnifferConfiguration sniff_config;
-	sniff_config.set_timeout(100);
+	sniff_config.set_timeout(100); //TODO hardcoded
 	sniff_config.set_immediate_mode(true);
 	sniff_config.set_filter(filter);
 

@@ -34,7 +34,7 @@ public:
 
 	void send(Tins::PDU &pdu, const Channel &ch) const;
 	static frame_raw_t build_inject_frame(
-		const frame_raw_t &raw, const Channel &ch);
+		const frame_raw_t &frame_raw, const Channel &ch);
 	void send(const frame_raw_t &raw, const Channel &ch) const;
 	static RecvResult parse_frame(const frame_raw_t &frame);
 	RecvResult recv();

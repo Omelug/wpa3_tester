@@ -43,7 +43,7 @@ unique_ptr<SsidConfusionTestable> make_ssid_fixture() {
     sta->set(SK::mac, string(CLIENT_MAC));
     ap->set(SK::mac,  string(AP_MAC));
     ap->set(SK::ssid, "TestNet");
-    return make_unique<SsidConfusionTestable>(r_sta, r_ap, sta, ap, nullopt, "SafeNet", 100, 5);
+    return make_unique<SsidConfusionTestable>(r_sta, r_ap, sta, ap, nullopt, "SafeNet", 100);
 }
 
 }

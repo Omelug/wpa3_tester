@@ -72,25 +72,13 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 		CHECK_UNARY(out.empty());
 	}
 
-	TEST_CASE("rt_len larger than buffer returns empty") { //FIXME change, added r
+	TEST_CASE("rt_len larger than buffer returns empty") {
 		// bytes 2-3 claim rt_len = 0xFFFF
 		const vector<uint8_t> bad = { 0x00, 0x00, 0xFF, 0xFF, 0xAA, 0xBB };
 		Channel ch{ 6, WifiBand::BAND_2_4, nullopt };
 		const auto out = MonitorSocket::build_inject_frame(bad, ch);
 		CHECK_UNARY(out.empty());
 	}
-
-	/*TEST_CASE("output starts with valid RadioTap header") {
-		auto [hdr, raw] = test_helpers::read_one_frame(PCAP_NO_FCS);
-		const auto out = MonitorSocket::build_inject_frame({raw.begin(), raw.end()}, 6);
-
-		REQUIRE_UNARY_FALSE(out.empty());
-		// radioTap revision byte must be 0
-		CHECK_EQ(out[0], 0x00);
-		// deserialize and verify channel
-		RadioTap rt(out.data(), out.size());
-		CHECK_EQ(rt.channel_freq(), hw_capabilities::channel_to_freq(6));
-	}*/
 
 	TEST_CASE("payload after old RadioTap is preserved byte-for-byte") {
 		frame_raw_t raw = test_helpers::read_one_frame(PCAP_NO_FCS);
@@ -100,10 +88,12 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 		const auto out = MonitorSocket::build_inject_frame(raw, ch);
 		REQUIRE_UNARY_FALSE(out.empty());
 
+		const uint16_t new_rt_len = out[2] | static_cast<uint16_t>(out[3]) << 8;
 		const vector old_payload(raw.begin() + rt_len, raw.end());
-		const vector new_payload(out.begin() + rt_len, out.end());
+		// libtins RadioTap{} sets FCS flag → appends 4-byte FCS; strip before comparing
+		REQUIRE_GE(out.size(), static_cast<size_t>(new_rt_len) + 4);
+		const vector new_payload(out.begin() + new_rt_len, out.end() - 4);
 
-		//payload is unmodified
 		REQUIRE_EQ(old_payload.size(), new_payload.size());
 		CHECK_EQ(old_payload, new_payload);
 	}

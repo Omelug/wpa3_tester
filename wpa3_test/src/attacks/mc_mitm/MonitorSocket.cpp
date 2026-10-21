@@ -57,37 +57,39 @@ static void write_to_inject_channel(const ssh_channel ch, const frame_raw_t &byt
 	ssh_channel_write(ch, bytes.data(), static_cast<uint32_t>(bytes.size()));
 }
 
-// Send with RadioTap TXFlags=NOACK|ORDER.
-// NOACK: spoofed src addr means hardware never gets an ACK; without it the driver retransmits.
-// ORDER: prevent TX queue reordering, critical for handshake frame sequencing.
 void MonitorSocket::send(PDU &pdu, const Channel &) const {
 	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
 
-	// wrap in RadioTap if not already present.
-	// keep the header minimal (only TXFlags) - matching Python behavior.
-	// adding CHANNEL field breaks ORDER flag scheduling on some drivers (ath9k_htc).
-	vector<uint8_t> bytes;
+	frame_raw_t frame_raw;
 	if(!pdu.find_pdu<RadioTap>()) {
 		RadioTap rt{};
 		rt.tx_flags(0x28); // NOACK | ORDER
 		rt.inner_pdu(RawPDU(pdu.serialize()));
-		bytes = rt.serialize();
+		frame_raw = rt.serialize();
 	} else {
 		pdu.find_pdu<RadioTap>()->tx_flags(0x28); // NOACK | ORDER
-		bytes = pdu.serialize();
+		frame_raw = pdu.serialize();
 	}
 	if(tx_ch_) {
-		write_to_inject_channel(tx_ch_, bytes);
+		write_to_inject_channel(tx_ch_, frame_raw);
 		return;
 	}
-	pcap_inject(sniffer_->get_pcap_handle(), bytes.data(), bytes.size());
+	pcap_inject(sniffer_->get_pcap_handle(), frame_raw.data(), frame_raw.size());
 }
 
 frame_raw_t MonitorSocket::build_inject_frame(
-	const frame_raw_t &raw, const Channel &) {
-	if(raw.size() < 4) return {};
+	const frame_raw_t &frame_raw, const Channel &) {
+	if(frame_raw.size() < 4) return {};
+	// 0 -> rt_len means corrupted capture, log and ignore
+	if(frame_raw[0] == 0) {
+		const uint16_t rt_len = frame_raw[2] | static_cast<uint16_t>(frame_raw[3]) << 8;
+		if(rt_len >= frame_raw.size()) {
+			log(LogLevel::WARNING, "build_inject_frame: malformed RadioTap rt_len={} >= frame size={}, dropping", rt_len, frame_raw.size());
+			return {};
+		}
+	}
 
-	const auto with_rt = ensure_radiotap(raw);
+	const auto with_rt = ensure_radiotap(frame_raw);
 
 	// Strip RX RT metadata, always inject with fresh minimal TX RT (NOACK|ORDER).
 	const uint16_t rt_len = with_rt[2] | static_cast<uint16_t>(with_rt[3]) << 8;
@@ -126,7 +128,7 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 			if(rt_len >= 8 && static_cast<size_t>(rt_len) + 2 <= frame.size()) {
 				const uint8_t fc0 = frame[rt_len];
 				const uint8_t fc1 = frame[rt_len + 1];
-				if(((fc0 >> 2) & 0x03) == 2) { // DATA frame type
+				if((fc0 >> 2 & 0x03) == 2) { // DATA frame type
 					const bool qos = (fc0 & 0x80) != 0;
 					const bool has_4addr = (fc1 & 0x03) == 0x03;
 					const size_t hdr = 24u + (qos ? 2u : 0u) + (has_4addr ? 6u : 0u);
@@ -134,7 +136,7 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 					if(trunc <= frame.size()) {
 						try {
 							auto pdu = make_unique<RadioTap>(frame.data(), trunc);
-							// Re-parse RT header only to check FCS flag (libtins threw on inner PDU, not RT).
+							// Reparse RT header only to check FCS flag (libtins threw on inner PDU, not RT).
 							uint32_t strip = 0;
 							try {
 								const RadioTap rt2(frame.data(), rt_len);
@@ -202,7 +204,7 @@ void MonitorSocket::set_filter(const string &bpf) const {
 SnifferConfiguration MonitorSocket::make_sniff_cfg() {
 	SnifferConfiguration cfg;
 	cfg.set_immediate_mode(true); // deliver each packet immediately, timeout is irrelevant
-	cfg.set_timeout(10); // immediate_mode dont works on really old kernels (< 3.2), for sure
+	cfg.set_timeout(10); // immediate_mode don't work on really old kernels (< 3.2), for sure
 	return cfg;
 }
 

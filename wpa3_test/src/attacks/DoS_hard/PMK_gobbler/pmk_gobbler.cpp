@@ -31,19 +31,16 @@ optional<ACMCookie> parse_acm_response(const frame_raw_t &frame) {
 }
 
 void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, CookieStore &store) {
-	const string filter = "wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string();
+	SnifferConfiguration cfg;
+	cfg.set_immediate_mode(true);
+	cfg.set_timeout(100); //TODO hardcoded
+	cfg.set_filter("wlan type mgt subtype auth and wlan addr2 " + ap_mac.to_string());
+	Sniffer sniffer(sniff_iface, cfg);
 
 	char errbuf[PCAP_ERRBUF_SIZE];
-	pcap_t *handle = pcap_open_live(sniff_iface.c_str(), 2000, 1, 100, errbuf);
-	if(!handle) throw run_err("pcap_open_live failed: " + string(errbuf));
-	pcap_setnonblock(handle, 1, errbuf);
-	auto guard = unique_ptr<pcap_t, void (*)(pcap_t *)>(handle, pcap_close);
+	pcap_setnonblock(sniffer.get_pcap_handle(), 1, errbuf);
 
-	bpf_program fp{};
-	if(pcap_compile(handle, &fp, filter.c_str(), 1, PCAP_NETMASK_UNKNOWN) == 0) pcap_setfilter(handle, &fp);
-	pcap_freecode(&fp);
-
-	components::poll_sniffer<monostate>(handle, nullopt, [&](const frame_raw_t &frame) -> optional<monostate> {
+	components::poll_sniffer<monostate>(sniffer.get_pcap_handle(), nullopt, [&](const frame_raw_t &frame) -> optional<monostate> {
 		if(store.stop.load()) return monostate{};
 
 		if(auto entry = parse_acm_response(frame)) {

@@ -94,7 +94,7 @@ void run_attack(RunStatus &rs) {
 	const ActorPtr client = rs.get_actor("client");
 
 	log(LogLevel::INFO, "Capturing SAE commit values...");
-	//TODO zkotrolovat, že tu je ssid ([předtím bylo hardcoded)
+	//TODO check ssid (hardcoded before)
 	const auto sae = cookie_guzzler::get_commit_values(
 		rs, attacker.get(SK::iface), attacker.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
 	if(!sae.has_value()) throw run_err("Failed to capture SAE commit values");

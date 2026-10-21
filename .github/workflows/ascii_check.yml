@@ -10,7 +10,7 @@ jobs:
   scan:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: |
           ! git ls-files -z -- '*.c' '*.h' '*.cc' '*.cpp' '*.cxx' '*.hpp' '*.hxx' '*.hh' '*.inl' '*.cmake' \
             | xargs -0 --no-run-if-empty grep -InP --color=always '[^\x00-\x7F]|^[ \t]*[\r\v\f][ \t\r\v\f]*$'

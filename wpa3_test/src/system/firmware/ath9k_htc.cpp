@@ -15,13 +15,13 @@
 using namespace std;
 
 namespace wpa3_tester::firmware{
-string get_random_ath_masker_mac(const string &attacker_mac) {
-	mt19937 gen(random_device{}());
-	uniform_int_distribution dis(0, 255);
-
+string get_rotating_ath_masker_mac(const string &attacker_mac) {
+	// static variable to rotate
+	static uint8_t counter = 0;
 	stringstream ss;
 	ss << attacker_mac.substr(0, 15)
-	   << hex << setw(2) << setfill('0') << dis(gen);
+		<< hex << setw(2) << setfill('0')
+		<< static_cast<int>(counter++);
 	return ss.str();
 }
 

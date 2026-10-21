@@ -26,7 +26,7 @@ void run_attack(RunStatus &rs) {
 	PacketSender sender(iface);
 
 	for(int i = 0; i < test_count; ++i) {
-		auto ath_mac = firmware::get_random_ath_masker_mac(att.get(SK::mac));
+		auto ath_mac = firmware::get_rotating_ath_masker_mac(att.get(SK::mac));
 
 		Dot11ProbeRequest probe(HWAddress<6>("ff:ff:ff:ff:ff:ff"), ath_mac);
 		probe.addr3(ap.get(SK::mac));

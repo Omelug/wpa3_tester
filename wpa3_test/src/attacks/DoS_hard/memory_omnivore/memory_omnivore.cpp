@@ -35,7 +35,7 @@ static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, c
 				pool.size(),
 				pool_size);
 			while(static_cast<int>(pool.size()) < pool_size)
-				pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
+				pool.emplace_back(firmware::get_rotating_ath_masker_mac(attacker_mac));
 		} else {
 			log(LogLevel::INFO, "Using {} connected STA MACs", pool_size);
 		}
@@ -43,7 +43,7 @@ static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, c
 	}
 
 	pool.reserve(pool_size);
-	for(int i = 0; i < pool_size; ++i) pool.emplace_back(firmware::get_random_ath_masker_mac(attacker_mac));
+	for(int i = 0; i < pool_size; ++i) pool.emplace_back(firmware::get_rotating_ath_masker_mac(attacker_mac));
 	log(LogLevel::INFO, "Using {} random MACs", pool_size);
 	return pool;
 }

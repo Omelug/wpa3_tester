@@ -106,6 +106,7 @@ public:
 	void set_wifi_type(nl80211_iftype type, const std::vector<std::string> &monitor_flags = {}) const;
 
 	void setup_actor(const nlohmann::json &j, const ActorPtr &a) { setup_actor(j, a, nullptr); }
+	// only simulation/internal,external have specific
 	virtual void setup_actor(const nlohmann::json &, const ActorPtr &, RunStatus *);
 
 	static std::shared_ptr<Actor_config> create(const nlohmann::json &j);

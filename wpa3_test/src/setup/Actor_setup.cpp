@@ -85,7 +85,7 @@ void Actor_config::real_actor_setup_base_keys(const ActorPtr &real_actor) {
 	if(!(*this)[SK::mac].has_value()) set(real_actor, SK::mac);
 	set(real_actor, SK::permanent_mac);
 }
-// Only simulation/internal,external have specific
+
 void Actor_config::setup_actor(const nlohmann::json & /*config*/, const ActorPtr &real_actor, RunStatus *) {
 	conn = real_actor->conn;
 	real_actor_setup_base_keys(real_actor);

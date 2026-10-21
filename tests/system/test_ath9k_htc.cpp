@@ -9,9 +9,9 @@ using namespace wpa3_tester;
 
 namespace wpa3_tester {
 
-TEST_CASE("firmware::get_random_ath_masker_mac - preserves first 5 octets") {
+TEST_CASE("firmware::get_rotating_ath_masker_mac - preserves first 5 octets") {
 	const string attacker_mac = "aa:bb:cc:dd:ee:ff";
-	const string result = firmware::get_random_ath_masker_mac(attacker_mac);
+	const string result = firmware::get_rotating_ath_masker_mac(attacker_mac);
 
 	// Split both
 	auto split = [](const string &s) {
@@ -29,8 +29,8 @@ TEST_CASE("firmware::get_random_ath_masker_mac - preserves first 5 octets") {
 	for(int i = 0; i < 5; ++i) CHECK_EQ(out_parts[i], in_parts[i]);
 }
 
-TEST_CASE("firmware::get_random_ath_masker_mac - last octet is valid hex in [01,ff]") {
-	const string result = firmware::get_random_ath_masker_mac("11:22:33:44:55:66");
+TEST_CASE("firmware::get_rotating_ath_masker_mac - last octet is valid hex in [01,ff]") {
+	const string result = firmware::get_rotating_ath_masker_mac("11:22:33:44:55:66");
 
 	vector<string> parts;
 	stringstream ss(result);
@@ -47,8 +47,8 @@ TEST_CASE("firmware::get_random_ath_masker_mac - last octet is valid hex in [01,
 	CHECK_LE(val, 255);
 }
 
-TEST_CASE("firmware::get_random_ath_masker_mac - result is valid MAC format") {
-	const string result = firmware::get_random_ath_masker_mac("de:ad:be:ef:00:01");
+TEST_CASE("firmware::get_rotating_ath_masker_mac - result is valid MAC format") {
+	const string result = firmware::get_rotating_ath_masker_mac("de:ad:be:ef:00:01");
 	const regex mac_re("^([0-9a-f]{2}:){5}[0-9a-f]{2}$");
 	CHECK(regex_match(result, mac_re));
 }

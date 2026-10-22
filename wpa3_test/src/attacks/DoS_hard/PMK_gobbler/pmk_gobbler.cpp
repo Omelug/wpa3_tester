@@ -104,10 +104,12 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 			}
 		}
 
+		// always send a trigger to keep cookie supply
+		auto trigger = make_sae_commit(ap_mac, firmware::get_rotating_ath_masker_mac(sta_mac), sae_params);
+		sender.send(trigger);
+
 		if(!entry) {
-			interruptible_sleep(milliseconds(cookie_wait_ms));
-			auto frame = make_sae_commit(ap_mac, firmware::get_rotating_ath_masker_mac(sta_mac), sae_params);
-			sender.send(frame);
+			interruptible_sleep(milliseconds(100));  //TODo hardcoded
 			return nullopt;
 		}
 

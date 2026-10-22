@@ -24,6 +24,7 @@ void start_resource_monitoring_remote(RunStatus &rs, const string &actor_name, c
 	string remote_log = "/tmp/" + actor_name + SUFFIX_res + ".log";
 	const string pid_file = remote_log + ".pid";
 
+	actor->conn->exec("[ -f " + pid_file + " ] && kill $(cat " + pid_file + ") 2>/dev/null; rm -f " + pid_file, false);
 	actor->conn->upload_script_raw(local_script, remote_script);
 	actor->conn->exec("rm -f " + remote_log, false);
 	const string stat_cmd = "awk -v delay=" + to_string(interval_sec) + " -v iface='" + iface + "' -f " + remote_script.

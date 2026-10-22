@@ -32,22 +32,26 @@ SsidConfusionEntry SsidConfusionEntry::parse(const path &test_folder) {
 
 	const auto ap = rs->get_actor("ap");
 	e.ap_mac = ap->get(SK::mac);
+	e.ap_driver = ap->get(SK::driver_name);
 	e.real_ssid = ap["ssid"];
 
 	const auto client = rs->get_actor("client");
-	e.client_mac = client->get(SK::mac);
+	e.sta_mac = client->get(SK::mac);
+	e.sta_driver = client->get(SK::driver_name);
 
 	const auto rogue_client = rs->get_actor("rogue_client");
+	e.rogue_client_mac = rogue_client->get(SK::mac);
 	e.rogue_client_driver = rogue_client->get(SK::driver_name);
 
 	const auto rogue_ap = rs->get_actor("rogue_ap");
+	e.rogue_ap_mac = rogue_ap->get(SK::mac);
 	e.rogue_ap_driver = rogue_ap->get(SK::driver_name);
 
 	const auto &att_cfg = rs->config().at("attack_config");
 	e.confused_ssid = att_cfg.value("confused_ssid", e.real_ssid);
 	e.strip_rsn = att_cfg.value("strip_rsn", false);
 
-	e.mitm_achieved = mc_mitm_filler::read_mitm_achieved(test_folder, e.client_mac);
+	e.mitm_achieved = mc_mitm_filler::read_mitm_achieved(test_folder, e.sta_mac);
 
 	return e;
 }
@@ -61,17 +65,17 @@ vector<SsidConfusionEntry> SsidConfusionEntry::collect_results(const path &suite
 }
 
 void SsidConfusionEntry::render_table(
-	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
+	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &page_dir, const string &t_name) {
 
 	helper::div_card<SsidConfusionEntry>(
 		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<SsidConfusionEntry> &entries) {
 			HtmlPathTable t(hg, entries, t_name);
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 			t.build([&](auto col) {
-				 col("AP MAC", &SsidConfusionEntry::ap_mac);
-				 col("Client MAC", &SsidConfusionEntry::client_mac);
-				 col("rogue_client driver", &SsidConfusionEntry::rogue_client_driver);
-				 col("rogue_ap driver", &SsidConfusionEntry::rogue_ap_driver);
+				 COL("AP (driver)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_driver << ")");
+				 COL("Client (macr)", overview::device(e.sta_mac, page_dir) << " (" << e.sta_driver << ")");
+				 COL("rogue_ap (driver)", overview::device(e.rogue_client_mac, page_dir) << " (" << e.rogue_client_driver << ")");
+				 COL("rogue_ap (driver)", overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")");
 				 col("Real SSID", &SsidConfusionEntry::real_ssid);
 				 col("Confused SSID", &SsidConfusionEntry::confused_ssid);
 				 COL("Strip RSN", e.strip_rsn);
@@ -103,7 +107,7 @@ void SsidConfusionEntry::generate_report(RunSuiteStatus &rss) {
 
 	for(const auto &e: entries) {
 		report << "| " << report::link(e.test_name, e.rel_path / REPORT_NAME) << " | " << e.ap_mac << " | "
-			   << e.client_mac << " | " << e.real_ssid << " | " << e.confused_ssid << " | " << e.strip_rsn << " | "
+			   << e.sta_mac << " | " << e.real_ssid << " | " << e.confused_ssid << " | " << e.strip_rsn << " | "
 			   << e.mitm_achieved << " |\n";
 	}
 }

@@ -12,6 +12,7 @@ struct HtmlGuard;
 namespace wpa3_tester::visual::reflection_attack_filler {
 struct ReflectionAttackTestEntry {
 	std::string test_name;
+	std::string ap_mac;
 	std::string ap_driver;
 	std::string ap_hostapd_version;
 	std::string attacker_driver;

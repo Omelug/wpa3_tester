@@ -22,6 +22,7 @@ ReflectionAttackTestEntry ReflectionAttackTestEntry::parse(const path &test_fold
 
 	const auto rs = helper::load_test_rs(test_folder);
 	e.ap_hostapd_version = hostapd::get_version(*rs, "ap");
+	e.ap_mac = rs->get_actor("ap").get(SK::mac);
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	e.attacker_mac = rs->get_actor("attacker")->get(SK::mac);
@@ -40,7 +41,7 @@ vector<ReflectionAttackTestEntry> ReflectionAttackTestEntry::collect_results(con
 }
 
 void ReflectionAttackTestEntry::render_table(
-	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
+	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &page_dir, const string &t_name) {
 
 	helper::div_card<ReflectionAttackTestEntry>(
 		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<ReflectionAttackTestEntry> &entries) {
@@ -48,9 +49,9 @@ void ReflectionAttackTestEntry::render_table(
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 			t.build([&](auto col) {
 				 col("Test", &ReflectionAttackTestEntry::test_name);
-				 col("AP Driver", &ReflectionAttackTestEntry::ap_driver);
+				 COL("AP (driver)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_driver << ")");
 				 col("Hostapd version", &ReflectionAttackTestEntry::ap_hostapd_version);
-				 COL("Attacker Driver", e.attacker_driver << "(" << e.attacker_mac << ")");
+				 COL("Attacker (driver)", overview::device(e.attacker_mac, page_dir) << "(" << e.attacker_driver << ")");
 				 col("Connected?", &ReflectionAttackTestEntry::connected);
 			 })->render({ "Test" });
 #undef COL

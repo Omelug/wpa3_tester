@@ -21,14 +21,16 @@ OweTransTestEntry OweTransTestEntry::parse(const path &test_folder) {
 	e.test_name = test_folder.filename().string();
 
 	const auto rs = helper::load_test_rs(test_folder);
+	e.ap_mac = rs->get_actor("ap").get(SK::mac);
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
+	e.attacker_mac = rs->get_actor("attacker").get(SK::mac);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
 }
 
 void OweTransTestEntry::render_table(
-	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const string &t_name) {
+	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &page_dir, const string &t_name) {
 
 	helper::div_card<OweTransTestEntry>(
 		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<OweTransTestEntry> &entries) {
@@ -37,9 +39,9 @@ void OweTransTestEntry::render_table(
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 			t.build([&](auto col) {
 				 COL("Test", e.test_name);
-				 col("AP Driver", &OweTransTestEntry::ap_driver);
+				 COL("AP Driver", overview::device(e.ap_mac, page_dir) << " (" << e.ap_driver << ")");;
 				 col("Client Driver", &OweTransTestEntry::client_driver);
-				 col("Attacker Driver", &OweTransTestEntry::attacker_driver);
+				 COL("Attacker (driver)", overview::device(e.attacker_mac, page_dir) << "(" << e.attacker_driver << ")");
 				 col("BC probes", &OweTransTestEntry::broadcast_probe_count);
 				 col("SSID probes", &OweTransTestEntry::ssid_probe_count);
 				 col("Disconnected", &OweTransTestEntry::disconnected);

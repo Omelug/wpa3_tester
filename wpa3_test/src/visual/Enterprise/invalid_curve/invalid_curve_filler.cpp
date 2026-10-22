@@ -23,6 +23,7 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder) {
 	const auto rs = helper::load_test_rs(test_folder);
 	e.ap_openssl_version = hostapd::get_openssl_version(*rs, "ap");
 	e.ap_hostapd_version = hostapd::get_version(*rs, "ap");
+	e.ap_mac = rs->get_actor("ap").get(SK::mac);
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.attacker_mac = rs->get_actor("attacker").get(SK::mac);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
@@ -41,7 +42,8 @@ vector<InvalidCurveTestEntry> InvalidCurveTestEntry::collect_results(const path 
 }
 
 void InvalidCurveTestEntry::render_table(
-	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &, const std::string &t_name) {
+	overview::HtmlGuard &f, const string &title, const path &suite_data_dir,
+	const path &page_dir, const std::string &t_name) {
 
 	helper::div_card<InvalidCurveTestEntry>(
 		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<InvalidCurveTestEntry> &entries) {
@@ -49,9 +51,9 @@ void InvalidCurveTestEntry::render_table(
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 			t.build([&](auto col) {
 				col("Test", &InvalidCurveTestEntry::test_name);
-				col("AP Driver", &InvalidCurveTestEntry::ap_driver);
+				COL("AP (driver)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_driver << ")");
 				col("Hostapd version", &InvalidCurveTestEntry::ap_hostapd_version);
-				COL("Attacker Driver", e.attacker_driver << "(" << e.attacker_mac << ")");
+				COL("Attacker (driver)", e.attacker_mac<< "(" << e.attacker_driver << ")");
 				col("AP openssl version", &InvalidCurveTestEntry::ap_openssl_version);
 				col("Connected?", &InvalidCurveTestEntry::connected);
 			});

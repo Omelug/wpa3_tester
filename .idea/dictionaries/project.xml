@@ -283,6 +283,7 @@
       <w>regval</w>
       <w>reproc</w>
       <w>retrans</w>
+      <w>retx</w>
       <w>reuseaddr</w>
       <w>rfkill</w>
       <w>rfmon</w>

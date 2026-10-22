@@ -12,8 +12,10 @@ namespace wpa3_tester::visual::owe_trans_filler {
 struct OweTransTestEntry {
 	std::string test_folder;
 	std::string test_name;
+	std::string ap_mac;
 	std::string ap_driver;
 	std::string client_driver;
+	std::string attacker_mac;
 	std::string attacker_driver;
 
 	//results json

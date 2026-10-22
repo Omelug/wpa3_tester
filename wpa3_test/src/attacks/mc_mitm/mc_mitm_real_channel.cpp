@@ -109,7 +109,8 @@ void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11,
 void McMitm::power_mgmt_response_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
 	if(dot11.addr1() == ap.get(SK::mac)){ // ->AP
 		// sleep mode detection for keep wake up
-		// encrypted, but still works for wake up TODO source
+		// encrypted, but still works for wake up
+		// TODO check WNM sleeep mode -> cant be spoofed like this
 		if(dot11.power_mgmt() && client_state.get_mac() == addr2){
 			Dot11Data null_frame(ap.get(SK::mac), addr2);
 			null_frame.subtype(Dot11::DATA_NULL);

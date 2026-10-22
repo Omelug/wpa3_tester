@@ -16,8 +16,12 @@ void setup_suite(const RunSuiteStatus &rss);
 struct SsidConfusionEntry {
 	std::string test_name;
 	std::string ap_mac;
-	std::string client_mac;
+	std::string ap_driver;
+	std::string sta_mac;
+	std::string sta_driver;
+	std::string rogue_client_mac;
 	std::string rogue_client_driver;
+	std::string rogue_ap_mac;
 	std::string rogue_ap_driver;
 	std::string real_ssid;
 	std::string confused_ssid;

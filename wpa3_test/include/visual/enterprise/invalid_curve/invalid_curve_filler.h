@@ -14,6 +14,7 @@ struct InvalidCurveTestEntry {
 	std::string test_name;
 	std::string ap_hostapd_version;
 	std::string ap_openssl_version;
+	std::string ap_mac;
 	std::string ap_driver;
 	std::string attacker_driver;
 	std::string attacker_mac;

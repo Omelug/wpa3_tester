@@ -20,12 +20,7 @@ using namespace filesystem;
 ExternalConn::ExternalConn() = default;
 
 ExternalConn::~ExternalConn(){
-	if(session){
-		// clean up all process associated with this session
-		try{ exec("pkill -s 0 -TERM"); } catch(...){}
-		ssh_disconnect(session);
-		ssh_free(session);
-	}
+	disconnect();
 }
 
 bool ExternalConn::connect(const ActorPtr &actor){

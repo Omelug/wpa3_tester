@@ -78,9 +78,10 @@ kernel-deploy: $(KERNEL_OUT)/arch/arm64/boot/Image
 	@echo "==> Kernel + drivers deployed. Pi rebooting - reconnect in ~30 s."
 	@echo "    Rollback: $(SSH) 'sudo cp /boot/firmware/kernel8.img.bak /boot/firmware/kernel8.img && sudo reboot'"
 
-ATH_MASKER_SRC := $(SRC_ROOT)/tools/ath_masker
+ATH_MASKER_SRC := $(CURDIR)/run/drivers-src/ath_masker
 
 ath_masker: $(KERNEL_OUT)/arch/arm64/boot/Image
+	@[ -d $(ATH_MASKER_SRC) ] || git clone --depth=1 https://github.com/Omelug/ath_masker $(ATH_MASKER_SRC)
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
 	    M=$(ATH_MASKER_SRC) modules -j$(shell nproc)
 	@test -z "$(PI)" || { \

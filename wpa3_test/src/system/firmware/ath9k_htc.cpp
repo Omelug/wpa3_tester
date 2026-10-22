@@ -1,3 +1,4 @@
+#include <atomic>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -16,12 +17,13 @@ using namespace std;
 
 namespace wpa3_tester::firmware{
 string get_rotating_ath_masker_mac(const string &attacker_mac) {
-	// static variable to rotate
-	static uint8_t counter = 0;
+	static atomic<uint32_t> counter = 0;
+	const uint32_t c = counter++ & 0xFFFFFF;
 	stringstream ss;
-	ss << attacker_mac.substr(0, 15)
-		<< hex << setw(2) << setfill('0')
-		<< static_cast<int>(counter++);
+	ss << attacker_mac.substr(0, 9) // keep first 3 octets, ath_masker masks last 3
+	   << hex << setw(2) << setfill('0') << ((c >> 16) & 0xFF) << ':'
+	   << setw(2) << setfill('0') << ((c >> 8) & 0xFF) << ':'
+	   << setw(2) << setfill('0') << (c & 0xFF);
 	return ss.str();
 }
 
@@ -44,7 +46,7 @@ void load_ath_masker(const bool git_install){
 		return;
 	}
 	if(git_install){
-		hw_capabilities::git_clone_or_pull("https://github.com/vanhoefm/ath_masker", ath_folder);
+		hw_capabilities::git_clone_or_pull("https://github.com/Omelug/ath_masker", ath_folder);
 	} else {
 		throw req_err("ath_masker folder not found: " + ath_folder + ". Enable git_install or clone it manually.");
 	}

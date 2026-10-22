@@ -9,6 +9,23 @@ observers:
   #  program: tshark
   #  program_config:
   #    filter: "udp port 5201"
+  tester_dmesg:
+    program: dmesg
+    program_config:
+      level: "emerg,alert,crit,err,warn,notice,info,debug"
+  tracer:
+    program: trace_cmd
+    actor: attacker
+    program_config:
+      events:
+        - "ath"
+        - "mac80211"
+        - "mt76"
+        - "mac80211:api_start_tx_ba_session"
+        - "mac80211:api_start_tx_ba_cb"
+        - "mac80211:api_stop_tx_ba_session"
+        - "mac80211:api_stop_tx_ba_cb"
+        - "mt76:mac_txdone"
   tshark_attacker:
     actor: attacker
     program: tshark

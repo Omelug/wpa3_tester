@@ -22,6 +22,7 @@ actors:
         key_mgmt: SAE
         pairwise: CCMP
         group: CCMP
+        scan_freq: 2437
     netns: sta
     ip_addr: "172.16.100.2"
     #sniff_iface: true

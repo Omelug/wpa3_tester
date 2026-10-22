@@ -29,9 +29,14 @@ actors:
     source: internal
     selection:
       driver: ath9k_htc
-      condition: [ monitor, 2_4GHz ] #injection_selftest
+      condition: [ monitor, 2_4GHz ]
       channel: 6
-    sniff_iface: true
+  get_commit:
+    source: internal
+    selection:
+      driver: [ mt76x2u, mt76x2u_git ]
+      condition: [ managed, 2_4GHz ]
+      channel: 6
 $extends: [ ../observers_DoS.comp.yaml ]
 observers:
   #client_mausezahn:
@@ -54,6 +59,6 @@ attack_config:
   acm_pause_millisec: 5
   acm_trigger_count: 2560
   burst_size: 32
-  frames_per_second_limit: 128
+  frames_per_second_limit: 100
   cookie_wait_ms: 50
 rewrite: errors

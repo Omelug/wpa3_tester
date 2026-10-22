@@ -138,13 +138,14 @@ RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac
 	vector<uint8_t> payload;
 	payload.reserve(2 + sae_params.token.size() + sae_params.scalar.size() + sae_params.element.size());
 	payload.push_back(sae_params.group_id & 0xFF);
-	payload.push_back((sae_params.group_id >> 8) & 0xFF);
+	payload.push_back(sae_params.group_id >> 8 & 0xFF);
 	payload.insert(payload.end(), sae_params.token.begin(), sae_params.token.end());
 	payload.insert(payload.end(), sae_params.scalar.begin(), sae_params.scalar.end());
 	payload.insert(payload.end(), sae_params.element.begin(), sae_params.element.end());
 
 	auth.inner_pdu(RawPDU(payload));
 	RadioTap rt{};
+	rt.tx_flags(0x28); // NOACK | ORDER
 	rt.inner_pdu(auth);
 	return rt;
 }

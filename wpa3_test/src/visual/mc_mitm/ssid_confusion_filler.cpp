@@ -40,11 +40,11 @@ SsidConfusionEntry SsidConfusionEntry::parse(const path &test_folder) {
 	e.sta_driver = client->get(SK::driver_name);
 
 	const auto rogue_client = rs->get_actor("rogue_client");
-	e.rogue_client_mac = rogue_client->get(SK::mac);
+	e.rogue_client_mac = rogue_client->get(SK::permanent_mac);
 	e.rogue_client_driver = rogue_client->get(SK::driver_name);
 
 	const auto rogue_ap = rs->get_actor("rogue_ap");
-	e.rogue_ap_mac = rogue_ap->get(SK::mac);
+	e.rogue_ap_mac = rogue_ap->get(SK::permanent_mac);
 	e.rogue_ap_driver = rogue_ap->get(SK::driver_name);
 
 	const auto &att_cfg = rs->config().at("attack_config");
@@ -73,7 +73,7 @@ void SsidConfusionEntry::render_table(
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 			t.build([&](auto col) {
 				 COL("AP (driver)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_driver << ")");
-				 COL("Client (macr)", overview::device(e.sta_mac, page_dir) << " (" << e.sta_driver << ")");
+				 COL("Client (mac)", overview::device(e.sta_mac, page_dir) << " (" << e.sta_driver << ")");
 				 COL("rogue_ap (driver)", overview::device(e.rogue_client_mac, page_dir) << " (" << e.rogue_client_driver << ")");
 				 COL("rogue_ap (driver)", overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")");
 				 col("Real SSID", &SsidConfusionEntry::real_ssid);

@@ -2,8 +2,11 @@ name: active_test_filler
 suite_functions: active_test_filler
 config_type: test_suite
 tests:
-  all_actors:
+  active_monitor:
     type: actor_filler
     config: ./active_test.yaml
+  no_active_monitor:
+    type: actor_filler
+    config: ./no_active_test.yaml
 rewrite: errors
 

@@ -1,0 +1,6 @@
+name: no_active_test_example
+$extends: ./active_test.yaml
+actors:
+  receiver:
+    selection:
+      condition: [ monitor, 2_4GHz ]

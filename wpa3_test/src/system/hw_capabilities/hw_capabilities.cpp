@@ -52,16 +52,19 @@ optional<string> hw_capabilities::get_driver_hash(const string &driver_name){
 			if(!s.empty()) return s;
 		}
 	}
-	// fallback: hash the .ko file via modinfo + sha256sum
-	string ko_path = run_cmd_output({"modinfo", "-F", "filename", driver_name});
-	while(!ko_path.empty() && (ko_path.back() == '\n' || ko_path.back() == '\r' || ko_path.back() == ' ')) ko_path.
-			pop_back();
-	if(ko_path.empty() || ko_path == "(builtin)") return nullopt;
+	// fallback: read srcversion field from .ko file directly (same format as sysfs)
+	string sv = run_cmd_output({"modinfo", "-F", "srcversion", driver_name});
+	while(!sv.empty() && (sv.back() == '\n' || sv.back() == '\r' || sv.back() == ' ')) sv.pop_back();
+	if(!sv.empty()) return sv;
 
-	const string sha_out = run_cmd_output({"sha256sum", ko_path}); //TODO external program needed ?
-	const auto space = sha_out.find(' ');
+	// md5sum the .ko binary
+	string ko_path = run_cmd_output({"modinfo", "-F", "filename", driver_name});
+	while(!ko_path.empty() && (ko_path.back() == '\n' || ko_path.back() == '\r' || ko_path.back() == ' ')) ko_path.pop_back();
+	if(ko_path.empty() || ko_path == "(builtin)") return nullopt;
+	const string md5_out = run_cmd_output({"md5sum", ko_path});
+	const auto space = md5_out.find(' ');
 	if(space == string::npos) return nullopt;
-	return sha_out.substr(0, min(space, size_t{16}));
+	return md5_out.substr(0, space);
 }
 
 optional<string> hw_capabilities::get_module_hash(const string &driver_name){
@@ -80,14 +83,10 @@ optional<string> hw_capabilities::get_module_hash(const string &driver_name){
 		}
 	}
 
-	// Collect "module:srcversion;" for each module that has a srcversion
+	// collect "module:hash;" for each module (same fallback chain as get_driver_hash)
 	string combined;
 	for(const auto &mod: modules){
-		ifstream ifs("/sys/module/" + mod + "/srcversion");
-		if(ifs.is_open()){
-			string sv;
-			if(getline(ifs, sv) && !sv.empty()) combined += format("{}:{};", mod, sv);
-		}
+		if(const auto h = get_driver_hash(mod)) combined += format("{}:{};", mod, *h);
 	}
 	if(combined.empty()) return nullopt;
 
@@ -98,12 +97,12 @@ optional<string> hw_capabilities::get_module_hash(const string &driver_name){
 		if(!f.is_open()) return nullopt;
 		f << combined;
 	}
-	const string sha_out = run_cmd_output({"sha256sum", tmp.string()});
+	const string md5_out = run_cmd_output({"md5sum", tmp.string()});
 	filesystem::remove(tmp);
 
-	const auto space = sha_out.find(' ');
+	const auto space = md5_out.find(' ');
 	if(space == string::npos) return nullopt;
-	return sha_out.substr(0, min(space, size_t{16}));
+	return md5_out.substr(0, space);
 }
 
 string hw_capabilities::get_phy(const string &iface, const optional<string> &netns){

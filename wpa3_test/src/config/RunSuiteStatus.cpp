@@ -143,7 +143,7 @@ void RunSuiteStatus::defined_by_generator(
 		ofs.close();
 		set_public_perms(test_config_path);
 
-		RunStatus::config_validation(test_config_path);
+		RunStatus::config_validation(test_config_path, gen_folder);
 		test_map.emplace_back(source_name, config_name, test_config_path);
 	}
 }
@@ -282,7 +282,7 @@ void RunSuiteStatus::generate_test_files(basic_json<> source_info,
 		set_public_perms(test_path);
 
 		// result test config validation
-		RunStatus::config_validation(test_path);
+		RunStatus::config_validation(test_path, gen_folder);
 		test_map.emplace_back(source_name, config_name, test_path);
 
 		// another index or stop

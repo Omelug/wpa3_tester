@@ -166,7 +166,8 @@ public:
 	static nlohmann::json extends_recursive(
 		const nlohmann::json &config_json, const std::filesystem::path &config_path);
 	static void validate_recursive(nlohmann::json &current_node, const std::filesystem::path &base_dir);
-	static nlohmann::json config_validation(const std::filesystem::path &config_path);
+	void save_result(const nlohmann::json &j) const;
+	static nlohmann::json config_validation(const std::filesystem::path &config_path, const std::filesystem::path &save_debug_dir = "");
 	void ensure_requirement(const std::string &req) const;
 	void check_local_requirements();
 	// use cache for options of actors
@@ -188,7 +189,6 @@ public:
 	void save_actor_interface_mapping() const;
 	void load_actor_interface_mapping();
 	void write_done() const;
-	void save_result(const nlohmann::json &j) const;
 	nlohmann::json load_result() const;
 };
 

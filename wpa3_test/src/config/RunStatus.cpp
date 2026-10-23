@@ -42,7 +42,7 @@ RunStatus::RunStatus(const path &config_path, string testName, const string &sub
 	_run_folder = BASE_FOLDER() / actual_sub_folder / testName;
 	set_public_perms(_run_folder);
 	log(LogLevel::INFO, "Used config {}", config_path);
-	_config = config_validation(_config_path);
+	_config = config_validation(_config_path, _run_folder);
 
 	parse_run_config(_config, _run_config);
 	_run_config.merge_from(get_global_run_config());
@@ -115,7 +115,7 @@ void RunStatus::do_run() {
 
 	if(run_config().get_only_stats()) {
 		config_path(absolute(run_folder() / TEST_CONFIG_NAME));
-		config(config_validation(config_path()));
+		config(config_validation(config_path(), _run_folder));
 		load_actor_interface_mapping();
 		stats_test();
 		return;

@@ -268,10 +268,37 @@ void RunStatus::validate_recursive(nlohmann::json &current_node, const path &bas
 	}
 }
 
-json RunStatus::config_validation(const path &config_path) {
+void save_yaml(const json &json_obj, const path &out_path) {
+	const YAML::Node node = YAML::Load(json_obj.dump());
+	auto force_block_style = [](auto &self, YAML::Node yaml_node) -> void {
+		if(yaml_node.IsMap() || yaml_node.IsSequence()) {
+			yaml_node.SetStyle(YAML::EmitterStyle::Block);
+			for(auto it = yaml_node.begin(); it != yaml_node.end(); ++it) {
+				if(yaml_node.IsMap()) {
+					self(self, it->second);
+				} else {
+					self(self, *it);
+				}
+			}
+		}
+	};
+	force_block_style(force_block_style, node);
+	ofstream out(out_path);
+	if(!out) throw run_err("Failed to open {} for writing", out_path);
+	out << node << endl;
+	out.close();
+	set_public_perms(out_path);
+	log(LogLevel::DEBUG, "Config saved to {}", out_path);
+}
+
+json RunStatus::config_validation(const path &config_path, const path &save_debug_dir) {
+	json config_json;
+	auto save_debug = [&] {
+		if(!save_debug_dir.empty()) save_yaml(config_json, save_debug_dir / "validation_error.yaml");
+	};
 	try {
 		unordered_map<string, YAML::Mark> line_map;
-		json config_json = yaml_to_json_with_marks(YAML::LoadFile(config_path), "", line_map);
+		config_json = yaml_to_json_with_marks(YAML::LoadFile(config_path), "", line_map);
 
 		// substitute global_variables before extends/validation
 		auto &gcfg = get_global_config();
@@ -288,11 +315,10 @@ json RunStatus::config_validation(const path &config_path) {
 		const YAMLValidator validator(global_schema_path);
 		validator.validate(config_json, line_map, config_path.string());
 		return config_json;
-	} catch(const tester_error &) { throw; } catch(const domain_error &e) {
-		throw config_err(string("Schema error: ") + e.what());
-	} catch(const invalid_argument &e) {
-		throw config_err(string("Error in config: ") + e.what());
-	} catch(const exception &e) { throw config_err(string("Config validation error: ") + e.what()); }
+	} catch(const tester_error &) { save_debug(); throw; }
+	  catch(const domain_error &e)     { save_debug(); throw config_err("Schema error: {}", e.what()); }
+	  catch(const invalid_argument &e) { save_debug(); throw config_err("Error in config: {}", e.what()); }
+	  catch(const exception &e)        { save_debug(); throw config_err("Config validation error: {}", e.what()); }
 }
 
 void RunStatus::ensure_requirement(const string &req) const {
@@ -329,26 +355,4 @@ void RunStatus::check_local_requirements() {
 	}
 }
 
-void save_yaml(const json &json_obj, const path &out_path) {
-	const YAML::Node node = YAML::Load(json_obj.dump());
-	auto force_block_style = [](auto &self, YAML::Node yaml_node) -> void {
-		if(yaml_node.IsMap() || yaml_node.IsSequence()) {
-			yaml_node.SetStyle(YAML::EmitterStyle::Block);
-			for(auto it = yaml_node.begin(); it != yaml_node.end(); ++it) {
-				if(yaml_node.IsMap()) {
-					self(self, it->second);
-				} else {
-					self(self, *it);
-				}
-			}
-		}
-	};
-	force_block_style(force_block_style, node);
-	ofstream out(out_path);
-	if(!out) throw run_err("Failed to open {} for writing", out_path);
-	out << node << endl;
-	out.close();
-	set_public_perms(out_path);
-	log(LogLevel::DEBUG, "Config saved to {}", out_path);
-}
 }

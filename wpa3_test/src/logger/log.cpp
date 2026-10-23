@@ -58,7 +58,7 @@ void write_log_message(const LogLevel level, const string &msg){
 	cerr << formatted << endl;
 	// write to log file if enabled
 	if(log_file_ptr && log_file_ptr->is_open()){
-		*log_file_ptr << formatted << endl;
+		*log_file_ptr << current_timestamp() << " " << formatted << endl;
 	}
 }
 
@@ -73,7 +73,7 @@ void log_actor_map(const string &name, const ActorMap &m){
 	log(LogLevel::DEBUG, "{}:{}", name, keys_str);
 }
 
-// Returns a nanosecond-precision time_point (epoch == error sentinel)
+// return a nanosecond-precision time_point (epoch == error sentinel)
 LogTimePoint log_time_to_epoch_ns(const string &time_str){
 	tm t = {};
 	const char *p = strptime(time_str.c_str(), "%Y-%m-%dT%H:%M:%S", &t);

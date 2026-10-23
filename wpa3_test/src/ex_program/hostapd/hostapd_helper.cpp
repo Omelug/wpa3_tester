@@ -642,7 +642,7 @@ string client_scanning_from_ap_log(const path &ap_log, const HWAddress<6> &clien
 	}
 
 	if(channels.empty()) return {};
-	return "ch: " + join(channels, " ", [](int ch) { return to_string(ch); });
+	return "ch: " + join(channels, " ", [](const int ch) { return to_string(ch); });
 }
 
 string owe_trans_bssid(const string &primary_mac){

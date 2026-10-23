@@ -1,16 +1,13 @@
 #include "attacks/two_iface/injection_test.h"
-#include <filesystem>
 #include <linux/nl80211.h>
 #include <tins/tins.h>
 
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "config/RunStatus.h"
-#include "default.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "system/hw_capabilities.h"
 #include "system/injection_result.h"
-#include "system/utils.h"
 
 namespace wpa3_tester {
 using namespace std;

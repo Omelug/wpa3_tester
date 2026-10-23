@@ -7,6 +7,8 @@ Version  v 0.0.0.0:
 +: add test to check if TX_flags in RadiTab are respected
 +:  invalid curve from AP to client (rogue AP)
 
+r: znovuspustiti expected_vht_beacon_ex_Dlink_filler a expected_vht_beacon_rogueAP_filler
+r: delete/add login to all catch(...)
 v PMKID je STA mac -> nejde v ssid_confusion obejít PMKSA přes to, že rogue_sta bude mít svojí mac a mac adresy se budou modifikovat přes forward?
 CSA:
     +: option for openwrt OCV / wpa3 disable for external client

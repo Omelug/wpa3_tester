@@ -60,7 +60,7 @@ actors:
                    80211ac, 5GHz, netns_change ]
     netns: sta
     ip_addr: "172.16.100.2"
-    sniff_iface: true
+   # FIXME this disconnect client before attack? after s=tshaek start?  sniff_iface: true
   attacker:
     source: internal
     selection:

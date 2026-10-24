@@ -1,4 +1,4 @@
 name: bl0ck_BAR_Dlink_random
-$extends: ../basic/bl0ck_BA_Dlink.yaml
+$extends: ../basic/bl0ck_BAR_Dlink.yaml
 attack_config:
   random_MAC: true

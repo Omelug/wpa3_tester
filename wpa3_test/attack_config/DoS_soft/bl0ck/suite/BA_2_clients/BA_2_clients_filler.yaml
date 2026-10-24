@@ -1,0 +1,8 @@
+name: BA_2_client_filler
+suite_functions: bl0ck_filler
+config_type: test_suite
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./bl0ck_BA_2_clients.yaml
+delete_old: true

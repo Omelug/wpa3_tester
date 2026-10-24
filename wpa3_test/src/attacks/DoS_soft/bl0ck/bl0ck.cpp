@@ -28,6 +28,7 @@
 #include "observer/trace_cmd_wrapper.h"
 #include "observer/tshark_wrapper.h"
 #include "system/hw_capabilities.h"
+#include "system/ip.h"
 #include "visual/result_helper.h"
 
 #include <linux/if_ether.h>
@@ -80,7 +81,7 @@ RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, 
 		0x08,
 		0x80 };
 	RadioTap rt{};
-	rt.tx_flags(0x28); // DONT_REORDER| NOOACK
+	rt.tx_flags(0x28); // DONT_REORDER| NOACK
 	return rt / bar / RawPDU(payload_data);
 }
 
@@ -261,6 +262,11 @@ static Bl0ckResult load_result(const RunStatus &rs) {
 
 void setup_attack(RunStatus &rs) {
 	components::client_ap_setup_t(rs);
+	if(rs.actor("client2")) {
+		components::setup_STA(rs, "client2");
+		rs.process_manager.wait_for("client2", "EVENT-CONNECTED", seconds(40)); //FIXME hardcoded timeout
+		if(rs.get_actor("client2")[SK::ip_addr]) ip::set_ip(rs, "client2");
+	}
 	components::setup_rogue_ap(rs);
 }
 

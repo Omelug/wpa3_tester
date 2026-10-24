@@ -1,0 +1,34 @@
+$validator: ../../bl0ck.schema.yaml
+$extends: [ ../../bl0ck.yaml,
+            ../../suite/mt76_filler/mt76_adapters_fixed.comp.yaml
+]
+name: bl0ck_BA_2_clients
+attacker_module: bl0ck
+actors:
+  client2:
+    source: internal
+    setup:
+      program: wpa_supplicant
+      program_config:
+        #other_options: "-d"
+        group: CCMP
+        ieee80211w: 2
+        key_mgmt: SAE
+        pairwise: CCMP
+        psk: password123
+        #FIXME má tu být psk nebo sae_password (asi jendou)?
+        # sae_password: password123
+        scan_freq: 5180
+        ssid: wpa3_tester_AP
+        version: 2_10
+    selection:
+      permanent_mac: "90:de:80:de:ff:7b"
+      condition: [ managed, 80211ac, 5GHz, netns_change ]
+    netns: sta2
+    #ip_addr: "172.16.100.4"
+    #sniff_iface: true
+attack_config:
+  attack_time_sec: 30
+  attack_variant: "BA"
+  random_MAC: false
+  frame_in_batch: 50

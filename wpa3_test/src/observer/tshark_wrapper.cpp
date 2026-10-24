@@ -305,7 +305,7 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 
 	double pad = (g.ymax - g.ymin) * 0.5;
 	if(pad == 0) pad = 1.0; //TODO hardcoded
-	g.ymin -= pad;
+	g.ymin = max(0.0, g.ymin - pad); // packet sizes can't be negative
 	g.ymax += pad;
 
 	g.gpcmd("set tmargin 5");

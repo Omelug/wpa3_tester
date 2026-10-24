@@ -74,7 +74,6 @@ void run_attack(RunStatus &rs) {
 		if(auto ec = netlink_helper::wait_for_channel(iface, netns, from_ch)) {
 			result["channel_switch"]["ok"] = !ec;
 			result["channel_switch"]["error"] = "wait_for_channel error: " + ec.message();
-			return;
 		}
 
 		const auto t0 = steady_clock::now();
@@ -215,7 +214,8 @@ void generate_report(const RunStatus &rs) {
 		md << "|------|-----------|\n";
 		md << "| AP | " << scanner[BK::AP] << " |\n";
 		md << "| STA | " << scanner[BK::STA] << " |\n";
-		md << "| Monitor | " << scanner[BK::monitor] << " |\n\n";
+		md << "| Monitor | " << scanner[BK::monitor] << " |\n";
+		md << "| Active Monitor | " << scanner[BK::active_monitor] << " |\n\n";
 
 		md << "### Frequency Bands\n\n";
 		md << "| Band | Supported |\n";

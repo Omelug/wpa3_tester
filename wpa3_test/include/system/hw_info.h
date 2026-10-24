@@ -31,7 +31,8 @@ struct HwInfo {
 		case BK::MFP:
 		case BK::WPA_PSK:
 		case BK::WPA3_SAE:
-		case BK::OWE: return true;
+		case BK::OWE:
+		case BK::active_monitor: return true;
 		default: return false;
 		}
 	}

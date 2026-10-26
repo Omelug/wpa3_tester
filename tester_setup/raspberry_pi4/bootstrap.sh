@@ -93,7 +93,8 @@ sudo systemctl start wpa3-nat.service
 sudo mkdir -p /etc/udev/rules.d
 sudo tee /etc/udev/rules.d/70-wifi.rules << 'EOF' > /dev/null
 SUBSYSTEM=="net", ACTION=="add", DEVPATH=="*/fe300000.mmcnr/*", NAME="wlan0"
-SUBSYSTEM=="net", ACTION=="add", SUBSYSTEMS=="usb", IMPORT{builtin}="net_id", ENV{ID_NET_NAME_MAC}!="", NAME="$env{ID_NET_NAME_MAC}"
+SUBSYSTEM=="net", ACTION=="add", SUBSYSTEMS=="usb", IMPORT{builtin}="net_id"
+SUBSYSTEM=="net", ACTION=="add", SUBSYSTEMS=="usb", ENV{ID_NET_NAME_MAC}!="", NAME="$env{ID_NET_NAME_MAC}"
 SUBSYSTEM=="net", ACTION=="add", SUBSYSTEMS=="usb", ENV{ID_NET_NAME_MAC}=="", ENV{ID_NET_NAME_PATH}!="", NAME="$env{ID_NET_NAME_PATH}"
 EOF
 sudo udevadm control --reload-rules

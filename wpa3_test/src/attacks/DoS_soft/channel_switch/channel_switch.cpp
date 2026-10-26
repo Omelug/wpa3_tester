@@ -245,7 +245,6 @@ void run_attack(RunStatus &rs) {
 	check_vulnerable(ap_mac, sta_mac, iface_name, essid, old_channel, new_channel, ms_interval, attack_time, att_cfg.at("RSN_scan_timeout_sec") ,netns);
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
-
 	ap->disconnect();
 	rs.process_manager.stop_all();
 }

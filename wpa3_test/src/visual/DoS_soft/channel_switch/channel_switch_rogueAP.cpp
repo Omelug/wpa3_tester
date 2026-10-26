@@ -22,21 +22,21 @@ CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 	if(!rs) return e;
 
 	const auto ap = rs->get_actor("ap");
-	e.ap_mac = ap->get(SK::mac);
+	e.ap_mac = ap->get(SK::permanent_mac);
 	e.ap_source = ap->get(SK::source);
 
 	const auto client = rs->get_actor("client");
 	//FIXME add mac to config/mapping to get it here in report (if client is external)
-	e.client_mac = client->get(SK::mac);
+	e.client_mac = client->get(SK::permanent_mac);
 	e.client_source = client->get(SK::source);
 	e.client_driver = client[SK::driver_name];
 
 	const auto att = rs->get_actor("attacker");
-	e.attacker_mac = att->get(SK::mac);
+	e.attacker_mac = att->get(SK::permanent_mac);
 	e.attacker_driver = att->get(SK::driver_name);
 
 	if(const auto rogue = rs->actor("rogue_ap")){ //optional
-		e.rogue_ap_mac = rogue->get(SK::mac);
+		e.rogue_ap_mac = rogue->get(SK::permanent_mac);
 		e.rogue_ap_driver = rogue->get(SK::driver_name);
 	}
 

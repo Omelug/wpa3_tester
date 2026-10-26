@@ -117,10 +117,12 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol) {
 	log(LogLevel::INFO, "client is connected");
 }
 
-void setup_rogue_ap(RunStatus &rs) {
+void setup_rogue_ap(RunStatus &rs, const std::optional<std::string> &fake_actor) {
 	if(rs.actor("rogue_ap")) {
-		//TODO zkusit
-		rs.get_actor("rogue_ap")->set_mac_address(rs.get_actor("ap").get(SK::mac)); //FIXME hardcoded "ap"
+		//TODO test
+		if(fake_actor.has_value()){
+			rs.get_actor("rogue_ap")->set_mac_address(rs.get_actor(fake_actor.value()).get(SK::permanent_mac));
+		}
 		const auto conf = rs.config_path().parent_path() / "config" / "hostapd-mana.conf";
 		if(exists(conf)) { copy_f(conf, rs.run_folder() / "rogue_ap_hostapd_mana.conf"); }
 

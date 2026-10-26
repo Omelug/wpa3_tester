@@ -229,7 +229,10 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 	// wait for ifname and store in actor
 	const string ifname = wait_for_ifname(section);
 	actor->set(SK::iface, ifname);
-	actor->set(SK::mac, get_mac_address(ifname));
+	const string iface_mac = get_mac_address(ifname);
+	actor->set(SK::mac, iface_mac);
+	if(!(*actor)[SK::permanent_mac].has_value())
+		actor->set(SK::permanent_mac, iface_mac);
 	actor->set(SK::radio, radio_name);
 	actor->set(SK::uci_section, section);
 }
@@ -256,7 +259,10 @@ void OpenWrtConn::setup_monitor_iface(const string &radio_name, const ActorPtr &
 	exec("ip link set " + ifname + " up");
 
 	actor->set(SK::iface, ifname);
-	actor->set(SK::mac, get_mac_address(ifname));
+	const string mon_mac = get_mac_address(ifname);
+	actor->set(SK::mac, mon_mac);
+	if(!(*actor)[SK::permanent_mac].has_value())
+		actor->set(SK::permanent_mac, mon_mac);
 	actor->set(SK::radio, radio_name);
 }
 

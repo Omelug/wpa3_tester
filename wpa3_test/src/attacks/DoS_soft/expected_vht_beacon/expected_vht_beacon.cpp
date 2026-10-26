@@ -70,7 +70,7 @@ static void inject_legacy_beacons(
 
 void setup_attack(RunStatus &rs) {
 	components::client_ap_setup(rs, false);
-	components::setup_rogue_ap(rs);
+	components::setup_rogue_ap(rs, nullopt);
 }
 
 void run_attack(RunStatus &rs) {

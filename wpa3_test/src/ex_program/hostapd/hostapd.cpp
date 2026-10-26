@@ -155,7 +155,14 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 		hostapd_bin = get_hostapd(version);
 	}
 
-	command.insert(command.end(), {hostapd_bin, "-i", rs.get_actor(actor_name).get(SK::iface), hostapd_config_path,});
+	const string &iface = rs.get_actor(actor_name).get(SK::iface);
+
+	// reset to managed mode so mac80211 clears AP frame registrations before
+	// hostapd does its own full AP-mode setup via nl80211
+	hw_capabilities::run_cmd({"ip", "link", "set", iface, "down"}, nullopt, false);
+	hw_capabilities::set_wifi_type(iface, NL80211_IFTYPE_STATION, nullopt, {});
+
+	command.insert(command.end(), {hostapd_bin, "-i", iface, hostapd_config_path,});
 	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){
 		istringstream ss(program_config["other_options"].get<string>());
 		string token;
@@ -359,13 +366,17 @@ void run_hostapd_mana(RunStatus &rs, const string &actor_name){
 		version = program_config["version"].get<string>();
 	}
 
+	const string &mana_iface = rs.get_actor(actor_name).get(SK::iface);
+	hw_capabilities::run_cmd({"ip", "link", "set", mana_iface, "down"}, nullopt, false);
+	hw_capabilities::set_wifi_type(mana_iface, NL80211_IFTYPE_STATION, nullopt, {});
+
 	vector<string> command = {};
 	observer::add_nets_header(rs, command, actor_name);
 
 	command.insert(command.end(), {
 						get_hostapd_mana(version),
 						//"-P", pid_file, // write PID to file, don't work without -B (background)
-						"-i", rs.get_actor(actor_name).get(SK::iface), mana_config_path,
+						"-i", mana_iface, mana_config_path,
 					});
 
 	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){

@@ -1,4 +1,7 @@
-$extends: ../expected_vht_beacon.yaml
+$extends: [
+  ../expected_vht_beacon.yaml,
+  ../../../comp/ap/ap_2_11_WPA3_only_MFPr_6.comp.yaml
+]
 name: expected_vht_beacon_beacon_prot
 actors:
   ap:

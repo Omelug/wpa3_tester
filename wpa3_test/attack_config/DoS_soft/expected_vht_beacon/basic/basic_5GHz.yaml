@@ -1,6 +1,7 @@
 $extends: [
   ../expected_vht_beacon.yaml,
   ../observers.comp.yaml,
+  ../../../comp/ap/ap_2_11_WPA3_only_MFPr_36.comp.yaml,
   ../../../comp/rogue_ap/rogue_ap_36.comp.yaml
 ]
 name: expected_vht_beacon_5GHz
@@ -8,14 +9,13 @@ $validator: ../expected_vht_beacon.schema.yaml
 actors:
   ap:
     setup:
-      program: hostapd
       program_config:
-        country_code: CZ
-        version: 2_10
-        hw_mode: a   # 5 GHz - VHT requires 5 GHz
-        channel: 36
+        ieee80211ac: 1
     selection:
-      permanent_mac: "90:de:80:de:fd:b2"
+      permanent_mac: "90:de:80:de:ff:7b"
+  rogue_ap:
+    selection:
+      permanent_mac: "90:de:80:4e:31:e6"
   client:
     setup:
       program: wpa_supplicant

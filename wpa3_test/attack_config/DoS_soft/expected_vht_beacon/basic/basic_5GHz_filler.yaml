@@ -5,8 +5,8 @@ tests:
   all_actors:
     type: actor_filler
     config: ./basic_5GHz.yaml
-  beacon_prot:
-    type: actor_filler
-    config: ../mitigation/expected_vht_beacon_beacon_prot_5GHz.yaml
+  #beacon_prot:
+  #  type: actor_filler
+  #  config: ../mitigation/expected_vht_beacon_beacon_prot_5GHz.yaml
 delete_old: true
 rewrite: "errors"

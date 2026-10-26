@@ -347,6 +347,13 @@ void RunSuiteStatus::defined_by_actor_filler(
 	create_public_dirs(gen_folder, ec);
 	if(ec) throw run_err("actor_filler: unable to create directory");
 
+	const path config_src = src.parent_path() / "config";
+	if(exists(config_src)) {
+		error_code ec2;
+		copy(config_src, gen_folder / "config", copy_options::recursive | copy_options::skip_existing, ec2);
+		if(!ec2) set_public_perms_recursive(gen_folder / "config");
+	}
+
 	const string base_name = template_config.at("name").get<string>();
 	for(const auto &solution: solutions) {
 		json cfg = template_config;

@@ -47,7 +47,10 @@ PI_IFACE    ?= $(shell ip route get $(PI_IP) 2>/dev/null | awk '{for(i=1;i<NF;i+
 HOST_IP     ?= $(PI_GW)
 NETCAT_PORT ?= 6666
 
-CROSS_COMPILE ?= aarch64-linux-gnu-
+CROSS_COMPILE ?= $(shell \
+    command -v aarch64-linux-gnu-gcc     >/dev/null 2>&1 && echo aarch64-linux-gnu-     || \
+    command -v aarch64-unknown-linux-gnu-gcc >/dev/null 2>&1 && echo aarch64-unknown-linux-gnu- || \
+    echo aarch64-linux-gnu-)
 
 KERNEL_REPO  := https://github.com/raspberrypi/linux
 KERNEL_SRC   := $(CURDIR)/run/kernel-src

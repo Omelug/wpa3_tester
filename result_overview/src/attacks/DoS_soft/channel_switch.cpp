@@ -3,6 +3,8 @@
 #include "page_cache.h"
 #include "system/utils.h"
 #include "visual/DoS_soft/channel_switch/channel_switch_rogueAP.h"
+#include "visual/suite_helper.h"
+#include <algorithm>
 #include <filesystem>
 #include <string>
 
@@ -56,8 +58,22 @@ Not very supported, mobile devices have better support.
 		CsaTestEntry::render_table(f, title, suite_data_dir, page_dir, suite_name);
 	};
 
-	// emit tables for each variant
-	emit_table("RogueAP internal",  base / "rogueAP" / "CSA_rogueAP_internal_filler", "CSA_rogueAP_internal_filler");
+	// emit separate table for each variant
+	{
+		const path rogue_dir = base / "rogueAP" / "CSA_rogueAP_internal_filler";
+		if(exists(rogue_dir)) {
+			vector<path> subdirs;
+			for(const auto &sub: directory_iterator(rogue_dir)) {
+				if(!sub.is_directory() || !visual::helper::has_test_runs(sub.path())) continue;
+				subdirs.push_back(sub.path());
+			}
+			ranges::sort(subdirs);
+			for(const auto &sub: subdirs) {
+				const string sn = sub.filename().string();
+				emit_table("RogueAP internal (" + sn + ")", sub, "CSA_rogueAP_internal_filler (" + sn + ")");
+			}
+		}
+	}
 	emit_table("OCV/ beacon prot mitigation",  base / "mitigation" / "CSA_mitigation_filler", "CSA_mitigation_filler");
 	emit_table("Dlink", base / "external" / "Dlink"   / "CSA_rogueAP_Dlink_filler", "CSA_rogueAP_Dlink_filler");
 	emit_table("External Client", base / "external" / "client"/ "CSA_external_client_filler", "CSA_external_client_filler");

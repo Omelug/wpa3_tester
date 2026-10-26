@@ -57,13 +57,16 @@ CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 }
 
 vector<CsaTestEntry> CsaTestEntry::collect_results(const path &test_data_dir) {
-
-	auto entries = helper::collect_entries_nested(test_data_dir, [&test_data_dir](const path &p){
+	auto collect = [&test_data_dir](const path &p) {
 		auto e = parse(p);
 		e.rel_path = relative(p, test_data_dir);
 		return e;
-	});
+	};
 
+	//TODO ome name conflicts edge cases?
+	auto entries = helper::has_test_runs(test_data_dir)
+		? helper::collect_entries_flat(test_data_dir, collect)
+		: helper::collect_entries_nested(test_data_dir, collect);
 
 	ranges::sort(entries, [](const CsaTestEntry& a, const CsaTestEntry& b) {
 		return tie(a.client_mac, a.ap_ocv, a.client_disconnected, a.client_mfp, a.conn_WPA_version, a.attacker_driver, a.rogue_ap_driver, a.name) <

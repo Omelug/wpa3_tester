@@ -46,6 +46,28 @@ auto collect_entries_nested(const std::filesystem::path &run_dir, ParseFn parse_
 	return entries;
 }
 
+template<typename ParseFn>
+auto collect_entries_flat(const std::filesystem::path &dir, ParseFn parse_fn) {
+	using E = decltype(parse_fn(std::declval<const std::filesystem::path &>()));
+	std::vector<E> entries;
+	for(const auto &entry: std::filesystem::directory_iterator(dir)) {
+		if(!entry.is_directory()) continue;
+		if(!std::filesystem::exists(entry.path() / TEST_CONFIG_NAME)) continue;
+		if(!std::filesystem::exists(entry.path() / DONE_FILE)) continue;
+		entries.push_back(parse_fn(entry.path()));
+	}
+	return entries;
+}
+
+// true if dir directly contains test runs (done.txt in a direct subdir)
+inline bool has_test_runs(const std::filesystem::path &dir) {
+	std::error_code ec;
+	for(const auto &e: std::filesystem::directory_iterator(dir, ec)) {
+		if(e.is_directory() && std::filesystem::exists(e.path() / DONE_FILE)) return true;
+	}
+	return false;
+}
+
 // parsing with Entry::parse (some results needs test_folder inf)
 template<typename Entry>
 std::vector<Entry> get_results_default(const std::filesystem::path &run_dir) {
@@ -66,7 +88,7 @@ concept HasCollectResults = requires(const std::filesystem::path &p) {
 template<typename Entry>
 void div_card(overview::HtmlGuard &f, const std::string &title, const std::filesystem::path &t_data_dir,
 	const std::function<void(overview::HtmlGuard &, const std::vector<Entry> &)> &render_func) {
-	f << "<div class=\"card\" style=\"overflow-x: auto;\">"
+	f << R"(<div class="card" style="overflow-x: auto;">)"
 	  << "<h2>" << title << "</h2>";
 
 	if(!std::filesystem::exists(t_data_dir)) {
@@ -76,7 +98,7 @@ void div_card(overview::HtmlGuard &f, const std::string &title, const std::files
 	}
 
 	auto entries = [t_data_dir] {
-		// is test folder
+		// is tested folder
 		if(std::filesystem::exists(t_data_dir / DONE_FILE)) { return std::vector<Entry>{ Entry::parse(t_data_dir) }; }
 		if constexpr(HasCollectResults<Entry>) {
 			return Entry::collect_results(t_data_dir);

@@ -156,11 +156,12 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 	}
 
 	const string &iface = rs.get_actor(actor_name).get(SK::iface);
+	const auto &netns = rs.get_actor(actor_name)[SK::netns];
 
 	// reset to managed mode so mac80211 clears AP frame registrations before
 	// hostapd does its own full AP-mode setup via nl80211
-	hw_capabilities::run_cmd({"ip", "link", "set", iface, "down"}, nullopt, false);
-	hw_capabilities::set_wifi_type(iface, NL80211_IFTYPE_STATION, nullopt, {});
+	hw_capabilities::run_cmd({"ip", "link", "set", iface, "down"}, netns, false);
+	hw_capabilities::set_wifi_type(iface, NL80211_IFTYPE_STATION, netns, {});
 
 	command.insert(command.end(), {hostapd_bin, "-i", iface, hostapd_config_path,});
 	if(program_config.contains("other_options") && !program_config["other_options"].is_null()){

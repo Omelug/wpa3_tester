@@ -345,11 +345,20 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 		[&]{ string s = wifi_iface; ranges::replace(s, '-', '_'); return s; }());
 	log(LogLevel::DEBUG, "setup_ap: configuring UCI section '{}' for iface '{}'", section, wifi_iface);
 
+	// delete stale WPA3/PMF options from previous tests that aren't in this config
+	for (const auto &opt : {"ieee80211w", "ocv", "transition_disable", "sae_require_mfp", "sae_groups", "sae_password"}) {
+		if (!program_config.contains(opt))
+			exec("uci -q delete wireless." + section + "." + string(opt));
+	}
+	exec("uci -q delete wireless." + actor.get(SK::radio) + ".ocv");
+	exec("uci -q delete wireless." + actor.get(SK::radio) + ".transition_disable");
+
 	vector<string> cmds = {format("set wireless.{}.disabled=0", actor.get(SK::radio))};
 	for(const auto &[key, val]: program_config.items()){
 		const string value = val.is_string() ? val.get<string>() : val.dump();
 		if(key == "eap_user_file"){
-			const path local = rs.config_path().parent_path() / value;
+			const path local_run = rs.run_folder() / path(value).filename();
+			const path local = exists(local_run) ? local_run : rs.config_path().parent_path() / value;
 			constexpr string_view remote = "/etc/hostapd.eap_user";
 			upload_file(local, remote);
 			cmds.push_back(format("set wireless.{}.eap_user_file={}", section, remote));
@@ -378,8 +387,8 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 		}
 	};
 
-	//try_download("/var/run/hostapd-" + actor.get(SK::iface) + ".conf",
-	//			 rs.run_folder() / (actor_name + "_hostapd.conf"));
+	try_download("/var/run/hostapd-" + actor.get(SK::iface) + ".conf",
+				 rs.run_folder() / (actor_name + "_hostapd.conf"));
 	try_download("/etc/config/wireless",
 				 rs.run_folder() / (actor_name + "_wireless_uci.conf"));
 }

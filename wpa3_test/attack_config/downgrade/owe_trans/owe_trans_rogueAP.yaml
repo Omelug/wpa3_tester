@@ -4,7 +4,7 @@ actors:
   rogue_ap:
     source: internal
     selection:
-      condition: [ AP ]
+      condition: [ AP,  2_4GHz]
       mac: "78:98:E8:55:3E:8D" #FIXME
     setup:
       program: hostapd

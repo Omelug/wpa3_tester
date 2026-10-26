@@ -87,6 +87,17 @@ EOF
 sudo systemctl enable wpa3-nat.service
 sudo systemctl start wpa3-nat.service
 
+# Pin internal WiFi (brcmfmac, RPi4 built-in) to wlan0 regardless of enumeration order
+# fe300000.mmcnr is the RPi4 SDIO controller - USB adapters never match this path
+# USB adapters get wlx<permanent_mac> (stable across reboots); fallback to current MAC
+sudo mkdir -p /etc/udev/rules.d
+sudo tee /etc/udev/rules.d/70-wifi.rules << 'EOF' > /dev/null
+SUBSYSTEM=="net", ACTION=="add", DEVPATH=="*/fe300000.mmcnr/*", NAME="wlan0"
+SUBSYSTEM=="net", ACTION=="add", SUBSYSTEMS=="usb", IMPORT{builtin}="net_id", ENV{ID_NET_NAME_MAC}!="", NAME="$env{ID_NET_NAME_MAC}"
+SUBSYSTEM=="net", ACTION=="add", SUBSYSTEMS=="usb", ENV{ID_NET_NAME_MAC}=="", ENV{ID_NET_NAME_PATH}!="", NAME="$env{ID_NET_NAME_PATH}"
+EOF
+sudo udevadm control --reload-rules
+
 sudo chmod +x /usr/bin/dumpcap
 sudo chsh -s "$(which fish)" "$USER"
 echo "==> Bootstrap complete"

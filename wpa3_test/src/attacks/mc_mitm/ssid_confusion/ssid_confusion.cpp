@@ -25,7 +25,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 
     // rogue_ap_mac BSSID + SafeNet SSID, ch IEs patched to rogue channel
     // rogue_ap_mac avoids wpa_supplicant's 10s ignore-list that fires after CSA disconnect
-    auto confused_beacon = make_confused_beacon(*beacon, confused_ssid, false);
+    auto confused_beacon = make_confused_beacon(*beacon, confused_ssid, strip_pmkid_in_assoc); //TODO should be strip_pmkid_in_assoc here?
     confused_beacon->addr2(rogue_ap_mac);
     confused_beacon->addr3(rogue_ap_mac);
     if(auto *ch_ie = confused_beacon->search_option(Dot11ManagementFrame::DS_SET))

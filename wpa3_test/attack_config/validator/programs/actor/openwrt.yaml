@@ -67,7 +67,7 @@ properties:
     enum: [ RSN, WPA, WPA2, WPA3, none ]
   encryption:
     type: string
-    enum: [ none, psk, psk2, psk-mixed, sae, sae-mixed, owe, wep, ccmp, tkip ]
+    enum: [ none, psk, psk2, psk-mixed, sae, sae-mixed, owe, wep, ccmp, tkip, wpa, wpa2, wpa+wpa2, wpa2+ccmp ]
     default: none
   key:
     type: string

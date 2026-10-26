@@ -24,7 +24,7 @@ void setup_AP(RunStatus &rs, const string &ap_actor_name) {
 	log(LogLevel::INFO, "{} is running", ap_actor_name);
 	if(rs.get_actor(ap_actor_name)[SK::ip_addr]) { ip::set_ip(rs, ap_actor_name); }
 	if(rs.get_actor(ap_actor_name).is(SK::source, "internal")) {
-		//FIXME opewrt dont need set up?
+		//FIXME openwrt dont need set up?
 		rs.get_actor(ap_actor_name)->set_iface_up();
 	}
 }

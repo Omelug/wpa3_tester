@@ -5,5 +5,8 @@ tests:
   all_actors:
     type: actor_filler
     config: ./ssid_confusion_internal.yaml
+  #all_external:
+  #  type: actor_filler
+  #  config: ./ssid_confusion_external.yaml
 delete_old: true
 rewrite: errors

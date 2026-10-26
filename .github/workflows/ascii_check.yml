@@ -13,4 +13,4 @@ jobs:
       - uses: actions/checkout@v5
       - run: |
           ! git ls-files -z -- '*.c' '*.h' '*.cc' '*.cpp' '*.cxx' '*.hpp' '*.hxx' '*.hh' '*.inl' '*.cmake' \
-            | xargs -0 --no-run-if-empty grep -InP --color=always '[^\x00-\x7F]|^[ \t]*[\r\v\f][ \t\r\v\f]*$'
+            | xargs -0 --no-run-if-empty grep -InP --color=always '[^\x00-\x7F]|^[ \t]*[\r\v\f][ \t\r\v\f]*$|[ \t]+$'

@@ -228,5 +228,3 @@ r?: hostapd_path - nebylo by jednoduší to na už ve validátoru rozbalit, pře
 
 TODO
 - funguje sudo micro ./ap_debug_test.txt -> inotify
-- macchanger musí být až potom / při tom
-get_CSA_beacon pak nic nedělá

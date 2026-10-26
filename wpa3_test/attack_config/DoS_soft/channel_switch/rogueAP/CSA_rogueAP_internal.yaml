@@ -16,7 +16,7 @@ actors:
       program_config:
         other_options: "-d"
     selection:
-      permanent_mac: "90:de:80:de:fd:b2"
+      permanent_mac: "90:de:80:de:ff:7b"
   client:
     setup:
       program_config:

@@ -11,10 +11,13 @@ actors:
     setup:
       program_config:
         other_options: "-d"
+        version: 2_9
+  client:
+    selection:
+      permanent_mac: "90:de:80:de:ff:7b"
   attacker:
     source: internal
     selection:
-      driver: [ mt76x2u, mt76x2u_git ]
       permanent_mac: "90:de:80:6c:90:92"
       condition: [ monitor, 2_4GHz ]
       channel: 6

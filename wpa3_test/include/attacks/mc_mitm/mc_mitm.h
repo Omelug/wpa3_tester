@@ -16,6 +16,8 @@ enum FrameProcess { CONTINUE = 0, STOP = 1 };
 
 class McMitm {
 	friend class McMitmHooks;
+protected:
+	std::vector<Tins::RadioTap> csa_frames;
 public:
 	ActorPtr rogue_sta, rogue_ap, sta, ap;
 	bool only_to_mitm = false;
@@ -31,8 +33,7 @@ public:
 	std::unique_ptr<McMitmHooks> hooks; // nullptr -> defualt behavior
 	void set_hooks(std::unique_ptr<McMitmHooks> h) { hooks = std::move(h); }
 
-	void send_csa_beacon(int numpairs = 1, const std::optional<Tins::HWAddress<6>> &target = std::nullopt,
-		int beacon_interval_ms = 100) const;
+	//void send_csa_beacon(const std::optional<Tins::HWAddress<6>> &target = std::nullopt, int beacon_interval_ms = 100) const;
 
 	virtual void setup_real_AP_RSN_frames(int beacon_timeout_sec);
 	virtual void run(RunStatus &rs, int timeout_sec);
@@ -69,8 +70,6 @@ public:
 	FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu);
 
 	FrameProcess handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
-	FrameProcess handle_action_real(const Tins::HWAddress<6> &addr2, Tins::PDU &pdu, const frame_raw_t &raw,
-		const Tins::Dot11 &dot11) const;
 	virtual FrameProcess handle_eapol_real(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu) const;
 	void handle_from_ap_real(
 	const std::unique_ptr<Tins::PDU> &pdu, const Tins::Dot11 &dot11, const Tins::HWAddress<6> &addr1);

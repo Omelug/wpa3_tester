@@ -48,7 +48,8 @@ inline void interruptible_sleep(const std::chrono::microseconds duration, const 
 		return;
 	}
 	pollfd pfd{ g_interrupt_pipe.read_fd, POLLIN, 0 };
-	poll(&pfd, 1, static_cast<int>(duration.count() / 1000));
+	timespec ts{ duration.count() / 1'000'000, (duration.count() % 1'000'000) * 1000 };
+	ppoll(&pfd, 1, &ts, nullptr);
 	if(g_interrupted && error) throw wpa3_tester::interrupted_err("interruptible_sleep");
 }
 

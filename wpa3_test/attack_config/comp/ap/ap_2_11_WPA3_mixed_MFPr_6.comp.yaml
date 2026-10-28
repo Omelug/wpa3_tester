@@ -3,7 +3,7 @@ actors:
     source: internal
     selection:
       channel: 6
-      condition: [ AP, 2_4GHz ]
+      condition: [ AP, 2_4GHz, netns_change ]
     setup:
       program: hostapd
       program_config:
@@ -21,3 +21,4 @@ actors:
         wpa_passphrase: password123
         channel: 6
     ip_addr: "172.16.100.1"
+    netns: ap

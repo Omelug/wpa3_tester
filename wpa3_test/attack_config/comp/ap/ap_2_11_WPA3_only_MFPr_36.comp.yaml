@@ -3,7 +3,7 @@ actors:
     source: internal
     selection:
       channel: 36
-      condition: [ AP, 5GHz ]
+      condition: [ AP, 5GHz, netns_change ]
     setup:
       program: hostapd
       program_config:
@@ -20,3 +20,4 @@ actors:
         sae_password: password123
         channel: 36
     ip_addr: "172.16.100.1"
+    netns: ap

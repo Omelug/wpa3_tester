@@ -21,7 +21,7 @@ const string program_name = "station_counter";
 static string build_count_script(const string &iface, const string &log_file, int interval_sec, bool append) {
 	const string write_cmd = append ? ">> " + log_file : "";
 	return "while true; do count=$(iw dev " + iface + " station dump 2>/dev/null"
-		   "| grep -c '^Station' || echo 0); "
+		   " | awk '/^Station/{n++} END{print n+0}'); "
 		   "echo \"$(date +%s) $count\" " + write_cmd + "; "
 		   "sleep " + to_string(interval_sec) + "; done";
 }
@@ -50,8 +50,12 @@ void start_remote(RunStatus &rs, const string &actor_name, int interval_sec, con
 	const string remote_log = "/tmp/" + actor_name + SUFFIX_sta + ".log";
 	const string pid_file = remote_log + ".pid";
 
+	actor->conn->exec(
+		"[ -f " + pid_file + " ] && kill $(cat " + pid_file + ") 2>/dev/null; rm -f " + pid_file + "; "
+		"kill $(ps | awk '/iw dev " + iface + " station/{print $1}') 2>/dev/null; true",
+		false);
 	const string script = build_count_script(iface, remote_log, interval_sec, true);
-	actor->conn->exec("sh -c '" + script + "' & echo $! > " + pid_file, false);
+	actor->conn->exec(script + " & echo $! > " + pid_file, false);
 
 	actor->conn->on_disconnect([remote_log, local_log, actor, pid_file](){
 		actor->conn->exec("kill $(cat " + pid_file + "); rm " + pid_file);
@@ -129,19 +133,21 @@ void generate_station_graph(const string &data_filepath, const string &output_im
 	all_elements.push_back(make_unique<GraphXYPoints>(times, sta_count, "stations", "blue"));
 	g.add_graph_elements(all_elements);
 
-	if (!times.empty()) {
-		const long long x_min = chrono::system_clock::to_time_t(times.front());
-		const long long x_max = chrono::system_clock::to_time_t(times.back());
-		g.gpcmd("set xrange ['" + to_string(x_min) + "':'" + to_string(x_max + 10) + "']");
+	if (times.empty()) {
+		log(LogLevel::WARNING, "station_counter: no data in {}, skipping graph", data_filepath);
+		return;
 	}
+	const long long x_min = chrono::system_clock::to_time_t(times.front());
+	const long long x_max = chrono::system_clock::to_time_t(times.back());
+	g.gpcmd("set xrange ['" + to_string(x_min) + "':'" + to_string(x_max + 10) + "']");
 	g.render();
 	set_public_perms(output_imagepath);
 }
 
 void create_station_graph(const RunStatus &rs, const string &actor_name, const G_elms &elements) {
-	path log_path = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_sta + ".log");
+	const path log_path = get_observer_folder(rs, program_name) / (actor_name + SUFFIX_sta + ".log");
 	set_public_perms(log_path);
-	const path output = log_path.replace_extension(".png");
+	const path output = path(log_path).replace_extension(".png");
 	remove(output);
 	generate_station_graph(log_path.string(), output.string(), elements);
 }

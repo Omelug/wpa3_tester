@@ -8,6 +8,7 @@
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/error_log.h"
 #include "system/hw_capabilities.h"
+#include <net/if.h>
 #include <iostream>
 #include <sstream>
 
@@ -203,8 +204,14 @@ bool Actor_config::get(const BK key) const{
 }
 
 //helper
-string Actor_config::get_ap_iface() const{ return AP_IFACE_PREFIX + get(SK::iface); }
-string Actor_config::get_mon_iface() const{ return MONITOR_IFACE_PREFIX + get(SK::iface); }
+string Actor_config::get_ap_iface() const{
+	const auto &iface = get(SK::iface);
+	return AP_IFACE_PREFIX + iface.substr(AP_IFACE_PREFIX.size(), IFNAMSIZ - 1 - AP_IFACE_PREFIX.size());
+}
+string Actor_config::get_mon_iface() const{
+	const auto &iface = get(SK::iface);
+	return MONITOR_IFACE_PREFIX + iface.substr(MONITOR_IFACE_PREFIX.size(), IFNAMSIZ - 1 - MONITOR_IFACE_PREFIX.size());
+}
 
 auto Actor_config::is(const SK key, const std::string &str_value) const->bool{
 	if(key == SK::source && str_value != "internal" && str_value != "external" && str_value != "simulation"){

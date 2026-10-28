@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iomanip>
+#include <net/if.h>
 #include <sstream>
 
 #include "ex_program/hostapd/hostapd_helper.h"
@@ -273,9 +274,9 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 }
 
 void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor, const Channel &channel, optional<HWAddress<6>> bssid) {
-	if(ap_iface.size() > 15)
+	if(ap_iface.size() >= IFNAMSIZ)
 		throw std::runtime_error("start_ap_hostapd: iface name '" + ap_iface + "' is " +
-			std::to_string(ap_iface.size()) + " chars, exceeds IFNAMSIZ-1=15");
+			std::to_string(ap_iface.size()) + " chars, exceeds IFNAMSIZ-1=" + std::to_string(IFNAMSIZ - 1));
 	const optional<string> &netns = base_actor[SK::netns];
 
 	netlink_helper::NetlinkRegistry::get_fd(netns);

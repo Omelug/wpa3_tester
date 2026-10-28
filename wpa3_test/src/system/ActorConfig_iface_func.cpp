@@ -35,6 +35,7 @@ void Actor_config::cleanup() const{
 	run({"rm", "-f", "/var/run/wpa_supplicant/" + iface});
 	run({"iw", "dev", get_ap_iface(), "del"}, false);
 	run({"iw", "dev", get_mon_iface(), "del"}, false);
+	run({"iw", "dev", get(SK::iface).substr(0, 11) + "_owe", "del"}, false);
 	if((*this)[BK::sniff_iface].has_value() && (*this)[BK::sniff_iface].value() == true){
 		hw_capabilities::pkill_wait("wpa_supplicant.*" + get_mon_iface());
 		hw_capabilities::pkill_wait("hostapd.*" + get_mon_iface());
@@ -65,7 +66,6 @@ void Actor_config::create_sniff_iface() const{
 	const auto fd_count = distance(filesystem::directory_iterator("/proc/self/fd"), filesystem::directory_iterator{});
 	log(LogLevel::DEBUG, "Current open FDs: {} {} {}", fd_count, iface, sniff_iface.c_str());
 
-	// add VIF
 	run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
 
 	vector<string> flags_cmd = {"iw", "dev", sniff_iface, "set", "monitor", /*"fcsfail",*/ "otherbss"};

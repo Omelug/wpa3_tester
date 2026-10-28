@@ -53,7 +53,7 @@ void InvalidCurveTestEntry::render_table(
 				col("Test", &InvalidCurveTestEntry::test_name);
 				COL("AP (driver)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_driver << ")");
 				col("Hostapd version", &InvalidCurveTestEntry::ap_hostapd_version);
-				COL("Attacker (driver)", e.attacker_mac<< "(" << e.attacker_driver << ")");
+				COL("Attacker (driver)", e.attacker_mac<< " (" << e.attacker_driver << ")");
 				col("AP openssl version", &InvalidCurveTestEntry::ap_openssl_version);
 				col("Connected?", &InvalidCurveTestEntry::connected);
 			});

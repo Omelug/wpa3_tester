@@ -48,7 +48,7 @@ static const std::vector<std::pair<std::string, RenderFunc>> registry = {
 	{ "cookie_guzzler", make_renderer<sae_dos::SaeDosFolderEntry>() },
 	{ "memory_omnivore", make_renderer<sae_dos::SaeDosFolderEntry>() },
 	{ "pmk_gobbler", make_renderer<sae_dos::SaeDosFolderEntry>() },
-	//{ "sae_dos_wrapper", make_renderer<visual::sae_dos::SaeDosFolderEntry>() },
+	{ "sae_dos_wrapper", make_renderer<sae_dos::SaeDosFolderEntry>() },
 };
 
 static size_t registry_index(const string &mod) {
@@ -75,9 +75,7 @@ static void render_attack_section(HtmlGuard &f, const std::string &module, const
 	const path &test_data_dir, const path &page_dir) {
 	if(const auto it = std::ranges::find_if(registry, [&](const auto &p) { return p.first == module; });
 		it != registry.end()) {
-		it->second(f, attack_name, test_data_dir, page_dir, module);
-	} else {
-		f << "<p>No parser for <code>" << module << "</code>.</p>";
+		it->second(f, attack_name, test_data_dir, page_dir, attack_name);
 	}
 }
 

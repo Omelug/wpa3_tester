@@ -56,7 +56,7 @@ observers:
     program_config:
       interval: 1
 attack_config:
-  attack_time_sec: 150
+  attack_time_sec: 360
   acm_pause_millisec: 5
   acm_trigger_count: 2560
   burst_size: 32

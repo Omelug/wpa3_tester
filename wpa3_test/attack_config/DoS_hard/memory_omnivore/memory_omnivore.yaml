@@ -25,6 +25,7 @@ $extends: [ ../observers_DoS.comp.yaml ]
 attack_config:
   attack_time_sec: 60
   burst_size: 1
+  frames_per_second_limit: 100
   acm_threshold: 5 # defualt openwrt value
   random_dh_groups: true
   use_connected_stas: true

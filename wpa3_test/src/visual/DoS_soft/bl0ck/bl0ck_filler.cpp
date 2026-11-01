@@ -126,8 +126,10 @@ void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss) {
 
 	ulong passed_count = 0;
 	for(const auto &e: entries) {
+		const bool passed = !e.bl0ck_iperf.empty() && e.bl0ck_iperf.value() == "down";
+		if(passed) ++passed_count;
 		const string result_link =
-			"[" + string((e.disconnect_count > 0) ? "PASSED" : "FAILED") + "](" + e.name + "/" + RESULT_NAME + ")";
+			"[" + string(passed ? "PASSED" : "FAILED") + "](" + e.name + "/" + RESULT_NAME + ")";
 		report << "| " << report::link(e.name, path(e.name) / REPORT_NAME) << " | " << e.ap_mac << " | " << e.client_mac
 			   << " | " << e.attacker_mac << " (" << e.attacker_driver << ") | " << e.attack_variant << " | "
 			   << result_link << " |\n";

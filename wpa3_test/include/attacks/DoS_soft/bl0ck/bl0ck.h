@@ -5,7 +5,6 @@
 
 namespace wpa3_tester::bl0ck_attack {
 struct Bl0ckResult {
-	//std::optional<bool> passed;
 	int disconnect_count = 0;
 	std::optional<bool> ap_disconnected;
 	std::vector<double> reconnect_times_ms;

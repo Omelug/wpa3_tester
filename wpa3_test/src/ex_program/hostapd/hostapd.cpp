@@ -21,7 +21,6 @@ static void write_hostapd_kv(ofstream &out, const json &setup){
 	static const set<string> skip = {"hostapd_path", "hostapd-mana_path", "version", "openssl", "other_options"};
 	for (const auto& [key, val] : setup.items()) {
 		if (skip.contains(key)) continue;
-	
 		out << key << "=";
 		if (val.is_string()) out << val.get<string>();
 		else out << val.dump();

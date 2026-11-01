@@ -67,7 +67,7 @@ static vector<path> collect_test_folders(const path &run_dir) {
 	ranges::sort(indexed, {}, &pair<path, size_t>::second);
 	vector<path> result;
 	result.reserve(indexed.size());
-	for(auto &[p, _]: indexed) result.push_back(std::move(p));
+	for(auto &p: indexed | views::keys) result.push_back(std::move(p));
 	return result;
 }
 

@@ -90,7 +90,7 @@ TEST_SUITE("MonitorSocket::build_inject_frame") {
 
 		const uint16_t new_rt_len = out[2] | static_cast<uint16_t>(out[3]) << 8;
 		const vector old_payload(raw.begin() + rt_len, raw.end());
-		// libtins RadioTap{} sets FCS flag → appends 4-byte FCS; strip before comparing
+		// libtins RadioTap{} sets FCS flag -> appends 4-byte FCS; strip before comparing
 		REQUIRE_GE(out.size(), static_cast<size_t>(new_rt_len) + 4);
 		const vector new_payload(out.begin() + new_rt_len, out.end() - 4);
 

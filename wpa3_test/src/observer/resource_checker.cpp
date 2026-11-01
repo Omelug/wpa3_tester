@@ -165,11 +165,14 @@ void generate_resource_graph(const path &data_filepath, const path &output_image
 	getline(file, second_line);
 	file.close();
 
+	long long start_time = 0;
 	int num_columns = 0;
 	{
 		istringstream iss(second_line);
+		iss >> start_time;
 		string t;
 		while(iss >> t) num_columns++;
+		num_columns++; // account for the timestamp token
 	}
 	int num_cores = max(1, num_columns - 4);
 	int ram_col = num_cores + 2;
@@ -177,7 +180,8 @@ void generate_resource_graph(const path &data_filepath, const path &output_image
 	auto g = Graph();
 	g.ymin = 0.0;
 	g.ymax = 100.0;
-	//graph.start_time = ;
+	g.start_time = chrono::system_clock::from_time_t(static_cast<time_t>(start_time));
+	g.axis = TimeAxis::RELATIVE;
 
 	g.file = popen("gnuplot", "w");
 	if(!g.file) throw run_err("Failed to start gnuplot");
@@ -185,28 +189,30 @@ void generate_resource_graph(const path &data_filepath, const path &output_image
 	g.gpcmd("set datafile commentschars '#'");
 	g.gpcmd("set terminal pngcairo size 1600,600");
 	g.gpcmd("set output '" + output_imagepath.string() + "'");
+	g.gpcmd("START = " + to_string(start_time));
 	g.gpcmd("set xdata time");
 	g.gpcmd("set timefmt '%s'");
 	g.gpcmd("set format x '%M:%S'");
+	g.gpcmd("set xlabel 'Time (mm:ss)'");
 	g.gpcmd("set xtics rotate by -45");
 	g.gpcmd("set ytics nomirror");
 	g.gpcmd("set y2tics");
-	g.gpcmd("set ylabel 'CPU Usage (%%)' ");
+	g.gpcmd("set ylabel 'CPU Usage (%)' ");
 	g.gpcmd("set yrange [0:100]");
-	g.gpcmd("set y2label 'Free Memory (KB)'");
+	g.gpcmd("set y2label 'Free Memory (MB)'");
 	g.gpcmd("set y2range [0:*]");
 	g.gpcmd("set grid");
 	g.gpcmd("set key outside");
 
 	for(int i = 0; i < num_cores; ++i){
 		g.plot_parts.push_back(
-			"'" + data_filepath.string() + "' using 1:" + to_string(i + 2) + " with lines lw 2 title 'Core " +
+			"'" + data_filepath.string() + "' using ($1-START):" + to_string(i + 2) + " with lines lw 2 title 'Core " +
 			to_string(i) + " %' axes x1y1");
 	}
 
 	g.plot_parts.push_back(
-		"'" + data_filepath.string() + "' using 1:" + to_string(ram_col) +
-		" with lines lw 2 dt 2 title 'Free RAM' axes x1y2");
+		"'" + data_filepath.string() + "' using ($1-START):($" + to_string(ram_col) + "/1024.0)" +
+		" with lines lw 2 dt 2 lc rgb 'blue' title 'Free RAM' axes x1y2");
 
 	g.add_graph_elements(elements);
 	g.render();

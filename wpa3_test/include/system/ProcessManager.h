@@ -35,7 +35,6 @@ class ProcessManager {
 		std::atomic<bool> shutting_down{ false };
 		std::atomic<bool> naturally_exited{ false };
 		ProcessLogs logs;
-		//std::mutex proc_mutex;
 		std::function<void()> before_stop_callback;
 		std::function<void()> after_stop_callback;
 	};
@@ -80,8 +79,8 @@ public:
 
 	//return  true if found
 	bool wait_for(const std::string &actor_name, const std::string &pattern,
-		std::chrono::seconds timeout = std::chrono::minutes(60), bool throw_err = true,
-		std::string *matched_line = nullptr); // 60 minutes (practically infinity)
+		std::chrono::seconds timeout = std::chrono::minutes(60), // 60 minutes (practically infinity) //TODO hardcoded
+		bool throw_err = true, std::string *matched_line = nullptr);
 	void stop(const std::string &process_name) noexcept;
 	void before_stop(const std::string &process_name, const std::function<void()> &callback);
 	void after_stop(const std::string &process_name, const std::function<void()> &callback);

@@ -21,14 +21,15 @@ void setup_attack(RunStatus &rs);
 void run_bl0ck_attack(RunStatus &rs);
 
 void stats_bl0ck_attack(const RunStatus &rs);
-void generate_report(const RunStatus &rs, const Bl0ckResult &result, /*const std::filesystem::path &attacker_graph,*/
-	const std::filesystem::path &client_graph						 /*, const std::filesystem::path &ap_graph*/
+void generate_report(const RunStatus &rs, const Bl0ckResult &result,
+	const std::filesystem::path &client_graph
 );
 void speed_observation_start(RunStatus &rs);
 
 Tins::RadioTap get_BAR_frame(
 	const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac, uint8_t fn = 4, uint16_t sn = 1175);
-Tins::RadioTap get_BA_frame(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac);
+// fn=4: non-zero FN in BA/BAR is spec-invalid, triggers the AP bug (values from paper https://github.com/efchatz/Bl0ck)
+Tins::RadioTap get_BA_frame(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac, uint16_t fn = 4, uint16_t sn = 1175);
 
 Tins::RadioTap get_BARS_frame(
 	const Tins::HWAddress<6> &ap_hw, const Tins::HWAddress<6> &sta_hw, const std::string &iface, int timeout_sec = 30);

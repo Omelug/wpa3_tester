@@ -2,6 +2,8 @@
 #include "page_cache.h"
 #include "system/utils.h"
 #include "visual/DoS_soft/deauth/deauth_suite.h"
+#include "visual/suite_helper.h"
+#include <algorithm>
 #include <filesystem>
 
 namespace wpa3_tester::overview {
@@ -59,10 +61,20 @@ void generate_deauth(const path &output_dir, const path &data_dir) {
         DeauthTestEntry::render_table(f, title, suite_data_dir, page_dir, t_name);
     };
 
-    emit_table("WPA2 deauth filler (2.9, 2.10)",
-        base / "deauth_filler", "deauth_filler");
-    emit_table("External client (WPA3)",
-        base / "deauth_external_client_filler", "deauth_external_client_filler");
+    for(const path &dir : {base / "deauth_filler", base / "deauth_external_client_filler"}) {
+        if(!exists(dir)) continue;
+        vector<path> subdirs;
+        for(const auto &sub : directory_iterator(dir)) {
+            if(!sub.is_directory() || !visual::helper::has_test_runs(sub.path())) continue;
+            subdirs.push_back(sub.path());
+        }
+        ranges::sort(subdirs);
+        const string base_name = dir.filename().string();
+        for(const auto &sub : subdirs) {
+            const string sn = sub.filename().string();
+            emit_table(base_name + " (" + sn + ")", sub, base_name + " (" + sn + ")");
+        }
+    }
 
     f << "</body></html>";
 }

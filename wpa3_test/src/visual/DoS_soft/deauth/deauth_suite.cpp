@@ -38,7 +38,7 @@ DeauthTestEntry DeauthTestEntry::parse(const path &test_folder) {
 }
 
 vector<DeauthTestEntry> DeauthTestEntry::collect_results(const path &test_data_dir) {
-	auto entries = helper::get_results_default<DeauthTestEntry>(test_data_dir);
+	auto entries = helper::collect_entries_flat(test_data_dir, DeauthTestEntry::parse);
 	ranges::sort(entries, [](const DeauthTestEntry &a, const DeauthTestEntry &b) {
 		return tie(a.client_version, a.client_mfp, a.ap_mac) < tie(b.client_version, b.client_mfp, b.ap_mac);
 	});

@@ -15,8 +15,6 @@ runs:
           libnl-3-dev libnl-genl-3-dev \
           libssl-dev \
           libssh-dev \
-          libyaml-cpp-dev \
-          libtins-dev \
           flex bison \
           clang-18 \
           libstdc++-13-dev \

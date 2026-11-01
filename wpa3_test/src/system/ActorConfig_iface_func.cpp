@@ -75,12 +75,16 @@ void Actor_config::create_sniff_iface() const{
 }
 
 void Actor_config::set_channel(const Channel &ch) const{
-	const string &iface = get(SK::iface);
 	if(conn != nullptr){
-		conn->set_channel(iface, ch);
+		conn->set_channel(get(SK::iface), ch);
 		return;
 	}
-	hw_capabilities::set_channel(iface, ch, (*this)[SK::netns]);
+	hw_capabilities::set_channel(get(SK::iface), ch, (*this)[SK::netns]);
+}
+
+void Actor_config::set_mon_channel(const Channel &ch) const{
+	set_iface_down();
+	hw_capabilities::set_channel(get_mon_iface(), ch, (*this)[SK::netns]);
 }
 
 //------------------ get status info functions

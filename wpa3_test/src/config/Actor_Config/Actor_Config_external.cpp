@@ -1,6 +1,7 @@
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
+#include "system/hw_capabilities.h"
 
 namespace wpa3_tester {
 using namespace std;
@@ -28,7 +29,7 @@ void Actor_Config_external::setup_actor(const nlohmann::json &config, const Acto
 	set_iface_up();
 	if((*this)[SK::channel].has_value() && base_mon_iface) set_channel(get_channel());
 
-	if((*this)[BK::sniff_iface]) {
+	if((*this)[BK::sniff_iface]) { //FIXMe i think this will not work, but to be consistent.... check
 		create_sniff_iface();
 		up_sniff_iface();
 	}

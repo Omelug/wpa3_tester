@@ -95,6 +95,7 @@ public:
 	std::string get_driver_name() const;
 	void load_hw_info(const std::optional<std::filesystem::path> &cache = std::nullopt);
 	virtual void set_channel(const Channel &ch) const;
+	void set_mon_channel(const Channel &ch) const;
 	virtual void set_ap_mode() const;
 	virtual void set_iface_down() const;
 	virtual void set_iface_up() const;

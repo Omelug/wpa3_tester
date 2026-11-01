@@ -92,6 +92,7 @@ vector<ActorMap> hw_capabilities::check_all_req_options(const ActorMap &rules, c
 	return results;
 }
 
+//TODO test
 string hw_capabilities::get_heuristic_err_msg(const ActorMap &rules, const vector<ActorPtr> &options) {
 	if(options.size() < rules.size())
 		return format("not enough interfaces: {} required, {} available", rules.size(), options.size());
@@ -172,7 +173,81 @@ string hw_capabilities::get_heuristic_err_msg(const ActorMap &rules, const vecto
 					supply);
 			}
 		}
-		if(msg.empty()) msg = "each actor individually matches some option; conflict is combinatorial";
+		if(msg.empty()) {
+			// exclusive claim conflict: actor A needs only option X, actor B needs only option Y
+			map<string, vector<size_t>> actor_matches;
+			for(const auto &[name, req_ptr]: rules)
+				for(size_t i = 0; i < options.size(); i++)
+					if(req_ptr->matches(*options[i])) actor_matches[name].push_back(i);
+
+			// for each singly-matched actor, record which key makes its match unique
+			auto exclusive_reason = [&](const string &name, const size_t opt_idx) -> string {
+				const Actor_config &req = *rules.at(name);
+				const Actor_config &opt = *options[opt_idx];
+				for(const auto k: sk_keys()) {
+					const auto &r = req[k];
+					if(!r) continue;
+					const auto &o = opt[k];
+					if(!o || *o != *r) continue;
+					const auto cnt = ranges::count_if(options, [&](const auto &op) {
+						const auto &v = (*op)[k]; return v && *v == *r;
+					});
+					if(cnt == 1) return format("{}={}", sk_name(k), *r);
+				}
+				for(const auto k: bk_keys()) {
+					const auto &r = req[k];
+					if(!r) continue;
+					const auto &o = opt[k];
+					if(!o || *o != *r) continue;
+					const auto cnt = ranges::count_if(options, [&](const auto &op) {
+						const auto &v = (*op)[k]; return v && *v == *r;
+					});
+					if(cnt == 1) return format("{}={}", bk_name(k), *r ? "true" : "false");
+				}
+				return "?";
+			};
+
+			unordered_map<size_t, string> claimed; // option index -> "actor(reason)"
+			for(const auto &[name, idxs]: actor_matches)
+				if(idxs.size() == 1)
+					claimed[idxs[0]] = format("{}[{}]", name, exclusive_reason(name, idxs[0]));
+
+			for(const auto &[name, idxs]: actor_matches) {
+				if(idxs.size() == 1) continue;
+				vector<string> blockers;
+				size_t free_count = 0;
+				for(const size_t i: idxs) {
+					if(const auto it = claimed.find(i); it != claimed.end())
+						blockers.push_back(
+							format("{}(claimed by {})", (*options[i])[SK::iface].value_or("?"), it->second));
+					else
+						++free_count;
+				}
+				if(free_count == 0 && !blockers.empty()) {
+					// also show unclaimed options that don't match this actor (explain why they're unusable)
+					const Actor_config &req = *rules.at(name);
+					vector<string> incompatible;
+					for(size_t i = 0; i < options.size(); i++) {
+						if(claimed.contains(i)) continue;
+						if(req.matches(*options[i])) continue;
+						// find first mismatching BK key to explain why
+						string reason;
+						for(const auto k: bk_keys()) {
+							const auto &r = req[k];
+							if(!r) continue;
+							const auto &o = (*options[i])[k];
+							if(o && *o != *r) { reason = format("{}={}", bk_name(k), *o ? "true" : "false"); break; }
+						}
+						incompatible.push_back(format("{}({})",
+							(*options[i])[SK::iface].value_or("?"), reason.empty() ? "incompatible" : reason));
+					}
+					msg += format("{}: claimed=[{}], incompatible=[{}]; ",
+						name, join(blockers, ", "),
+						incompatible.empty() ? "none" : join(incompatible, ", "));
+				}
+			}
+			if(msg.empty()) msg = "each actor individually matches some option; conflict is combinatorial";
+		}
 	}
 	return msg;
 }

@@ -13,11 +13,15 @@ properties:
   attack_config:
     type: object
     required:
-      $UNION: [ burst_size ]
+      $UNION: [ burst_size, frames_per_second_limit, variant ]
     additionalProperties: false
     properties:
       burst_size:
         type: integer
+        minimum: 1
       frames_per_second_limit:
         type: integer
-        default: 99999999999
+        minimum: 1
+      variant:
+        type: string
+        enum: [ muted_peer, hasty_peer ]

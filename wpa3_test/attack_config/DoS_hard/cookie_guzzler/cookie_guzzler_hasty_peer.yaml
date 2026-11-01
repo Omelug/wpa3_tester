@@ -1,0 +1,4 @@
+name: cookie_guzzler_hasty_peer_Dlink
+$extends: ./cookie_guzzler.yaml
+attack_config:
+  variant: hasty_peer

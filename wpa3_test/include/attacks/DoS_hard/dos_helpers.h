@@ -12,7 +12,8 @@
 namespace wpa3_tester::dos_helpers {
 template<typename FrameGen>
 void timed_burst(Tins::PacketSender &sender, const int attack_time_sec, const size_t burst_size,
-	const size_t frames_per_second_limit, FrameGen &&frame_gen) {
+	const size_t frames_per_second_limit, FrameGen &&frame_gen,
+	const std::chrono::microseconds inter_frame = std::chrono::microseconds(0)) {
 	long long counter = 0;
 	long long next_log = 0;
 	const auto end_time = std::chrono::steady_clock::now() + std::chrono::seconds(attack_time_sec);
@@ -23,7 +24,12 @@ void timed_burst(Tins::PacketSender &sender, const int attack_time_sec, const si
 		auto frame = frame_gen();
 		if(!frame) continue;
 
-		for(size_t i = 0; i < burst_size; ++i) sender.send(*frame);
+		for(size_t i = 0; i < burst_size; ++i) {
+			sender.send(*frame);
+			// inter_frame gap lets the AP's ACK arrive before the next injection
+			// without it the NIC TX queue fills faster than ACKs return -> ACK fail
+			if(inter_frame.count() > 0) interruptible_sleep(inter_frame);
+		}
 
 		const auto target = std::chrono::microseconds(burst_size * 1'000'000 / frames_per_second_limit);
 		if(const auto elapsed = std::chrono::steady_clock::now() - burst_start; elapsed < target)

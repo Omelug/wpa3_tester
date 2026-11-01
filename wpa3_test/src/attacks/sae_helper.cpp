@@ -149,4 +149,18 @@ RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac
 	rt.inner_pdu(auth);
 	return rt;
 }
+
+RadioTap make_sae_confirm(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
+	Dot11Authentication auth(ap_mac, sta_mac);
+	auth.addr3(ap_mac);
+	auth.auth_algorithm(3); // SAE
+	auth.auth_seq_number(2); // Confirm
+	auth.status_code(0);
+	// SC (2 bytes) + verifier (32 bytes zeros - garbage, AP will reject but still process)
+	auth.inner_pdu(RawPDU(vector<uint8_t>(34, 0)));
+	RadioTap rt{};
+	rt.tx_flags(0x28);
+	rt.inner_pdu(auth);
+	return rt;
+}
 }

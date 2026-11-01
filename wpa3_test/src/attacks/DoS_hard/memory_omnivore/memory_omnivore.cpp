@@ -65,7 +65,7 @@ void run_attack(RunStatus &rs) {
 	const HWAddress<6> ap_mac = ap.get(SK::mac);
 
 	auto sae_per_group = random_dh
-		? cookie_guzzler::get_commit_values_all_groups(rs, attacker.get(SK::iface), attacker.get_mon_iface(), ssid, ap_mac)
+		? cookie_guzzler::get_commit_values_all_groups(rs, attacker.get_mon_iface(), ap_mac)
 		: [&]() -> unordered_map<uint16_t, sae_helper::SAEPair> {
 			auto s = cookie_guzzler::get_commit_values(rs, attacker.get(SK::iface), attacker.get_mon_iface(), ssid, ap_mac, 30); //TODO hardcoded sae group
 			if(!s) throw run_err("Failed to capture SAE commit values");

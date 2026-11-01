@@ -5,9 +5,12 @@ properties:
   attack_config:
     type: object
     required:
-      $UNION: [ burst_size, acm_threshold, random_dh_groups, use_connected_stas ]
+      $UNION: [ burst_size, frames_per_second_limit, acm_threshold, random_dh_groups, use_connected_stas ]
     properties:
       burst_size:
+        type: integer
+        minimum: 1
+      frames_per_second_limit:
         type: integer
         minimum: 1
       acm_threshold:

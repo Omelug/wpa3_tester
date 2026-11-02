@@ -113,8 +113,10 @@ void RunStatus::solve_new_pdu(const frame_raw_t &frame, ActorMACMap &seen, Assoc
 	if(frame.size() < 4) return;
 	const uint16_t rt_len = frame[2] | static_cast<uint16_t>(frame[3]) << 8;
 	if(components::radiotap_bad_fcs(frame, rt_len)) return;
-	auto rt = RadioTap(frame.data(), frame.size());
-	solve_new_pdu(rt, seen, assoc);
+	try {
+		RadioTap rt(frame.data(), frame.size());
+		solve_new_pdu(rt, seen, assoc);
+	} catch(...) {}
 }
 
 static pcap_t *open_scan_pcap(const string &iface, const ActorPtr &scanner){
@@ -243,7 +245,13 @@ bool RunStatus::process_single_pdu(
 
 	const size_t before_seen = seen.size();
 	const size_t before_assoc = assoc.size();
-	solve_new_pdu(frame, seen, assoc);
+	try {
+		solve_new_pdu(frame, seen, assoc);
+	} catch(const exception &e) {
+		log(LogLevel::ERROR, "solve_new_pdu failed: {}", e.what());
+	} catch(...) {
+		log(LogLevel::ERROR, "solve_new_pdu failed: unknown exception");
+	}
 
 	if (seen.size() > before_seen) {
 		for (const auto &[mac, actor] : seen) {

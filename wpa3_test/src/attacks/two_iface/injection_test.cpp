@@ -68,6 +68,8 @@ InjectionSuiteResult hw_capabilities::run_injection_tests(
 	add(test_injection_order(s_out, s_in, spoofed, "spoofed", ch));
 	add(test_injection_order(s_out, s_in, valid, "valid", ch));
 
+	add(test_injection_noack(s_out, s_in, ch));
+
 	// retrans + txack only make sense with two distinct interfaces
 	bool two_iface = cap_iface != actor_tx.get(SK::iface);
 

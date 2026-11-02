@@ -168,7 +168,7 @@ public:
 	// ----- injection utilities -----
 	// inject pdu, capture frames containing the unique label, count=0 = no limit.
 	static std::vector<frame_raw_t> inject_and_capture(const MonitorSocket &sout, MonitorSocket &sin,
-		Tins::PDU &pdu, const Channel &ch, int count = 0, int retries = 1);
+		Tins::PDU &pdu, const Channel &ch, int count = 0, int retries = 1, uint16_t tx_flags = 0x28);
 	static void flush_socket(MonitorSocket &s);
 	static ProbeCapture capture_probe_response_ack(
 		const MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &probe_req, const Channel &ch, int retries = 1);
@@ -188,6 +188,10 @@ public:
 
 	static InjectionTestResult test_injection_retrans(const MonitorSocket &sout, MonitorSocket &sin,
 		const Tins::HWAddress<6> &addr1, const Tins::HWAddress<6> &addr2, const Channel &ch);
+
+	// test that driver respects RadioTap NOACK flag (no retransmissions)
+	static InjectionTestResult test_injection_noack(
+		const MonitorSocket &sout, MonitorSocket &sin, const Channel &ch);
 
 	// test if transmitter generate ACK
 	static InjectionTestResult test_injection_txack(const MonitorSocket &sout, MonitorSocket &sin,

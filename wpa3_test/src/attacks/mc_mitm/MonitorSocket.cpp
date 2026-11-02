@@ -57,17 +57,17 @@ static void write_to_inject_channel(const ssh_channel ch, const frame_raw_t &byt
 	ssh_channel_write(ch, bytes.data(), static_cast<uint32_t>(bytes.size()));
 }
 
-void MonitorSocket::send(PDU &pdu, const Channel &) const {
+void MonitorSocket::send(PDU &pdu, const Channel &, const uint16_t tx_flags) const {
 	if(rx_ch_) throw run_err("MonitorSocket::send called on remote-capture-only socket");
 
 	frame_raw_t frame_raw;
 	if(!pdu.find_pdu<RadioTap>()) {
 		RadioTap rt{};
-		rt.tx_flags(0x28); // NOACK | ORDER
+		rt.tx_flags(tx_flags);
 		rt.inner_pdu(RawPDU(pdu.serialize()));
 		frame_raw = rt.serialize();
 	} else {
-		pdu.find_pdu<RadioTap>()->tx_flags(0x28); // NOACK | ORDER
+		pdu.find_pdu<RadioTap>()->tx_flags(tx_flags);
 		frame_raw = pdu.serialize();
 	}
 	if(tx_ch_) {

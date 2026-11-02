@@ -27,7 +27,8 @@ static vector<uint8_t> make_label() {
 }
 
 vector<frame_raw_t> hw_capabilities::inject_and_capture(
-	const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu, const Channel &ch, const int count, const int retries) {
+	const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu, const Channel &ch, const int count, const int retries,
+	const uint16_t tx_flags) {
 	const auto label = make_label();
 
 	const auto frame = unique_ptr<PDU>(pdu.clone());
@@ -39,7 +40,7 @@ vector<frame_raw_t> hw_capabilities::inject_and_capture(
 	vector<frame_raw_t> captured;
 	int attempt = 0;
 	while(true) {
-		sout.send(*frame, ch);
+		sout.send(*frame, ch, tx_flags);
 
 		if(sout.mf_workaround && has_mf) {
 			if(const auto *qos = pdu.find_pdu<Dot11QoSData>()) {
@@ -276,7 +277,8 @@ InjectionTestResult hw_capabilities::test_injection_retrans(const MonitorSocket 
 
 	auto count = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) -> int {
 		auto p = make_frame(a1, a2);
-		return static_cast<int>(inject_and_capture(sout, sin, p, ch, 0, 1).size());
+		// TX_ORDER only (0x20), no NOACK — driver retransmits when ACK doesn't arrive
+		return static_cast<int>(inject_and_capture(sout, sin, p, ch, 0, 1, MonitorSocket::TX_ORDER).size());
 	};
 
 	const int n_dummy = count({ "00:11:00:00:02:01" }, { "00:11:00:00:02:01" });
@@ -300,6 +302,20 @@ InjectionTestResult hw_capabilities::test_injection_retrans(const MonitorSocket 
 
 	detail += "dummy=" + to_string(n_dummy) + " spoofed=" + to_string(n_spoofed) + " real=" + to_string(n_real);
 	return { "injection_fields_retrans", result, detail };
+}
+
+InjectionTestResult hw_capabilities::test_injection_noack(
+	const MonitorSocket &sout, MonitorSocket &sin, const Channel &ch) {
+	// send unicast to a non-existent MAC -> no ACK
+	// NOACK driver should sends once (without NOACK it retransmits 4–7x)
+	Dot11Data p({ "00:11:00:00:02:01" }, { "00:22:00:00:02:01" });
+	p.to_ds(1);
+	p.seq_num(34);
+	const auto frames = inject_and_capture(sout, sin, p, ch, 0, 0);
+	if(frames.empty()) return { "injection_noack", NOCAPTURE, "no capture" };
+	if(frames.size() > 1)
+		return { "injection_noack", FAIL, "retransmitted " + to_string(frames.size()) + "x (NOACK ignored by driver)" };
+	return { "injection_noack", PASSED };
 }
 
 InjectionTestResult hw_capabilities::test_injection_txack(const MonitorSocket &sout, MonitorSocket &sin,

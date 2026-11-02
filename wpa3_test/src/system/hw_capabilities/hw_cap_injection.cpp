@@ -277,7 +277,7 @@ InjectionTestResult hw_capabilities::test_injection_retrans(const MonitorSocket 
 
 	auto count = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) -> int {
 		auto p = make_frame(a1, a2);
-		// TX_ORDER only (0x20), no NOACK — driver retransmits when ACK doesn't arrive
+		// TX_ORDER only (0x20), no NOACK - driver retransmits when ACK doesn't arrive
 		return static_cast<int>(inject_and_capture(sout, sin, p, ch, 0, 1, MonitorSocket::TX_ORDER).size());
 	};
 
@@ -307,7 +307,7 @@ InjectionTestResult hw_capabilities::test_injection_retrans(const MonitorSocket 
 InjectionTestResult hw_capabilities::test_injection_noack(
 	const MonitorSocket &sout, MonitorSocket &sin, const Channel &ch) {
 	// send unicast to a non-existent MAC -> no ACK
-	// NOACK driver should sends once (without NOACK it retransmits 4–7x)
+	// NOACK driver should send once (without NOACK it retransmits 4-7x)
 	Dot11Data p({ "00:11:00:00:02:01" }, { "00:22:00:00:02:01" });
 	p.to_ds(1);
 	p.seq_num(34);

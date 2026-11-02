@@ -75,7 +75,8 @@ FetchContent_Declare(json
 )
 FetchContent_Declare(json_schema_validator
         GIT_REPOSITORY https://github.com/pboettch/json-schema-validator.git
-        GIT_TAG fb270d5a7dc570f60db50e2d5bced90ead7ba362
+        GIT_TAG 2.4.0
+        GIT_SHALLOW TRUE
         OVERRIDE_FIND_PACKAGE
 )
 FetchContent_Declare(doctest
@@ -148,9 +149,7 @@ FetchContent_Declare(linux_headers_wifi
 FetchContent_Declare(
         radiotap
         GIT_REPOSITORY https://github.com/radiotap/radiotap-library.git
-        GIT_TAG master
-        GIT_SHALLOW TRUE
-        UPDATE_COMMAND ""
+        GIT_TAG c21ba1e6fc6cc7723bd02faf000dd6d3d345abfa
 )
 
 FetchContent_Declare(yaml-cpp
@@ -174,6 +173,7 @@ if (CMAKE_CROSSCOMPILING AND CMAKE_LIBRARY_ARCHITECTURE)
     include_directories(SYSTEM "${CMAKE_SYSROOT}/usr/include/${CMAKE_LIBRARY_ARCHITECTURE}")
 endif ()
 
+set(nlohmann_json_VERSION "3.12.0")
 FetchContent_MakeAvailable(reproc libtins doctest argparse yaml-cpp json
         json_schema_validator linux_headers_wifi radiotap boost_pfr pugixml)
 

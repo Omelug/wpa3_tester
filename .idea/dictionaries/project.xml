@@ -173,6 +173,7 @@
       <w>libelf</w>
       <w>libgcc</w>
       <w>libssh</w>
+      <w>libstdc</w>
       <w>libtins</w>
       <w>libusb</w>
       <w>libwifi</w>

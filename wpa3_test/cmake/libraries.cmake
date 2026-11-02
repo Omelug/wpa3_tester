@@ -5,8 +5,6 @@ set(REQUIRED_PACKAGES
         "openssl"
         "libnl-3.0"
         "libnl-genl-3.0"
-        "yaml-cpp"
-        "libtins"
 )
 
 foreach (pkg ${REQUIRED_PACKAGES})

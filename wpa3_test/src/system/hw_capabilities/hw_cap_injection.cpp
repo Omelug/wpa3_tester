@@ -3,6 +3,7 @@
 #include <random>
 #include <tins/tins.h>
 #include <vector>
+#include "attacks/components/sniffer_helper.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "system/hw_capabilities.h"
@@ -78,15 +79,18 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 		flush_socket(sin);
 		sout.send(probe_req, ch);
 		sin.recv_loop(steady_clock::now() + seconds(1), [&](auto r) -> bool {
-			//try{
-			const RadioTap rt(r.raw.data(), r.raw.size());
-			const auto addrs = get_addrs(rt, r.raw);
-			if(rt.find_pdu<Dot11ProbeResponse>()) {
-				if(addrs.addr1 == src && addrs.addr2 == dst) cur.rx_probes.push_back(r.raw);
-			} else if(rt.find_pdu<Dot11Ack>()) {
-				if(addrs.addr1 == dst) cur.tx_acks.push_back(r.raw);
-			}
-			//} catch(...){} //TODO corrupted frames are possible ?
+			if(r.raw.size() < 4) return false;
+			const uint16_t rt_len = r.raw[2] | static_cast<uint16_t>(r.raw[3]) << 8;
+			if(components::radiotap_bad_fcs(r.raw, rt_len)) return false;
+			try {
+				const RadioTap rt(r.raw.data(), r.raw.size());
+				const auto addrs = get_addrs(rt, r.raw);
+				if(rt.find_pdu<Dot11ProbeResponse>()) {
+					if(addrs.addr1 == src && addrs.addr2 == dst) cur.rx_probes.push_back(r.raw);
+				} else if(rt.find_pdu<Dot11Ack>()) {
+					if(addrs.addr1 == dst) cur.tx_acks.push_back(r.raw);
+				}
+			} catch(...) {}
 			return false;
 		});
 		result = std::move(cur);
@@ -241,6 +245,7 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 
 		sin.recv_loop(steady_clock::now() + milliseconds(2500), [&](auto r) -> bool {
 			if(ranges::search(r.raw, label).empty()) return false;
+			if(r.raw.size() < 4) return false;
 
 			const RadioTap rt(r.raw.data(), r.raw.size());
 			const auto *q = rt.find_pdu<Dot11QoSData>();

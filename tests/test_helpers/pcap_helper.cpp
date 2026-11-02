@@ -36,7 +36,7 @@ frame_raw_t read_one_frame(const string &path){
 		throw run_err("No PDUs in file: {}", path);
 	}
 
-	frame_raw_t bytes(data, data + hdr->caplen);
+	frame_raw_t bytes(data, data + static_cast<std::ptrdiff_t>(hdr->caplen));
 	pcap_close(handle);
 	return bytes;
 }
@@ -50,7 +50,7 @@ frame_raw_t read_pcap_file(const string &filename){
 	pcap_pkthdr *header;
 	const u_char *frame;
 	pcap_next_ex(handle, &header, &frame);
-	vector frame_data(frame, frame + header->caplen);
+	vector frame_data(frame, frame + static_cast<std::ptrdiff_t>(header->caplen));
 	pcap_close(handle);
 	return frame_data;
 }

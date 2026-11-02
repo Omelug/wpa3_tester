@@ -4,7 +4,6 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version  v 0.0.0.0:
-+: add test to check if TX_flags in RadiTab are respected
 +:  invalid curve from AP to client (rogue AP)
 
 r: znovuspustiti expected_vht_beacon_ex_Dlink_filler a expected_vht_beacon_rogueAP_filler
@@ -74,6 +73,7 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAddress, not string
 
 //DONE
++: add test to check if TX_flags in RadiTab are respected
 f: github se zasekne v kompilaci testu
 f?: vyzkoušet mc_mitm po změnách po ssid separation
 f: v cracked: se někdy objevuje 2/1

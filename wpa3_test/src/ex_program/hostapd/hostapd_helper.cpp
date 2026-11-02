@@ -161,7 +161,9 @@ static string get_binary(const string &bin_prefix, const string &version, const 
 
 	if(cfg.has_tags){
 		const string tag = find_matching_tag(repo_path, version, cfg);
-		try{ hw_capabilities::run_in("git fetch --tags", repo_path); } catch(const run_err &){
+		try {
+			hw_capabilities::run_in("git fetch --tags", repo_path);
+		} catch(const run_err &){
 			log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags");
 		}
 		hw_capabilities::run_in("git reset --hard HEAD", repo_path);
@@ -171,7 +173,9 @@ static string get_binary(const string &bin_prefix, const string &version, const 
 		if(!cfg.pinned_commit.empty()){
 			hw_capabilities::run_in("git fetch origin", repo_path);
 		} else{
-			try{ hw_capabilities::run_in("git fetch", repo_path); } catch(const run_err &){
+			try {
+				hw_capabilities::run_in("git fetch", repo_path);
+			} catch(const run_err &){
 				log(LogLevel::WARNING, "git fetch failed (offline?), using local version");
 			}
 		}
@@ -243,7 +247,9 @@ OpenSSLPaths get_openssl_paths(const string &tag){
 		log(LogLevel::INFO, "OpenSSL repository cloned successfully");
 	}
 
-	try{ hw_capabilities::run_in("git fetch --tags", repo_path); } catch(const run_err &){
+	try {
+		hw_capabilities::run_in("git fetch --tags", repo_path);
+	} catch(const run_err &){
 		log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags");
 	}
 
@@ -287,7 +293,9 @@ string get_wpa_supplicant(const string &version){
 	ensure_git_repo_cloned(hostapd_folder, HOSTAPD_CONFIG);
 	const path repo_path = hostapd_folder / "hostapd";
 	const string tag = find_matching_tag(repo_path, version, HOSTAPD_CONFIG);
-	try{ hw_capabilities::run_in("git fetch --tags", repo_path); } catch(const run_err &){
+	try {
+		hw_capabilities::run_in("git fetch --tags", repo_path);
+	} catch(const run_err &){
 		log(LogLevel::WARNING, "git fetch --tags failed (offline?), using local tags");
 	}
 	//cleanup
@@ -419,8 +427,9 @@ static optional<RsnIe> parse_rsn_ie_line(const string &line){
 	stringstream ss(line.substr(colon + 3));
 	string tok;
 	while(ss >> tok){
-		try{ ie.raw.push_back(static_cast<uint8_t>(stoi(tok, nullptr, 16))); }
-		catch(...){ break; }
+		try {
+			ie.raw.push_back(static_cast<uint8_t>(stoi(tok, nullptr, 16)));
+		}catch(...){ break; } // not hex-> end of parsing, dont log
 	}
 	if(ie.raw.size() < 10 || ie.raw[0] != 0x30) return nullopt;
 	ie.pw_count = ie.raw[8] | (static_cast<uint16_t>(ie.raw[9]) << 8);

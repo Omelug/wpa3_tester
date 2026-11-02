@@ -157,7 +157,7 @@ protected: // external BB
 		const std::vector<std::string> &disabled_tests_hash_filler = {});
 	static std::vector<ActorPtr> scan_until_match(const std::string &iface, const std::vector<uint8_t> &channels,
 		const ActorMap &actors, const std::vector<std::pair<std::string, std::string>> &conn_conds = {},
-		std::vector<std::string> disabled_tests_hash_filler = {});
+		const std::vector<std::string> &disabled_tests_hash_filler = {});
 public:
 	static std::vector<ActorPtr> create_simulation(size_t n_radios);
 	static std::vector<ActorPtr> internal_options();

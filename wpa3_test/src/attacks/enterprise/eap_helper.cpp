@@ -316,28 +316,11 @@ void send_eapol(const EAP_Att &eap_att, const frame_raw_t &eapol) {
 	eap_att.sock.send(dot11, eap_att.channel);
 }
 
-// return true if the RadioTap Flags byte (when present) has the BAD_FCS bit set
-static bool radiotap_bad_fcs(const frame_raw_t &p, const uint16_t rt_len) {
-	// Walk present-word chain (each word bit-31 -> another word follows).
-	size_t off = 4;
-	uint32_t present0 = 0;
-	while(off + 4 <= static_cast<size_t>(rt_len)) {
-		const uint32_t w = static_cast<uint32_t>(p[off]) | static_cast<uint32_t>(p[off + 1]) << 8 |
-		                   static_cast<uint32_t>(p[off + 2]) << 16 | static_cast<uint32_t>(p[off + 3]) << 24;
-		if(off == 4) present0 = w;
-		off += 4;
-		if(!(w & 1u << 31)) break;
-	}
-	if(!(present0 & 1u << 1)) return false; // Flags field not present
-	if(present0 & 1u << 0) off += 8;        // skip TSFT (8 bytes) if present
-	return off < rt_len && p[off] & 0x40u;  // bit 6 = BAD_FCS
-}
-
 vector<uint8_t> extract_eapol(const frame_raw_t &p, const HWAddress<6> &our_mac) {
 	if(p.size() < 4) return {};
 	const uint16_t rt_len = p[2] | static_cast<uint16_t>(p[3]) << 8;
 
-	if(radiotap_bad_fcs(p, rt_len)) return {};
+	if(components::radiotap_bad_fcs(p, rt_len)) return {};
 
 	// FC byte 0: bits 3-2 = type, must be 0b10 (data); bit 7 = QoS subtype flag
 	if(p.size() <= rt_len + 1u) return {};
@@ -365,6 +348,6 @@ vector<uint8_t> extract_eapol(const frame_raw_t &p, const HWAddress<6> &our_mac)
 	const size_t eapol_end = eapol_off + 4 + body_len;
 	if(eapol_end > p.size()) return {};
 
-	return { p.begin() + eapol_off, p.begin() + eapol_end };
+	return { p.begin() + static_cast<ptrdiff_t>(eapol_off), p.begin() + static_cast<ptrdiff_t>(eapol_end) };
 }
 }

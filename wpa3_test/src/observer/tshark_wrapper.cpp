@@ -142,7 +142,10 @@ static LogTimePoint epoch_str_to_tp(const string &s) {
 			frac_ns = stoll(frac);
 		}
 		return LogTimePoint(chrono::nanoseconds(sec_ns + frac_ns));
-	} catch(...) { return LogTimePoint{}; }
+	} catch(const std::exception& e) {
+		log(LogLevel::WARNING, "Time parsing error {}", e.what());
+		return LogTimePoint{};
+	}
 }
 
 pair<vector<LogTimePoint>, vector<double>> times_pdu_sizes_from_csv(const path &csv_path) {
@@ -160,7 +163,10 @@ pair<vector<LogTimePoint>, vector<double>> times_pdu_sizes_from_csv(const path &
 			if(tp.time_since_epoch().count() == 0) continue;
 			try {
 				sizes.push_back(stod(s_str));
-			} catch(...) { continue; }
+			} catch(const std::exception &e) {
+				log(LogLevel::WARNING, "Invalid time string {}", s_str, e.what());
+				continue;
+			}
 			times.push_back(tp);
 		}
 	}
@@ -305,7 +311,7 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 
 	double pad = (g.ymax - g.ymin) * 0.5;
 	if(pad == 0) pad = 1.0; //TODO hardcoded
-	g.ymin = max(0.0, g.ymin - pad); // packet sizes can't be negative
+	g.ymin = max(0.0, g.ymin - pad); // packet sizes can't be negativie
 	g.ymax += pad;
 
 	g.gpcmd("set tmargin 5");
@@ -420,7 +426,9 @@ static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_f
 				const auto val = stoul(token, nullptr, 0);
 				found = true;
 				if(val & RSN_CAP_OCVC) return true;
-			} catch(...) {}
+			} catch(const std::exception &e) {
+				log(LogLevel::WARNING, "Invalid RSN capabilities token '{}': {}", token, e.what());
+			}
 		}
 	}
 	return found ? optional(false) : nullopt;
@@ -510,7 +518,9 @@ static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_
 				const auto val = stoul(token, nullptr, 0);
 				found = true;
 				if(val & RSN_CAP_PBAC) return true;
-			} catch(...) {}
+			} catch(const std::exception &e) {
+				log(LogLevel::WARNING, "Invalid RSN capabilities token '{}': {}", token, e.what());
+			}
 		}
 	}
 	return found ? optional(false) : nullopt;
@@ -563,7 +573,9 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 				if(caps & RSN_CAP_MFPR) return "REQUIRED";
 				if(caps & RSN_CAP_MFPC) result = "OPTIONAL";
 				else if(result.empty()) result = "OFF";
-			} catch(...) {}
+			} catch(const std::exception &e) {
+				log(LogLevel::WARNING, "Invalid RSN capabilities token '{}': {}", token, e.what());
+			}
 		}
 	}
 	return result;
@@ -686,10 +698,14 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 		rt_ch = trim(rt_ch);
 		try {
 			if(!ds_ch.empty()) channels.insert(stoi(ds_ch));
-		} catch(...) {}
+		} catch(const std::exception &e) {
+			log(LogLevel::WARNING, "Invalid channel string '{}': {}", ds_ch, e.what());
+		}
 		try {
 			if(!rt_ch.empty()) channels.insert(stoi(rt_ch));
-		} catch(...) {}
+		} catch(const std::exception &e) {
+			log(LogLevel::WARNING, "Invalid channel string '{}': {}", rt_ch, e.what());
+		}
 	}
 
 	if(channels.empty()) return "yes";

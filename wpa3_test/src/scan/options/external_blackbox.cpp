@@ -110,10 +110,10 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 }
 
 void RunStatus::solve_new_pdu(const frame_raw_t &frame, ActorMACMap &seen, AssocMap &assoc){
-	RadioTap rt;
-	try {
-		rt = RadioTap(frame.data(), frame.size());
-	} catch(...){ return; } //FIXME ignore  or check it with fskfail
+	if(frame.size() < 4) return;
+	const uint16_t rt_len = frame[2] | static_cast<uint16_t>(frame[3]) << 8;
+	if(components::radiotap_bad_fcs(frame, rt_len)) return;
+	auto rt = RadioTap(frame.data(), frame.size());
 	solve_new_pdu(rt, seen, assoc);
 }
 
@@ -237,11 +237,13 @@ bool RunStatus::process_single_pdu(
 	const ActorMap &actors, const vector<pair<string,string>> &conn_conds,
 	const std::vector<std::string> &disabled_tests_hash_filler
 ) {
+	if(frame.size() < 4) return false;
+	const uint16_t rt_len = frame[2] | static_cast<uint16_t>(frame[3]) << 8;
+	if(components::radiotap_bad_fcs(frame, rt_len)) return false;
+
 	const size_t before_seen = seen.size();
 	const size_t before_assoc = assoc.size();
-	try {
-		solve_new_pdu(frame, seen, assoc);
-	} catch(...) {} //FIXME needed? - testwith fail FSC
+	solve_new_pdu(frame, seen, assoc);
 
 	if (seen.size() > before_seen) {
 		for (const auto &[mac, actor] : seen) {
@@ -275,7 +277,7 @@ bool RunStatus::process_single_pdu(
 vector<ActorPtr> RunStatus::scan_until_match(const string &iface, const vector<uint8_t> &channels,
 											  const ActorMap &actors,
 											  const vector<pair<string,string>> &conn_conds,
-											  std::vector<std::string> disabled_tests_hash_filler
+											  const std::vector<std::string> &disabled_tests_hash_filler
 
 ){
 	const ActorPtr scanner(make_shared<Actor_Config_internal>());

@@ -2,6 +2,7 @@
 
 #include <random>
 
+#include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "pcap_helper.h"
@@ -25,6 +26,11 @@ public:
 	std::string rogue_pcap_path = "/tmp/mc_mitm_test_rogue.pcap";
 
 	void set_ap_mac(const Tins::HWAddress<6> &mac) const { ap->set(SK::mac, mac.to_string()); }
+	void init_csa_frames() {
+		csa_frames = CSA_attack::get_CSA_frames(
+			Tins::HWAddress<6>(ap->get(SK::mac)), netconfig.real_channel, netconfig.rogue_channel,
+			beacon, Tins::HWAddress<6>(sta->get(SK::mac)));
+	}
 
 	void send_to_real(Tins::PDU &pdu) const override;
 	void send_to_real(const frame_raw_t &raw) const override;

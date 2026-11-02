@@ -171,7 +171,8 @@ void run_attack(RunStatus &rs) {
 			burst_size,
 			frames_per_sec,
 			cookie_wait_ms);
-	} catch(...) {
+	} catch(const exception &e) {
+		log(LogLevel::ERROR, "burst_with_cookies failed: {}", e.what());
 		store.stop.store(true);
 		if(capture_thread.joinable()) capture_thread.join();
 		throw;

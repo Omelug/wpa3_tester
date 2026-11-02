@@ -16,21 +16,18 @@ using json = nlohmann::json;
 using YNode = YAML::Node;
 using namespace filesystem;
 
+static json scalar_to_json(const YNode &node) {
+	if(node.Tag() == "!") return node.as<string>();
+	bool b; int64_t i; double d;
+	if(YAML::convert<bool>::decode(node, b))    return b;
+	if(YAML::convert<int64_t>::decode(node, i)) return i;
+	if(YAML::convert<double>::decode(node, d))  return d;
+	return node.as<string>();
+}
+
 json yaml_to_json(const YNode &node) {
 
-	if(node.IsScalar()) {
-		if(node.Tag() == "!") { return node.as<string>(); }
-		try {
-			return node.as<bool>();
-		} catch(...) {}
-		try {
-			return node.as<int64_t>();
-		} catch(...) {}
-		try {
-			return node.as<double>();
-		} catch(...) {}
-		return node.as<string>();
-	}
+	if(node.IsScalar()) return scalar_to_json(node);
 	if(node.IsSequence()) {
 		auto j = json::array();
 		for(auto const &item: node) j.push_back(yaml_to_json(item));
@@ -48,19 +45,7 @@ json yaml_to_json_with_marks(
 	const YNode &node, const string &current_path, unordered_map<string, YAML::Mark> &line_map) {
 	line_map[current_path.empty() ? "/" : current_path] = node.Mark();
 
-	if(node.IsScalar()) {
-		if(node.Tag() == "!") return node.as<string>();
-		try {
-			return node.as<bool>();
-		} catch(...) {}
-		try {
-			return node.as<int64_t>();
-		} catch(...) {}
-		try {
-			return node.as<double>();
-		} catch(...) {}
-		return node.as<string>();
-	}
+	if(node.IsScalar()) return scalar_to_json(node);
 	if(node.IsSequence()) {
 		auto j = json::array();
 		size_t index = 0;

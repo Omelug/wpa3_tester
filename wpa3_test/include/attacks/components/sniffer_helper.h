@@ -12,6 +12,9 @@
 enum class StopReason { Timeout, HandlerDone, Interrupted };
 
 namespace wpa3_tester::components {
+
+// Returns true if the RadioTap Flags field (when present) has the BAD_FCS bit set.
+bool radiotap_bad_fcs(const frame_raw_t &p, uint16_t rt_len);
 template<typename T, typename Handler>
 std::variant<T, StopReason> poll_sniffer(pcap_t *handle, const std::optional<std::chrono::milliseconds> timeout,
 	Handler &&on_frame, const std::string &iface = "") {

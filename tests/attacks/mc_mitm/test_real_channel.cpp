@@ -100,6 +100,7 @@ TEST_SUITE("handle_auth_from_client_real") {
 		auto m = make_fixture();
 		m->beacon = make_unique<Dot11Beacon>();
 		m->beacon->ssid("test");
+		m->init_csa_frames(); // populate csa_frames before handler uses them
 
 		// auth->addr2() must equal client_state.get_mac() == CLIENT_MAC
 		auto auth = Dot11Authentication(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC));

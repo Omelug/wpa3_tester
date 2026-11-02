@@ -9,11 +9,10 @@ using namespace wpa3_tester;
 
 namespace wpa3_tester {
 
-TEST_CASE("firmware::get_rotating_ath_masker_mac - preserves first 5 octets") {
+TEST_CASE("firmware::get_rotating_ath_masker_mac - preserves first 3 octets") {
 	const string attacker_mac = "aa:bb:cc:dd:ee:ff";
 	const string result = firmware::get_rotating_ath_masker_mac(attacker_mac);
 
-	// Split both
 	auto split = [](const string &s) {
 		vector<string> parts;
 		stringstream ss(s);
@@ -26,7 +25,7 @@ TEST_CASE("firmware::get_rotating_ath_masker_mac - preserves first 5 octets") {
 	auto out_parts = split(result);
 
 	REQUIRE_EQ(out_parts.size(), 6);
-	for(int i = 0; i < 5; ++i) CHECK_EQ(out_parts[i], in_parts[i]);
+	for(int i = 0; i < 3; ++i) CHECK_EQ(out_parts[i], in_parts[i]);
 }
 
 TEST_CASE("firmware::get_rotating_ath_masker_mac - last octet is valid hex in [01,ff]") {

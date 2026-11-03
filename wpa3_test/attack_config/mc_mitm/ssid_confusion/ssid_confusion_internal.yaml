@@ -119,6 +119,6 @@ attack_config:
   beacon_warning_sec: 2
   only_to_mitm: false
   beacon_timeout_sec: 10
-  #strip_pmkid_in_assoc: true
+  strip_pmkid_in_assoc: false
 
 rewrite: errors

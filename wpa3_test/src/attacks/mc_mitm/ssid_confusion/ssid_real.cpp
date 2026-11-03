@@ -70,7 +70,8 @@ FrameProcess SsidConfusion::handle_eapol_real(
 			send_to_rogue(stripped);
 			return STOP;
 		}
-		if(msg != -1) return CONTINUE; //FIXME thist should be  msg == 1 (but its sent later i think)
+		// allow other processing for EAP frames (not valid EAPOL)
+		if(msg != -1) return CONTINUE;
 		display_traffic(pdu, "Real channel", " AP -> STA  -- MitM'ing ");
 		send_to_rogue(raw);
 		return STOP;

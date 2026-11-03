@@ -115,8 +115,8 @@ InjectionTestResult hw_capabilities::test_injection_more_fragments(
 
 InjectionTestResult hw_capabilities::test_packet_injection(const MonitorSocket &sout, MonitorSocket &sin, PDU &pdu,
 	const function<bool(const frame_raw_t &)> &test_func, const string &name, const string &msgfail,
-	const Channel &ch) {
-	const auto frames = inject_and_capture(sout, sin, pdu, ch, 1);
+	const Channel &ch, const uint16_t tx_flags) {
+	const auto frames = inject_and_capture(sout, sin, pdu, ch, 1, 1, tx_flags);
 	if(frames.empty()) return { name, NOCAPTURE, "no capture" };
 	if(!ranges::all_of(frames, test_func)) return { name, FAIL, msgfail };
 	return { name, PASSED };
@@ -136,8 +136,9 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 	string failed;
 
 	auto run =
-		[&](auto &pdu, const function<bool(const frame_raw_t &)> &fn, const string &name, const string &msg) {
-			const auto r = test_packet_injection(sout, sin, pdu, fn, name, msg, ch);
+		[&](auto &pdu, const function<bool(const frame_raw_t &)> &fn, const string &name, const string &msg,
+			const uint16_t tx_flags = MonitorSocket::TX_DEFAULT) {
+			const auto r = test_packet_injection(sout, sin, pdu, fn, name, msg, ch, tx_flags);
 			if(r.result() != PASSED) {
 				if(result == PASSED) result = r.result();
 				failed += name + " ";
@@ -164,7 +165,8 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 			} catch(...) { return false; }
 		},
 		"seq_num",
-		"sequence number overwritten");
+		"sequence number overwritten",
+		MonitorSocket::TX_DEFAULT | MonitorSocket::TX_NOSEQ);
 
 	// frag num preserved
 	Dot11Data p3;
@@ -181,7 +183,8 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 			} catch(...) { return false; }
 		},
 		"frag_num",
-		"fragment number overwritten");
+		"fragment number overwritten",
+		MonitorSocket::TX_DEFAULT | MonitorSocket::TX_NOSEQ);
 
 	// QoS TID preserved
 	Dot11QoSData p4;

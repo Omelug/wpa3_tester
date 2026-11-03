@@ -88,18 +88,6 @@ observers: #(allow start_observers if used )
     program: wpa_cli
     program_config:
       interval: 2
-  #client_mausezahn:
-  #  actor: client
-  #  program: mausezahn
-  #  program_config:
-  #    target_actor: ap
-
-  #client_tshark:
-  #  actor: client
-  #  program: tshark
-  #  program_config:
-  #    filter: ""
-
   tester_dmesg:
     program: dmesg
     program_config:

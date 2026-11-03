@@ -36,20 +36,6 @@ McMitm::McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, Actor
 
 McMitm::~McMitm() { stop(); }
 
-/*//TODO cache frames like in the channel_switch.cpp
-void McMitm::send_csa_beacon(const optional<HWAddress<6>> &target, const int beacon_interval_ms) const {
-	// Intel firmware: must see count >= 2 before count  //TODO source? Python?
-	for(int count = CSA_attack::CHANNEL_SWITCH_MAX; count >= 0; --count) {
-		RadioTap csa_rt = CSA_attack::get_CSA_beacon(
-			ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, count, beacon.get());
-		if(target.has_value()) {
-			if(auto *b = csa_rt.find_pdu<Dot11Beacon>()) b->addr1(*target);
-		}
-		send_to_real(csa_rt);
-		interruptible_sleep(milliseconds(beacon_interval_ms));
-	}
-}*/
-
 void McMitm::setup_real_AP_RSN_frames(int beacon_timeout_sec) {
 	rogue_sta->set_iface_up();
 	rogue_sta->set_channel(netconfig.real_channel);

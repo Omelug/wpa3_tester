@@ -69,12 +69,15 @@ void stats(const RunStatus &rs) {
 	observer::tshark::pcap_events(rs,
 		elements_ap,
 		{
-			{ "rogue_ap", "wlan.tag.number == 37", "CSA", "black" },
 			{ "rogue_ap", "wlan.fc.type_subtype == 0x0d", "Action", "blue" },
 			{ "rogue_ap", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan" },
 			{ "rogue_ap", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange" },
 			{ "rogue_ap", "wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0001", "ASSOC", "green" },
-			{ "rogue_ap", "eapol", "EAPOL", "dark-green" },
+			{ "rogue_ap", "wlan_rsna_eapol.keydes.key_info.keyack == 1 && wlan_rsna_eapol.keydes.key_info.keymic == 0", "EAPOL 1", "dark-green" },
+			{ "rogue_ap", "wlan_rsna_eapol.keydes.key_info.keyack == 0 && wlan_rsna_eapol.keydes.key_info.keymic == 1 && wlan_rsna_eapol.keydes.key_info.secure == 0", "EAPOL 2", "green" },
+			{ "rogue_ap", "wlan_rsna_eapol.keydes.key_info.keyack == 1 && wlan_rsna_eapol.keydes.key_info.keymic == 1", "EAPOL 3", "dark-red" },
+			{ "rogue_ap", "wlan_rsna_eapol.keydes.key_info.keyack == 0 && wlan_rsna_eapol.keydes.key_info.keymic == 1 && wlan_rsna_eapol.keydes.key_info.secure == 1", "EAPOL 4", "red" },
+			{ "rogue_ap", "eap", "EAP", "magenta" },
 		});
 	observer::tshark::tshark_graph(rs, "rogue_ap", elements_ap);
 
@@ -83,13 +86,15 @@ void stats(const RunStatus &rs) {
 	observer::tshark::pcap_events(rs,
 		elements_client,
 		{
-			{ "rogue_client", "wlan.tag.number == 37", "CSA", "black" },
 			{ "rogue_client", "wlan.fc.type_subtype == 0x0d", "Action", "blue" },
-			{ "rogue_client", "wlan.fc.type_subtype == 0x000c", "DISCONN_frame", "pink" },
 			{ "rogue_client", "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0005", "PROBE", "cyan" },
 			{ "rogue_client", "wlan.fc.type_subtype == 0x000b", "AUTH", "orange" },
 			{ "rogue_client", "wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0001", "ASSOC", "green" },
-			{ "rogue_client", "eapol", "EAPOL", "dark-green" },
+			{ "rogue_client", "wlan_rsna_eapol.keydes.key_info.keyack == 1 && wlan_rsna_eapol.keydes.key_info.keymic == 0", "EAPOL 1", "dark-green" },
+			{ "rogue_client", "wlan_rsna_eapol.keydes.key_info.keyack == 0 && wlan_rsna_eapol.keydes.key_info.keymic == 1 && wlan_rsna_eapol.keydes.key_info.secure == 0", "EAPOL 2", "green" },
+			{ "rogue_client", "wlan_rsna_eapol.keydes.key_info.keyack == 1 && wlan_rsna_eapol.keydes.key_info.keymic == 1", "EAPOL 3", "dark-red" },
+			{ "rogue_client", "wlan_rsna_eapol.keydes.key_info.keyack == 0 && wlan_rsna_eapol.keydes.key_info.keymic == 1 && wlan_rsna_eapol.keydes.key_info.secure == 1", "EAPOL 4", "red" },
+			{ "rogue_client", "eap", "EAP", "magenta" },
 		});
 	observer::tshark::tshark_graph(rs, "rogue_client", elements_client);
 

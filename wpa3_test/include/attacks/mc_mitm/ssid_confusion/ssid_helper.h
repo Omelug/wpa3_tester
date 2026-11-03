@@ -15,7 +15,7 @@ public:
 	static void translate_data_mac(frame_raw_t& raw,
 							   const Tins::HWAddress<6>& from_bssid,
 							   const Tins::HWAddress<6>& to_bssid, bool change_sa = true);
-	static std::unique_ptr<Tins::Dot11Beacon> make_confused_beacon(const Tins::Dot11Beacon &real, const std::string &confused_ssid, bool strip_rsn);
+	static std::unique_ptr<Tins::Dot11Beacon> make_confused_beacon(const Tins::Dot11Beacon &real, const std::string &confused_ssid);
 
 	SsidConfusion(const ActorPtr &rogue_sta, const ActorPtr &rogue_ap, const ActorPtr &sta, const ActorPtr &ap,
 		const std::optional<std::filesystem::path> &run_folder, const std::string & confused_ssid, const int beacon_ms):

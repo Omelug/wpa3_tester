@@ -5,10 +5,14 @@ v: visualization
 
 Version  v 0.0.0.0:
 +:  invalid curve from AP to client (rogue AP)
-
 r: znovuspustiti expected_vht_beacon_ex_Dlink_filler a expected_vht_beacon_rogueAP_filler
-r: delete/add login to all catch(...)
 v PMKID je STA mac -> nejde v ssid_confusion obejít PMKSA přes to, že rogue_sta bude mít svojí mac a mac adresy se budou modifikovat přes forward?
+
+f: rerun ssid_confusion (save backup) - check if(strip_pmkid_in_assoc) (was enabled by default before)
+
+f:FIXME  na ssid nepoužívat ten tu černou tenkou  USB prodlužovačku -
+FIXME mt76 :b2 je n2ějak pomalejší než ostatní?
+FIXME zkusit mt76 vyměnit u AP ?
 CSA:
     +: option for openwrt OCV / wpa3 disable for external client
 
@@ -19,10 +23,7 @@ DoS_hard:
      +: observer for new_valid client (wpa_cli ? )
      +: add possibility DoS on 2_4/5Ghz (2 adapters ) - is attacker accept radar checks in monitpr mode ? - US/CZ?
 
-f: clang_tidy bere uplně n2co jiného než Clion
-+: pokud nepůjde cookie_guzzler, zkusit v ath_masker forku 3 bytes a přespsat ath_masker v pdf o rotaci
-
-r: první reflexion attack v 2_8 se nepřipojí, nevalidní ukončení předchozího testu?, bčžící hostapd ?
+f: clang_tidy v github works bere uplně n2co jiného než Clion
 
 r: hash type
 t: hash function
@@ -73,6 +74,8 @@ r?: scan parsing is still messy (maybe do everything with libpcap)
 ch: change functions to work with HWAddress, not string
 
 //DONE
++: pokud nepůjde cookie_guzzler, zkusit v ath_masker forku 3 bytes a přespsat ath_masker v pdf o rotaci
+r: delete/add log for catch(...) blciks
 +: add test to check if TX_flags in RadiTab are respected
 f: github se zasekne v kompilaci testu
 f?: vyzkoušet mc_mitm po změnách po ssid separation

@@ -31,7 +31,7 @@ void SsidConfusion::translate_data_mac(frame_raw_t& raw,
 		ranges::copy(to_bssid, addr3);
 }
 
-unique_ptr<Dot11Beacon> SsidConfusion::make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid, const bool strip_rsn) {
+unique_ptr<Dot11Beacon> SsidConfusion::make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid) {
 	// BSSID kept identical to real AP
 	auto b = Dot11Beacon(real.addr1(), real.addr2());
 	b.addr3(real.addr3());
@@ -44,8 +44,6 @@ unique_ptr<Dot11Beacon> SsidConfusion::make_confused_beacon(const Dot11Beacon &r
 			b.add_option({ Dot11::SSID,
 				static_cast<uint8_t>(confused_ssid.size()),
 				reinterpret_cast<const uint8_t *>(confused_ssid.data()) });
-		} else if(strip_rsn && opt.option() == Dot11::RSN) {
-			continue; // drop RSN IE - rogue beacon appears as an open network
 		} else {
 			b.add_option(opt);
 		}

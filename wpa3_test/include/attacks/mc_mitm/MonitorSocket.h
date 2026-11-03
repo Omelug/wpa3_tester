@@ -36,7 +36,7 @@ public:
 	static constexpr uint16_t TX_NOACK  = 0x0008; // don't wait for ACK
 	static constexpr uint16_t TX_NOSEQ  = 0x0010; // preserve sequence number (only for kernel >= 5.9)
 	static constexpr uint16_t TX_ORDER  = 0x0020; // don't reorder relative to other injected frames
-	static constexpr uint16_t TX_DEFAULT = TX_NOACK | TX_ORDER | TX_NOSEQ;
+	static constexpr uint16_t TX_DEFAULT = TX_NOACK | TX_ORDER;
 
 	void send(Tins::PDU &pdu, const Channel &ch, uint16_t tx_flags = TX_DEFAULT) const;
 	static frame_raw_t build_inject_frame(

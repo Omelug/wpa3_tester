@@ -153,9 +153,10 @@ string eap_description(const PDU &pdu) {
 		const string dir = code == 1 ? "Request" : "Response";
 		if(raw.size() < 9) return "EAP " + dir;
 		const uint8_t type = raw[8];
-		if(type == 1) return "EAP " + dir + " Identity";
+		if(type ==  1) return "EAP " + dir + " Identity";
 		if(type == 21) return "EAP " + dir + " TTLS";
 		if(type == 25) return "EAP " + dir + " PEAP";
+		if(type == 52) return "EAP " + dir + " PWD";
 		return "EAP " + dir + " type=" + to_string(type);
 	}
 	return "EAP code=" + to_string(code);

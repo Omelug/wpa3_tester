@@ -10,7 +10,8 @@ constexpr int CHANNEL_SWITCH_MAX = 3;
 Tins::RadioTap get_CSA_beacon(const Tins::HWAddress<6> &ap_mac, const Channel &ap_channel, const Channel &new_channel,
 	int switch_count = 3, const Tins::Dot11Beacon *src_beacon = nullptr);
 std::vector<Tins::RadioTap> get_CSA_frames(const Tins::HWAddress<6> &ap_mac, const Channel &ap_channel,
-	const Channel &new_channel, const std::unique_ptr<Tins::Dot11Beacon> &beacon, const Tins::HWAddress<6> &sta_mac);
+	const Channel &new_channel, const std::unique_ptr<Tins::Dot11Beacon> &beacon, const Tins::HWAddress<6> &sta_mac,
+	bool add_deauth = false);
 void update_time_CSA_frames(std::vector<Tins::RadioTap> &frames);
 void check_vulnerable(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac,
 	const std::string &iface_name, const std::string &ssid, const Channel &ap_channel, const Channel &new_channel,

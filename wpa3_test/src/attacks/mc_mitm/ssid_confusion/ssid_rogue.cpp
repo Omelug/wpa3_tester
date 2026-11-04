@@ -1,3 +1,4 @@
+#include "attacks/components/sniffer_helper.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "attacks/mc_mitm/wifi_util.h"
@@ -133,7 +134,8 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 		   client_state.get_state() >= ClientState::Associated &&
 		   client_state.get_state() < ClientState::GotMitm)
 			client_state.update_state(ClientState::GotMitm);
-		display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
+		const auto eap = components::eap_description_raw(raw);
+		display_traffic(*pdu, "Rogue channel", (eap.empty() ? "" : " [" + eap + "]") + " -- MitM'ing");
 		send_to_real(raw);
 	}
 }

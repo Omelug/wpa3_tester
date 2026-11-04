@@ -232,6 +232,7 @@ bool RunStatus::config_requirement(const std::vector<std::string> &disabled_test
 	if(!_rssi_checked && _config.contains("requirements") && _config.at("requirements").contains("rssi_setup")) {
 		//FIXME globally allow/disable wizards , if disabled -> warning
 		//TODO add to validator bandwidth / conditions
+
 		auto conditions = _config["requirements"]["rssi_setup"]["conditions"].get<std::vector<std::string>>();
 
 		string cond_str = join(conditions, " && ");

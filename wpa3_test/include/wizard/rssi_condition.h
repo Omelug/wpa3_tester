@@ -2,6 +2,7 @@
 #include "config/Actor_Config/actor_keys.h"
 #include "system/wifi_channel.h"
 
+#include <cmath>
 #include <map>
 #include <memory>
 #include <string>
@@ -11,6 +12,21 @@
 
 // Sentinel: no measurement available
 inline constexpr double RSSI_NO_DATA = -90.0;
+
+// reference RSSI at 1 metre
+// should be calibrated for m <-> rssi, but isnt its "randomly chosen"
+// just hope its good enogh for testing
+
+inline constexpr double RSSI_REF_1M = -30.0;
+
+// free-space path loss exponent (2.0 = open air; 3-4 for indoor)
+// TODO not checcked, just reference
+inline constexpr double PATH_LOSS_EXP = 2.0;
+
+// convert distance in metres to expected RSSI threshold
+inline double meters_to_rssi(const double d) {
+	return RSSI_REF_1M - 10.0 * PATH_LOSS_EXP * std::log10(d);
+}
 
 // {src_mac, rx_mac} -> dBm
 using RssiMatrix = std::map<std::pair<Tins::HWAddress<6>, Tins::HWAddress<6>>, double>;

@@ -50,8 +50,7 @@ void run_attack(RunStatus &rs) {
     const int    beacon_ms     = att_cfg.at("beacon_interval_ms");
 
 	SsidConfusion attack(rogue_client, rogue_ap, client, ap, rs.run_folder(), confused_ssid, beacon_ms);
-	if(att_cfg.contains("strip_pmkid_in_assoc"))
-		attack.strip_pmkid_in_assoc = att_cfg.at("strip_pmkid_in_assoc").get<bool>();
+	attack.strip_pmkid_in_assoc = att_cfg.at("strip_pmkid_in_assoc").get<bool>();
 	attack.run(rs, rs.config().at("attack_config").at("attack_time_sec").get<int>());
 	ap->disconnect();
 }

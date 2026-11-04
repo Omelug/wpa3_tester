@@ -10,6 +10,7 @@ v PMKID je STA mac -> nejde v ssid_confusion obejít PMKSA přes to, že rogue_s
 
 f: rerun ssid_confusion (save backup) - check if(strip_pmkid_in_assoc) (was enabled by default before)
 
+#FIXME změřit aby ssid měl aaspoň jeden metr mezi ap <
 f:FIXME  na ssid nepoužívat ten tu černou tenkou  USB prodlužovačku -
 FIXME mt76 :b2 je n2ějak pomalejší než ostatní?
 FIXME zkusit mt76 vyměnit u AP ?

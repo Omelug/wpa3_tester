@@ -1,12 +1,15 @@
 These points should be solved separately
 In new versions
 
-ch: mahcge to meson
++: change libtins to something faster and full
+    - (add support for all sub - AngryOxide Rust library?)
+    - extensd libtins constant "maps" - try do it directly from specification
+        - chcek for linking pdf dirrectly to code (try find ALAteX/ geenrate tyspts code form pdf)
+ch: change to meson
 +?: nix compilace pro arm (pomalejší, ale stabilnější?)
 +: trace-cmd on  OpenWrt self compilated with ONFIG_FUNCTION_TRACER=y) needed
 +: Create system for auto loading firmware
 (not sure if possible fully automated, truy find already woking solution )
 
 +: change config to something like KCL
-+: nix support
 +: Faraday cell + DoS with detection (need to be legally OK)

@@ -14,6 +14,8 @@ f: rerun ssid_confusion (save backup) - check if(strip_pmkid_in_assoc) (was enab
 f:FIXME  na ssid nepoužívat ten tu černou tenkou  USB prodlužovačku -
 FIXME mt76 :b2 je n2ějak pomalejší než ostatní?
 FIXME zkusit mt76 vyměnit u AP ?
+
++: iface info add if is adapter fullMAAC
 CSA:
     +: option for openwrt OCV / wpa3 disable for external client
 

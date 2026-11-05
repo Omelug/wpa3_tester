@@ -3,7 +3,6 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "config/RunStatus.h"
-#include "attacks/mc_mitm/MonitorSocket.h"
 
 namespace wpa3_tester::ssid_confusion {
 
@@ -29,8 +28,11 @@ public:
 	void send_to_rogue(Tins::PDU &pdu) const override;
 	void send_to_rogue(const frame_raw_t &raw) const override;
 	FrameProcess handle_eapol_real(Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const frame_raw_t &raw) const;
+	FrameProcess handle_sa_query_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11, const frame_raw_t &raw) const;
+	FrameProcess handle_assoc_real(Tins::HWAddress<6> addr1, const Tins::PDU &pdu, const frame_raw_t &raw) const;
 	[[nodiscard]] FrameProcess handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11);
 	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const frame_raw_t &raw) override;
+
 	void send_to_real(Tins::PDU &pdu) const override;
 	void send_to_real(const frame_raw_t &raw) const override;
 	FrameProcess handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11) override;

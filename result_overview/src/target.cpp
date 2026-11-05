@@ -127,30 +127,10 @@ static void generate_target_page(const path &output_dir, const string &target_na
 	f << "</body></html>";
 }
 
-static void generate_target_index(HtmlGuard &f, const vector<string> &targets) {
-	f << R"html(<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Targets - WPA3 Tester</title>
-	<link rel="stylesheet" href="../style.css">
-</head>
-<body>
-	<a href="../index.html" class="back-link"><= Overview</a>
-	<h1>Targets</h1>
-	<div class="card">
-		<ul>
-)html";
-	for(const auto &t: targets) f << "<li><a href=\"" << t << "/index.html\">" << t << "</a></li>";
-	f << "</ul>\n    </div></body></html>";
-}
-
-void generate_targets(const path &output_dir, const path &data_dir) {
+vector<string> generate_targets(const path &output_dir, const path &data_dir) {
 	const path targets_data = data_dir / DATA_SUITE / "comp";
 	const path targets_dir = output_dir / "target";
 	create_public_dirs(targets_dir);
-	if(data_unchanged(targets_dir, targets_data)) return;
 
 	vector<string> names;
 	if(is_directory(targets_data)) {
@@ -160,9 +140,10 @@ void generate_targets(const path &output_dir, const path &data_dir) {
 		}
 	}
 
-	HtmlGuard f(targets_dir);
-	generate_target_index(f, names);
-	for(const auto &name: names) generate_target_page(output_dir, name, targets_data / name);
+	if(!data_unchanged(targets_dir, targets_data))
+		for(const auto &name: names) generate_target_page(output_dir, name, targets_data / name);
+
+	return names;
 }
 
 }

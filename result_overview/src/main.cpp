@@ -66,7 +66,7 @@ static Args parse_args(const int argc, char *argv[]) {
 	return a;
 }
 
-static string html_page() {
+static string html_page(const vector<string> &targets) {
 	ostringstream out;
 	out << R"html(<!DOCTYPE html>
 <html lang="en">
@@ -119,15 +119,16 @@ static string html_page() {
 	</div>
 
 	<div class="card">
-		<h2>
-			<a href="devices/index.html">Devices</a>
-		</h2>
+		<h2><a href="devices/index.html">Devices</a></h2>
 	</div>
 
 	<div class="card">
-		<h2>
-			<a href="target/index.html">Targets</a>
-		</h2>
+		<h2>Targets</h2>
+		<ul>
+)html";
+	for(const auto &t: targets)
+		out << "\t\t\t<li><a href=\"target/" << t << "/index.html\">" << t << "</a></li>\n";
+	out << R"html(		</ul>
 	</div>
 
 	<hr style="margin: 32px 0; border: none; border-top: 2px solid #3498db;">
@@ -156,13 +157,7 @@ int main(int argc, char *argv[]) {
 	const path static_src = project_root() / "result_overview" / "static";
 	if(exists(static_src)) copy(static_src, output_dir, copy_options::recursive | copy_options::overwrite_existing);
 
-	const path index = output_dir / "index.html";
-	ofstream f(index);
-	f << html_page();
-	f.close();
-	wpa3_tester::set_public_perms(index);
-
-	wpa3_tester::overview::generate_devices(output_dir, data_dir); // before for device  links
+	wpa3_tester::overview::generate_devices(output_dir, data_dir); // before for device links
 
 	wpa3_tester::overview::generate_channel_switch(output_dir, data_dir);
 	wpa3_tester::overview::generate_bl0ck(output_dir, data_dir);
@@ -171,8 +166,14 @@ int main(int argc, char *argv[]) {
 	wpa3_tester::overview::generate_expected_vht_beacon(output_dir, data_dir);
 	wpa3_tester::overview::generate_owe_trans(output_dir, data_dir);
 	wpa3_tester::overview::generate_wpa3_trans_downgrade(output_dir, data_dir);
-	wpa3_tester::overview::generate_targets(output_dir, data_dir);
+	const auto targets = wpa3_tester::overview::generate_targets(output_dir, data_dir);
 	wpa3_tester::overview::generate_invalid_curve_attack(output_dir, data_dir);
+
+	const path index = output_dir / "index.html";
+	ofstream f(index);
+	f << html_page(targets);
+	f.close();
+	wpa3_tester::set_public_perms(index);
 	wpa3_tester::overview::generate_reflection_attack(output_dir, data_dir);
 	wpa3_tester::overview::generate_active_monitor_overview(output_dir, data_dir);
 	wpa3_tester::overview::generate_injection_overview(output_dir, data_dir);

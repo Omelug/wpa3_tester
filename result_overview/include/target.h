@@ -1,5 +1,7 @@
 #pragma once
 #include <filesystem>
+#include <string>
+#include <vector>
 
 namespace wpa3_tester::overview {
 struct HtmlGuard;
@@ -15,5 +17,5 @@ RenderFunc make_renderer() {
 			   const std::string &module) { Entry::render_table(f, title, suite_data_dir, page_dir, module); };
 }
 
-void generate_targets(const std::filesystem::path &output_dir, const std::filesystem::path &data_dir);
+std::vector<std::string> generate_targets(const std::filesystem::path &output_dir, const std::filesystem::path &data_dir);
 }

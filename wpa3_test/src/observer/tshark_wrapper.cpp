@@ -47,7 +47,7 @@ string masked_mac_filter_5(const RunStatus &rs) {
 
 string all_actors_mac_filter(const RunStatus &rs, const bool broadcast) {
 	vector<string> mac_filters;
-
+	//FIXME this is useless?? - same as bpf filter?
 	for(const auto &actor: rs.actors | views::values) { mac_filters.push_back("wlan host " + actor.get(SK::mac)); }
 	if(broadcast) mac_filters.emplace_back("wlan host ff:ff:ff:ff:ff:ff");
 	return or_filter(mac_filters);

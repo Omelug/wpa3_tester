@@ -34,6 +34,8 @@ Dot11Addrs get_addrs(const PDU &pdu, const frame_raw_t &raw) {
 		addr2 = mgmt->addr2();
 	} else if(const auto *data = pdu.find_pdu<Dot11Data>()) {
 		addr2 = data->addr2();
+	} else if(pdu.find_pdu<Dot11Control>()) {
+		return { addr1, HWAddress<6>() };
 	}
 
 	// fallback addresses from raw (libtins cant parse some encrypted frames)

@@ -94,9 +94,10 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
 	//}
 
-	const string bpf = "(wlan type data or mgt) and (wlan host " + ap.get(SK::permanent_mac) + " or wlan host " +
-		sta.get(SK::permanent_mac) + " or wlan host " + rogue_sta.get(SK::permanent_mac) + " or wlan host " +
-		rogue_ap.get(SK::permanent_mac) + ")";
+
+	const string bpf = "(type data or type mgt) and"
+	" (ether host " + ap.get(SK::permanent_mac) + " or ether host " + sta.get(SK::permanent_mac) + " or"
+	" ether host " + rogue_sta.get(SK::permanent_mac) + " or ether host " + rogue_ap.get(SK::permanent_mac) + ")";
 
 	sock_real = make_unique<MonitorSocket>(rogue_sta.get(SK::iface), rogue_sta[SK::netns]);
 	sock_real->set_filter(bpf);

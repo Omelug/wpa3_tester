@@ -8,14 +8,13 @@ Version  v 0.0.0.0:
 r: znovuspustiti expected_vht_beacon_ex_Dlink_filler a expected_vht_beacon_rogueAP_filler
 v PMKID je STA mac -> nejde v ssid_confusion obejít PMKSA přes to, že rogue_sta bude mít svojí mac a mac adresy se budou modifikovat přes forward?
 
-f: rerun ssid_confusion (save backup) - check if(strip_pmkid_in_assoc) (was enabled by default before)
-
 #FIXME změřit aby ssid měl aaspoň jeden metr mezi ap <
 f:FIXME  na ssid nepoužívat ten tu černou tenkou  USB prodlužovačku -
 FIXME mt76 :b2 je n2ějak pomalejší než ostatní?
 FIXME zkusit mt76 vyměnit u AP ?
+f: downgrade kaenrel to rpi-6.6.y ? (mt76and V7TU drivers ) - thre ewere some mac80211 API changes
 
-+: iface info add if is adapter fullMAAC
++: iface info add if is adapter FullMAAC
 CSA:
     +: option for openwrt OCV / wpa3 disable for external client
 

@@ -47,7 +47,7 @@ observers:
     program: mausezahn
     program_config:
       target_actor: ap
-  ap_mausezahn:
+  ap_iperf3:
     actor: client
     program: iperf3
     program_config:

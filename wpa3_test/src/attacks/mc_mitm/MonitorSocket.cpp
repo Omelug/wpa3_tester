@@ -197,7 +197,6 @@ void MonitorSocket::recv_loop(
 		if(auto r = recv(); r && on_frame(std::move(r))) break;
 	}
 }
-
 //TODO test in sim possible?
 void MonitorSocket::set_filter(const string &bpf) const {
 	if(!sniffer_) throw run_err("set_filter: not supported on remote socket");
@@ -209,6 +208,16 @@ void MonitorSocket::set_filter(const string &bpf) const {
 	const int dlt = pcap_datalink(handle);
 	if (dlt != DLT_IEEE802_11_RADIO) {
 		throw run_err("set_filter: no DLT_IEEE802_11_RADIO (got dlt = {})", dlt);
+	}
+
+	if(!bpf.empty()) {
+		bpf_program prog{};
+		if(pcap_compile(handle, &prog, bpf.c_str(), 1, PCAP_NETMASK_UNKNOWN) != 0) {
+			throw run_err("set_filter: pcap_compile failed (dlt={}): {}", pcap_datalink(handle), pcap_geterr(handle));
+		}
+		if(prog.bf_len <= 1)
+			log(LogLevel::WARNING, "set_filter: '{}' compiled to {} instruction(s) — DLT mismatch?", bpf, prog.bf_len);
+		pcap_freecode(&prog);
 	}
 
 	if(!sniffer_->set_filter(bpf))  throw run_err("set_filter: compilation error");

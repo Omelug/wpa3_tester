@@ -69,8 +69,13 @@ void Actor_config::create_sniff_iface() const{
 	run({"iw", "dev", iface, "interface", "add", sniff_iface, "type", "monitor"});
 
 	vector<string> flags_cmd = {"iw", "dev", sniff_iface, "set", "monitor", /*"fcsfail",*/ "otherbss"};
-	if(get_or(BK::active_monitor, false)) flags_cmd.emplace_back("active");
-	if(get_or(BK::control_monitor, false)) flags_cmd.emplace_back("control");
+
+	if(get_driver_name() == "mt76x2u_git") { //FIXME not valid on 6.18 kenrel ?
+		log(LogLevel::ERROR, "mt76x2u_git dont work with active flag ");
+	}else {
+		if(get_or(BK::active_monitor, false)) flags_cmd.emplace_back("active");
+		if(get_or(BK::control_monitor, false)) flags_cmd.emplace_back("control");
+	}
 	run(flags_cmd);
 }
 

@@ -24,6 +24,14 @@ struct IfaceInfoTestEntry {
 	std::optional<int> start_ap_hostapd_ms;
 	std::string mac_layer;
 
+	// BPF filter
+	std::optional<bool> bpf_filter_ok;
+	std::optional<int> bpf_dlt;
+	std::string bpf_dlt_name;
+	std::optional<bool> bpf_dlt_ok;
+	std::optional<bool> bpf_valid_filter_ok;
+	std::optional<bool> bpf_invalid_rejected;
+
 	static IfaceInfoTestEntry parse(const std::filesystem::path &test_folder);
 };
 

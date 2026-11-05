@@ -223,6 +223,7 @@
       <w>noborder</w>
       <w>nocapture</w>
       <w>nohead</w>
+      <w>nohwcrypt</w>
       <w>nomatch</w>
       <w>nomirror</w>
       <w>nonassoc</w>

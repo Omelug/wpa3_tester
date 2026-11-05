@@ -2,6 +2,10 @@
 #include <filesystem>
 #include <vector>
 
+#include <pcap/pcap.h>
+
+#include <iostream>
+#include "attacks/mc_mitm/MonitorSocket.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_config.h"
@@ -10,10 +14,8 @@
 #include "logger/devices.h"
 #include "logger/report.h"
 #include "observer/dmesg_wrapper.h"
-#include "observer/observers.h"
 #include "system/driver_diagnostics.h"
 #include "system/hw_capabilities.h"
-#include "system/hw_info.h"
 #include "system/ip.h"
 #include "system/netlink_helper.h"
 #include "system/utils.h"
@@ -23,77 +25,45 @@ using namespace std;
 using namespace filesystem;
 using namespace Tins;
 
-void test_bpf_filter(const ActorPtr & scanner, const optional<string> &netns, nlohmann::json& result) {
-    result["bpf_filter"] = {
-        {"ok", false},
-        {"dlt", -1},
-        {"dlt_name", "n/a"},
-        {"dlt_ok", false},
-        {"valid_filter_ok", false},
-        {"invalid_rejected", false}
-    };
+void test_bpf_filter(const ActorPtr &scanner, const optional<string> &netns, nlohmann::json &result) {
+	result["bpf_filter"]["ok"] = false;
 
-    std::string mon;
-    try {
-        scanner->create_sniff_iface();
-        mon = scanner.get_mon_iface();
-    } catch(const exception &e) {
-    	log(LogLevel::ERROR, "Error in bpf test: ", e.what());
-        return; //return default
-    }
+	try {
+		scanner->create_sniff_iface();
+		scanner->up_sniff_iface();
+	} catch(const exception &e) {
+		log(LogLevel::ERROR, "bpf test create_sniff_iface: {}", e.what());
+		return;
+	}
 
-    auto cleanup = [&]() {
-        if (!mon.empty()) {
-            try {
-                hw_capabilities::run_cmd({ "iw", "dev", mon, "del" }, netns);
-            } catch(...) {}
-        }
-    };
+	try {
+		const MonitorSocket ms(scanner.get_mon_iface(), netns);
 
-    try {
-		const MonitorSocket ms(mon, netns);
-        pcap_t* handle = ms.get_pcap_handle();
-        if (!handle) {
-            cleanup();
-            return;
-        }
+		int dlt = pcap_datalink(ms.get_pcap_handle());
+		if(dlt != DLT_IEEE802_11_RADIO)
+			pcap_set_datalink(ms.get_pcap_handle(), DLT_IEEE802_11_RADIO);
+		dlt = pcap_datalink(ms.get_pcap_handle());
 
-        int dlt = pcap_datalink(handle);
-        if (dlt != DLT_IEEE802_11_RADIO) {
-            pcap_set_datalink(handle, DLT_IEEE802_11_RADIO);
-        }
+		const char *dlt_name = pcap_datalink_val_to_name(dlt);
+		result["bpf_filter"]["dlt"] = dlt;
+		result["bpf_filter"]["dlt_name"] = string(dlt_name ? dlt_name : "unknown");
+		const bool dlt_ok = (dlt == DLT_IEEE802_11_RADIO);
+		result["bpf_filter"]["dlt_ok"] = dlt_ok;
 
-        dlt = pcap_datalink(handle);
-        result["bpf_filter"]["dlt"] = dlt;
-        const char* name_ptr = pcap_datalink_val_to_name(dlt);
-        result["bpf_filter"]["dlt_name"] = std::string(name_ptr != nullptr ? name_ptr : "unknown");
+		bool valid_ok = false;
+		try { ms.set_filter("wlan type mgt"); valid_ok = true; } catch(...) {}
+		result["bpf_filter"]["valid_filter_ok"] = valid_ok;
 
-        const bool dlt_ok = (dlt == DLT_IEEE802_11_RADIO);
-        result["bpf_filter"]["dlt_ok"] = dlt_ok;
+		bool invalid_rejected = false;
+		try { ms.set_filter("not_a_valid_bpf @@@"); } catch(...) { invalid_rejected = true; }
+		result["bpf_filter"]["invalid_rejected"] = invalid_rejected;
 
-        // test ok filter
-        bool valid_ok = false;
-        try {
-            ms.set_filter("wlan type mgt");
-            valid_ok = true;
-        } catch(...) {} //ignore
-        result["bpf_filter"]["valid_filter_ok"] = valid_ok;
+		result["bpf_filter"]["ok"] = dlt_ok && valid_ok && invalid_rejected;
+	} catch(const exception &e) {
+		log(LogLevel::ERROR, "bpf test: {}", e.what());
+	}
 
-        // Test reject invalid filter
-        bool invalid_rejected = false;
-        try {
-            ms.set_filter("not_a_valid_bpf @@@");
-        } catch(...) {
-            invalid_rejected = true;
-        }
-        result["bpf_filter"]["invalid_rejected"] = invalid_rejected;
-        result["bpf_filter"]["ok"] = dlt_ok && valid_ok && invalid_rejected;
-
-    } catch(const exception &e) {
-       log(LogLevel::ERROR, "Error in bpf test: ", e.what());
-    }
-
-    cleanup();
+	try { hw_capabilities::run_cmd({ "iw", "dev", scanner.get_mon_iface(), "del" }, netns); } catch(...) {}
 }
 
 
@@ -228,6 +198,9 @@ void run_attack(RunStatus &rs) {
 		hw_capabilities::run_cmd({ "iw", "dev", ap_bench, "del" }, netns);
 	} catch(...) { result["start_ap_hostapd"]["ok"] = false; }
 
+	// ----- BPF filter test -----
+	test_bpf_filter(scanner, netns, result);
+
 	rs.save_result(result);
 
 	ofstream result_txt(rs.run_folder() / "result.txt");
@@ -251,6 +224,7 @@ void generate_report(const RunStatus &rs) {
 	const bool is_up = result.value("is_up", false);
 	const string phy = result.value("phy", "n/a");
 	const string ip_addr = result.value("ip_addr", "n/a");
+	const string mac_layer = result.value("mac_layer", "unknown");
 	const string iw_info = result.value("iw_info", "");
 	const auto usb_info = result.value("usb_info", nlohmann::json{});
 	const auto regulatory = result.value("regulatory", nlohmann::json{});
@@ -272,7 +246,8 @@ void generate_report(const RunStatus &rs) {
 		md << "| PHY        | " << phy << " |\n";
 		md << "| Driver     | " << scanner->get_or(SK::driver_name, "n/a") << " |\n";
 		md << "| State      | " << (is_up ? "UP" : "DOWN") << " |\n";
-		md << "| IP Address | " << ip_addr << " |\n\n";
+		md << "| IP Address | " << ip_addr << " |\n";
+		md << "| MAC Layer  | " << mac_layer << " |\n\n";
 
 		md << "## MAC Addresses\n\n";
 		md << "| Type | Address |\n";
@@ -341,6 +316,17 @@ void generate_report(const RunStatus &rs) {
 		if(result.contains("driver_specific")) {
 			md << "## Driver-Specific Diagnostics (debugfs)\n\n";
 			md << "```json\n" << result["driver_specific"].dump(2) << "\n```\n\n";
+		}
+
+		if(result.contains("bpf_filter")) {
+			const auto &bf = result["bpf_filter"];
+			md << "## BPF Filter\n\n";
+			md << "| Check | Result |\n";
+			md << "|-------|--------|\n";
+			md << "| DLT | " << bf.value("dlt_name", "?") << " (" << bf.value("dlt", -1) << ") |\n";
+			md << "| DLT is radiotap | " << (bf.value("dlt_ok", false) ? "yes" : "**no**") << " |\n";
+			md << "| Valid filter attaches | " << (bf.value("valid_filter_ok", false) ? "yes" : "**no**") << " |\n";
+			md << "| Invalid filter rejected | " << (bf.value("invalid_rejected", false) ? "yes" : "**no**") << " |\n\n";
 		}
 
 		md << "## `iw dev " << iface << " info`\n\n";

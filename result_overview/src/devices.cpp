@@ -44,7 +44,7 @@ struct ApInfoData {
 	vector<string> stations;
 };
 
-struct IfaceData {
+struct IfaceData { //TODO ? -> IfaceInfoTestEntry (thsi is weird artefact)
 	string phy;
 	string iw_info;
 	string ip_addr;
@@ -60,6 +60,15 @@ struct IfaceData {
 	optional<int>  start_ap_iw_ms;
 	optional<bool> start_ap_hostapd_ok;
 	optional<int>  start_ap_hostapd_ms;
+	string mac_layer;
+
+	optional<bool> bpf_filter_ok;
+	optional<int>  bpf_dlt;
+	string         bpf_dlt_name;
+	optional<bool> bpf_dlt_ok;
+	optional<bool> bpf_valid_filter_ok;
+	optional<bool> bpf_invalid_rejected;
+
 	optional<UsbInfo> usb;
 };
 
@@ -154,6 +163,16 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 			const auto &s = j["start_ap_hostapd"];
 			d.start_ap_hostapd_ok = s.value("ok", false);
 			if(s.contains("ms")) d.start_ap_hostapd_ms = s.value("ms", -1);
+		}
+		d.mac_layer = j.value("mac_layer", string{});
+		if(j.contains("bpf_filter")) {
+			const auto &bpf = j["bpf_filter"];
+			d.bpf_filter_ok = bpf.value("ok", false);
+			if(bpf.contains("dlt")) d.bpf_dlt = bpf["dlt"].get<int>();
+			d.bpf_dlt_name = bpf.value("dlt_name", "unknown");
+			if(bpf.contains("dlt_ok")) d.bpf_dlt_ok = bpf["dlt_ok"].get<bool>();
+			if(bpf.contains("valid_filter_ok")) d.bpf_valid_filter_ok = bpf["valid_filter_ok"].get<bool>();
+			if(bpf.contains("invalid_rejected")) d.bpf_invalid_rejected = bpf["invalid_rejected"].get<bool>();
 		}
 		if(j.contains("usb_info") && j["usb_info"].value("is_usb", false)){
 			const auto &u = j["usb_info"];
@@ -286,8 +305,21 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 		f << "<div class=\"card\"><h2>System Snapshot</h2><table>";
 		if(!iface.phy.empty())                              tr("PHY", iface.phy);
 		if(!iface.ip_addr.empty() && iface.ip_addr != "n/a") tr("IP Address", iface.ip_addr);
+		if(!iface.mac_layer.empty())                        tr("MAC Layer", iface.mac_layer);
+		if(iface.bpf_filter_ok.has_value()) {
+			string bpf_text = iface.bpf_filter_ok.value() ? "PASS" : "FAIL";
+
+			string details = "";
+			if(!iface.bpf_dlt_name.empty() && iface.bpf_dlt_name != "unknown") {
+				details += " (DLT: " + iface.bpf_dlt_name;
+				if(iface.bpf_dlt.has_value()) details += " [" + to_string(*iface.bpf_dlt) + "]";
+				details += ")";
+			}
+
+			tr("BPF filter", bpf_text + details);
+		}
 		if(iface.channel_switch_ok.has_value()){
-			const string val = (iface.channel_switch_ok.value() ? "PASS " :  "FAIL")
+			const string val = (iface.channel_switch_ok.value() ? "PASS " : "FAIL ")
 				+ to_string(iface.channel_switch_us.value_or(-1)) + " &micro;s";
 			tr("Channel switch", val);
 		}
@@ -364,6 +396,8 @@ static void emit_section(HtmlGuard &f, const vector<DeviceInfo> &devices,
 		});
 		COL("Driver",      d.driver);
 		col("PHY/radio", [&](const DeviceInfo &d){ f << (d.iface ? d.iface->phy : ""); });
+		col("MAC layer", [&](const DeviceInfo &d){ f << (d.iface ? d.iface->mac_layer : ""); });
+		col("BPF", [&](const DeviceInfo &d){ f << (d.iface && d.iface->bpf_filter_ok.has_value() ? (d.iface->bpf_filter_ok.value() ? "ok" : "fail") : ""); });
 		COL("AP",          d.caps.AP);
 		COL("STA",         d.caps.STA);
 		COL("Mon",         d.caps.monitor);

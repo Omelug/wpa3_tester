@@ -162,7 +162,6 @@ bool RunStatus::config_requirement(const std::vector<std::string> &disabled_test
 	parse_requirements();
 	log_actor_map("Actors: ", actors);
 
-	// set the regulatory domain before loading the driver so ath9k_htc (user_regd=1)
 	// picks it up from the kernel on init instead of falling back to EEPROM.
 	auto &g_config = get_global_config();
 	if(g_config.contains("regulatory_domain")) {

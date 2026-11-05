@@ -38,6 +38,16 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder) {
 		try {
 			const auto result = rs.load_result();
 			e.mac_layer = result.value("mac_layer", "");
+			if(result.contains("bpf_filter")) {
+				const auto& bpf = result["bpf_filter"];
+				e.bpf_filter_ok = bpf.value("ok", false);
+
+				if(bpf.contains("dlt")) e.bpf_dlt = bpf["dlt"].get<int>();
+				e.bpf_dlt_name = bpf.value("dlt_name", "unknown");
+				if(bpf.contains("dlt_ok")) e.bpf_dlt_ok = bpf["dlt_ok"].get<bool>();
+				if(bpf.contains("valid_filter_ok")) e.bpf_valid_filter_ok = bpf["valid_filter_ok"].get<bool>();
+				if(bpf.contains("invalid_rejected")) e.bpf_invalid_rejected = bpf["invalid_rejected"].get<bool>();
+			}
 			e.driver_summary =
 				driver_diag::summarize_driver_specific(result.value("driver_specific", nlohmann::json::object()));
 			if(result.contains("channel_switch")) {
@@ -97,8 +107,8 @@ void generate_report(RunSuiteStatus &rss) {
 		return;
 	}
 
-	r << "| Test | Info | Ch Switch | NetNS Move | Sniff VIF | Start AP iw | Start AP hostapd | Report |\n";
-	r << "|------|------|-----------|------------|-----------|-------------|------------------|--------|\n";
+	r << "| Test | Info | MAC Layer | BPF | Ch Switch | NetNS Move | Sniff VIF | Start AP iw | Start AP hostapd | Report |\n";
+	r << "|------|------|-----------|-----|-----------|------------|-----------|-------------|------------------|--------|\n";
 
 	for(const auto &e: entries) {
 		string ch = "n/a";
@@ -124,7 +134,11 @@ void generate_report(RunSuiteStatus &rss) {
 			ap_hd = (e.start_ap_hostapd_ok.value() ? "ok " : "fail ") + to_string(e.start_ap_hostapd_ms.value_or(-1)) +
 				"ms";
 
-		r << "| " << e.test_name << " | " << e.hw_summary << " | " << ch << " | " << ns << " | " << si << " | " << ap_iw
+		const string bpf = e.bpf_filter_ok.has_value() ? (e.bpf_filter_ok.value() ? "ok" : "fail") : "n/a";
+		r << "| " << e.test_name << " | " << e.hw_summary << " | "
+		  << (e.mac_layer.empty() ? "n/a" : e.mac_layer) << " | "
+		  << bpf << " | "
+		  << ch << " | " << ns << " | " << si << " | " << ap_iw
 		  << " | " << ap_hd << " | " << report::link("report", e.report_md) << " |\n";
 	}
 }

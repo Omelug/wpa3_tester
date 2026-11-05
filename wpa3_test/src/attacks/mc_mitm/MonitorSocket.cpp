@@ -142,6 +142,7 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 								const RadioTap rt2(frame.data(), rt_len);
 								if(rt2.present() & RadioTap::FLAGS && (rt2.flags() & RadioTap::FCS)) strip = 4;
 							} catch(...) {}
+							//TODO ok ignore all other?
 							log(LogLevel::DEBUG, "SNAP/EAPOL inner PDU, type=0x{:02x}", trunc < frame.size() ? frame[trunc + 1] : 0xFF);
 							return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };
 						} catch(...) {
@@ -197,8 +198,20 @@ void MonitorSocket::recv_loop(
 	}
 }
 
+//TODO test in sim possible?
 void MonitorSocket::set_filter(const string &bpf) const {
-	if(sniffer_) sniffer_->set_filter(bpf);
+	if(!sniffer_) throw run_err("set_filter: not supported on remote socket");
+	pcap_t *handle = sniffer_->get_pcap_handle();
+	if (!handle) {
+		throw run_err("set_filter: pcap handle is null or not initialized");
+	}
+
+	const int dlt = pcap_datalink(handle);
+	if (dlt != DLT_IEEE802_11_RADIO) {
+		throw run_err("set_filter: no DLT_IEEE802_11_RADIO (got dlt = {})", dlt);
+	}
+
+	if(!sniffer_->set_filter(bpf))  throw run_err("set_filter: compilation error");
 }
 
 SnifferConfiguration MonitorSocket::make_sniff_cfg() {

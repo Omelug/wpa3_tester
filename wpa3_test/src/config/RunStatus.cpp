@@ -480,7 +480,7 @@ void RunStatus::load_actor_interface_mapping() {
 		actor->set(SK::actor_name, actor_name);
 		actors.emplace(actor_name, ActorPtr(actor));
 	}
-	log(LogLevel::INFO, "Loaded {} actors from mapping.csv", actors.size());
+	log(LogLevel::INFO, "Loaded {} actors from {}", actors.size(), csv_path);
 }
 
 void RunStatus::write_done() const {

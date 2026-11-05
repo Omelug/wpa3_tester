@@ -106,6 +106,7 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 			}
 	}
 	const auto [addr1, addr2] = get_addrs(*pdu, raw);
+	if(dot11->find_pdu<Dot11Beacon>()) return;
 
 	power_mgmt_response_rogue(addr2, *dot11);
 

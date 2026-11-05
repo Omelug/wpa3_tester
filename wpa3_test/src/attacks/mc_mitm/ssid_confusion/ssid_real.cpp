@@ -105,6 +105,7 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		log(LogLevel::DEBUG, "Real channel: Unknown frame type");
 		return;
 	}
+	if(dot11->find_pdu<Dot11Beacon>()) return;
 
 	power_mgmt_response_real(addr2, *dot11);
 

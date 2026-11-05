@@ -38,10 +38,7 @@ PDF:
     +: vysvětlit co jsou var_ a indexy v permutacích
     +: PMKSA
     +: SPP
-    +: testování testeru? (asi jen zímínit u výběru jazyka)
-    +: RunConfig description
-
-t: internal/externla Actor_Config_external::setup_actor (run some test, should be visible directly )
+    +: testování testeru? (asi jen zímínit u výběru jazyka)t: internal/externla Actor_Config_external::setup_actor (run some test, should be visible directly )
 t: reguratory change to iface_info
 f: regulatory dont works on rapsberry (ath_htc reset to US), add to global_variables
 d: zmínit bakalářskou práci v README

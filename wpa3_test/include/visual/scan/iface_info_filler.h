@@ -22,6 +22,7 @@ struct IfaceInfoTestEntry {
 	std::optional<int> start_ap_iw_ms;
 	std::optional<bool> start_ap_hostapd_ok;
 	std::optional<int> start_ap_hostapd_ms;
+	std::string mac_layer;
 
 	static IfaceInfoTestEntry parse(const std::filesystem::path &test_folder);
 };

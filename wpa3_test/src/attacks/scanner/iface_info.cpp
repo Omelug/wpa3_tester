@@ -21,6 +21,81 @@
 namespace wpa3_tester::iface_info {
 using namespace std;
 using namespace filesystem;
+using namespace Tins;
+
+void test_bpf_filter(const ActorPtr & scanner, const optional<string> &netns, nlohmann::json& result) {
+    result["bpf_filter"] = {
+        {"ok", false},
+        {"dlt", -1},
+        {"dlt_name", "n/a"},
+        {"dlt_ok", false},
+        {"valid_filter_ok", false},
+        {"invalid_rejected", false}
+    };
+
+    std::string mon;
+    try {
+        scanner->create_sniff_iface();
+        mon = scanner.get_mon_iface();
+    } catch(const exception &e) {
+    	log(LogLevel::ERROR, "Error in bpf test: ", e.what());
+        return; //return default
+    }
+
+    auto cleanup = [&]() {
+        if (!mon.empty()) {
+            try {
+                hw_capabilities::run_cmd({ "iw", "dev", mon, "del" }, netns);
+            } catch(...) {}
+        }
+    };
+
+    try {
+		const MonitorSocket ms(mon, netns);
+        pcap_t* handle = ms.get_pcap_handle();
+        if (!handle) {
+            cleanup();
+            return;
+        }
+
+        int dlt = pcap_datalink(handle);
+        if (dlt != DLT_IEEE802_11_RADIO) {
+            pcap_set_datalink(handle, DLT_IEEE802_11_RADIO);
+        }
+
+        dlt = pcap_datalink(handle);
+        result["bpf_filter"]["dlt"] = dlt;
+        const char* name_ptr = pcap_datalink_val_to_name(dlt);
+        result["bpf_filter"]["dlt_name"] = std::string(name_ptr != nullptr ? name_ptr : "unknown");
+
+        const bool dlt_ok = (dlt == DLT_IEEE802_11_RADIO);
+        result["bpf_filter"]["dlt_ok"] = dlt_ok;
+
+        // test ok filter
+        bool valid_ok = false;
+        try {
+            ms.set_filter("wlan type mgt");
+            valid_ok = true;
+        } catch(...) {} //ignore
+        result["bpf_filter"]["valid_filter_ok"] = valid_ok;
+
+        // Test reject invalid filter
+        bool invalid_rejected = false;
+        try {
+            ms.set_filter("not_a_valid_bpf @@@");
+        } catch(...) {
+            invalid_rejected = true;
+        }
+        result["bpf_filter"]["invalid_rejected"] = invalid_rejected;
+        result["bpf_filter"]["ok"] = dlt_ok && valid_ok && invalid_rejected;
+
+    } catch(const exception &e) {
+       log(LogLevel::ERROR, "Error in bpf test: ", e.what());
+    }
+
+    cleanup();
+}
+
 
 void run_attack(RunStatus &rs) {
 	rs.start_observers();
@@ -60,6 +135,7 @@ void run_attack(RunStatus &rs) {
 	} catch(...) { result["iw_info"] = ""; }
 
 	const string phy = result.value("phy", "");
+	result["mac_layer"] = hw_capabilities::detect_mac_layer(iface);
 	result["driver_specific"] = driver_diag::collect_driver_specific(scanner->get(SK::driver_name), phy);
 	result["regulatory"] = driver_diag::collect_regulatory(phy, netns);
 	result["usb_info"] = driver_diag::collect_usb_info(iface);
@@ -123,14 +199,14 @@ void run_attack(RunStatus &rs) {
 		using namespace chrono;
 		const string ap_bench = iface + "_bench";
 		Channel bench_ch{ 6, WifiBand::BAND_2_4, nullopt };
-		Tins::Dot11Beacon bench_beacon;
+		Dot11Beacon bench_beacon;
 		bench_beacon.interval(100);
-		const Tins::HWAddress<6> bench_mac("02:00:00:be:ac:01");
+		const HWAddress<6> bench_mac("02:00:00:be:ac:01");
 		bench_beacon.addr2(bench_mac);
 		bench_beacon.addr3(bench_mac);
 		bench_beacon.ssid("wpa3_tester_bench");
 		uint8_t ds_ch = 6;
-		bench_beacon.add_option({ Tins::Dot11::DS_SET, 1, &ds_ch });
+		bench_beacon.add_option({ Dot11::DS_SET, 1, &ds_ch });
 		const auto t0 = steady_clock::now();
 		start_ap(rs, ap_bench, scanner, bench_ch, bench_beacon, bench_mac, 100, 1);
 		result["start_ap_iw"]["ok"] = true;

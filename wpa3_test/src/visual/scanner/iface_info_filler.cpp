@@ -37,6 +37,7 @@ IfaceInfoTestEntry IfaceInfoTestEntry::parse(const path &test_folder) {
 		}
 		try {
 			const auto result = rs.load_result();
+			e.mac_layer = result.value("mac_layer", "");
 			e.driver_summary =
 				driver_diag::summarize_driver_specific(result.value("driver_specific", nlohmann::json::object()));
 			if(result.contains("channel_switch")) {

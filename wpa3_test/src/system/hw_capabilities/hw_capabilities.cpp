@@ -217,11 +217,9 @@ string hw_capabilities::get_iface(const string &ip_address, const optional<strin
 	return match[1].str();
 }
 
-//TODO get permanent mac of spoofed mac?
+// return mac adress (actual if spoofed, return spoofed )
 Tins::HWAddress<6> hw_capabilities::get_mac_address(const string &iface, const optional<string> &netns){
 	netlink_helper::NetNSContext ns_guard(netns);
-
-	//TODO  return read_sysfs(iface, "address");
 
 	ifreq ifr{};
 	iface.copy(ifr.ifr_name, IFNAMSIZ - 1);
@@ -237,6 +235,28 @@ Tins::HWAddress<6> hw_capabilities::get_mac_address(const string &iface, const o
 
 	return {reinterpret_cast<const uint8_t *>(ifr.ifr_hwaddr.sa_data)};
 }
+
+string hw_capabilities::detect_mac_layer(const std::string& interface) {
+	const path driver_path = path("/sys/class/net") / interface / "device" / "driver";
+	if (!exists(driver_path)) return "unknown";
+
+	const path module_link = driver_path / "module";
+	if (!exists(module_link)) return "unknown";
+
+	const string module_name = read_symlink(module_link).filename().string();
+
+	const path mac80211_holders = "/sys/module/mac80211/holders";
+	if (exists(mac80211_holders)) {
+		for (const auto& entry : directory_iterator(mac80211_holders))
+			if (entry.path().filename().string() == module_name) return "SoftMAC";
+		return "FullMAC";
+	}
+	// mac80211 built into kernel (no /sys/module/mac80211) — fall back to debugfs
+	const path phy_dbg = path("/sys/kernel/debug/ieee80211") / get_phy(interface, nullopt);
+	if (!exists(phy_dbg)) return "unknown";
+	return exists(phy_dbg / "mac80211stats") ? "SoftMAC" : "FullMAC";
+}
+
 
 string hw_capabilities::get_permanent_mac(const string &iface, const optional<string> &netns){
 	const string output = run_cmd_output({"ip", "-j", "link", "show", iface}, netns);

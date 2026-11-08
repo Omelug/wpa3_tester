@@ -7,24 +7,31 @@
 
 kernel: $(KERNEL_OUT)/arch/arm64/boot/Image
 
-$(KERNEL_OUT)/arch/arm64/boot/Image: $(DEBUG_CONFIG)
+$(KERNEL_OUT)/arch/arm64/boot/Image: $(DEBUG_CONFIG) # FIXME downgrade to rpi-6.6.y ?
 	@command -v $(CROSS_COMPILE)gcc >/dev/null 2>&1 \
-	    || { echo "Error: cross-compiler $(CROSS_COMPILE)gcc not found"; \
-	         echo "  Debian/Ubuntu: sudo apt install gcc-aarch64-linux-gnu flex bison libssl-dev libelf-dev bc"; \
-	         echo "  NixOS:         nix-shell  (shell.nix in this directory)"; exit 1; }
+		|| { echo "Error: cross-compiler $(CROSS_COMPILE)gcc not found"; \
+			 echo "  Debian/Ubuntu: sudo apt install gcc-aarch64-linux-gnu flex bison libssl-dev libelf-dev bc"; \
+			 echo "  NixOS:         nix-shell  (shell.nix in this directory)"; exit 1; }
 	[ -d $(KERNEL_SRC)/.git ] || git clone --depth=1 --branch rpi-6.18.y $(KERNEL_REPO) $(KERNEL_SRC)
+
+ifneq ($(RASPBERRY_GIT_COMMIT),)
+	cd $(KERNEL_SRC) && \
+		git fetch origin $(RASPBERRY_GIT_COMMIT) --depth=1 || true; \
+		git checkout $(RASPBERRY_GIT_COMMIT)
+endif
+
 	grep -q 'reset_resume' $(KERNEL_SRC)/drivers/net/wireless/mediatek/mt76/mt76x2/usb.c || \
-	    sed -i '/\.resume\s*=\s*mt76x2u_resume/a\\t.reset_resume\t= mt76x2u_resume,' \
-	    $(KERNEL_SRC)/drivers/net/wireless/mediatek/mt76/mt76x2/usb.c
+		sed -i '/\.resume\s*=\s*mt76x2u_resume/a\\t.reset_resume\t= mt76x2u_resume,' \
+		$(KERNEL_SRC)/drivers/net/wireless/mediatek/mt76/mt76x2/usb.c
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) bcm2711_defconfig
 	grep -E '^CONFIG_[A-Z0-9_]+=[yn]' $(DEBUG_CONFIG) | while IFS='=' read -r k v; do \
-	    case "$$v" in \
-	        y) $(KERNEL_SRC)/scripts/config --file $(KERNEL_OUT)/.config --enable  "$$k" ;; \
-	        n) $(KERNEL_SRC)/scripts/config --file $(KERNEL_OUT)/.config --disable "$$k" ;; \
-	    esac; done
+		case "$$v" in \
+			y) $(KERNEL_SRC)/scripts/config --file $(KERNEL_OUT)/.config --enable  "$$k" ;; \
+			n) $(KERNEL_SRC)/scripts/config --file $(KERNEL_OUT)/.config --disable "$$k" ;; \
+		esac; done
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) olddefconfig
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
-	    -j$(shell nproc) Image modules dtbs
+		-j$(shell nproc) Image modules dtbs
 
 # -- Out-of-tree WiFi drivers, cross-built against THIS kernel's own O=$(KERNEL_OUT) tree
 #  (not against apt headers)

@@ -53,6 +53,7 @@ CROSS_COMPILE ?= $(shell \
     echo aarch64-linux-gnu-)
 
 KERNEL_REPO  := https://github.com/raspberrypi/linux
+RASPBERRY_GIT_COMMIT = a4985478de14b3a83c8e04fed68377c1bdae735d
 KERNEL_SRC   := $(CURDIR)/run/kernel-src
 KERNEL_OUT   := $(CURDIR)/run/kernel-build
 KERNEL_MODS  := $(CURDIR)/run/kernel-modules

@@ -2,13 +2,13 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <nlohmann/json.hpp>
 #include "system/wifi_channel.h"
 
 namespace wpa3_tester {
 enum it_test_result { UNKNOWN, PASSED, FAIL, SUSPICIOUS, NOCAPTURE };
 
-NLOHMANN_JSON_SERIALIZE_ENUM(it_test_result,
-	{
+NLOHMANN_JSON_SERIALIZE_ENUM(it_test_result,{
 		{ UNKNOWN, "UNKNOWN" },
 		{ PASSED, "PASSED" },
 		{ FAIL, "FAIL" },

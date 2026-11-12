@@ -74,6 +74,7 @@ public:
 		const std::filesystem::path &working_dir = {}, const std::filesystem::path &logging_dir = {});
 
 	void allow_history(const std::string &actor_name);
+	//TODO leave here for future optimalization, i
 	void ignore_history(const std::string &actor_name);
 	void discard_history(const std::string &actor_name);
 

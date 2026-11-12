@@ -6,4 +6,5 @@ actors:
     setup:
       program_config:
         ieee80211w: 1
+        sae_password: password123
         key_mgmt: SAE WPA-PSK

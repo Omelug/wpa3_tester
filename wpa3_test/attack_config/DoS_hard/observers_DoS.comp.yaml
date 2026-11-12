@@ -1,14 +1,9 @@
 observers:
-  #client_mausezahn:
-  #  actor: client
-  #  program: mausezahn
-  #  program_config:
-  #    target_actor: ap
-  #tshark_client:
-  #  actor: client
-  #  program: tshark
-  #  program_config:
-  #    filter: "udp port 5201"
+  ap_iperf3:
+    actor: client
+    program: iperf3
+    program_config:
+      target_actor: ap
   tester_dmesg:
     program: dmesg
     program_config:

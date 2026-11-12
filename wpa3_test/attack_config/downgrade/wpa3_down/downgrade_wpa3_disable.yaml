@@ -24,6 +24,7 @@ actors:
         other_options: -d
         ieee80211w: 1 #Needed for WPA3 disable ?
         key_mgmt: SAE WPA-PSK
+        sae_password: password123
         psk: password123 #needed for connect to transition (at least rtw89_8852au)
   attacker:
     source: internal

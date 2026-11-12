@@ -90,6 +90,9 @@ test_build:
 test: test_build
 	sudo -E ctest --test-dir $(BUILD_DIR) --output-on-failure
 
+test_failed: test_build
+	sudo -E ctest --test-dir $(BUILD_DIR) --rerun-failed --output-on-failure
+
 test_manual_build:
 	cmake --build $(BUILD_DIR) --target \
 		test_list_external_entities \

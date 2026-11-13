@@ -1,6 +1,8 @@
 #pragma once
 #include <chrono>
 #include <cstdint>
+#include <linux/if_packet.h>
+#include <sys/socket.h>
 #include <thread>
 #include <tins/tins.h>
 #include <vector>
@@ -10,6 +12,7 @@
 #include "logger/log.h"
 
 namespace wpa3_tester::dos_helpers {
+
 template<typename FrameGen>
 void timed_burst(Tins::PacketSender &sender, const int attack_time_sec, const size_t burst_size,
 	const size_t frames_per_second_limit, FrameGen &&frame_gen,
@@ -28,6 +31,41 @@ void timed_burst(Tins::PacketSender &sender, const int attack_time_sec, const si
 			sender.send(*frame);
 			// inter_frame gap lets the AP's ACK arrive before the next injection
 			// without it the NIC TX queue fills faster than ACKs return -> ACK fail
+			if(inter_frame.count() > 0) interruptible_sleep(inter_frame);
+		}
+
+		const auto target = std::chrono::microseconds(burst_size * 1'000'000 / frames_per_second_limit);
+		if(const auto elapsed = std::chrono::steady_clock::now() - burst_start; elapsed < target)
+			std::this_thread::sleep_for(target - elapsed);
+
+		counter += static_cast<long long>(burst_size);
+		if(counter >= next_log) {
+			log(LogLevel::DEBUG, "Packets sent: {}", counter);
+			next_log += 10 * static_cast<long long>(burst_size);
+		}
+	}
+	log(LogLevel::INFO, "Done. Total packets sent: {}", counter);
+}
+
+// Raw AF_PACKET overload: bypasses driver MAC enforcement so injected addr2 reaches the AP unchanged
+template<typename FrameGen>
+void timed_burst(const int fd, const sockaddr_ll &addr, const int attack_time_sec, const size_t burst_size,
+	const size_t frames_per_second_limit, FrameGen &&frame_gen,
+	const std::chrono::microseconds inter_frame = std::chrono::microseconds(0)) {
+	long long counter = 0;
+	long long next_log = 0;
+	const auto end_time = std::chrono::steady_clock::now() + std::chrono::seconds(attack_time_sec);
+
+	while(std::chrono::steady_clock::now() < end_time) {
+		if(g_interrupted) throw interrupted_err("timed_burst loop");
+		const auto burst_start = std::chrono::steady_clock::now();
+		auto frame = frame_gen();
+		if(!frame) continue;
+
+		const auto bytes = frame->serialize();
+		for(size_t i = 0; i < burst_size; ++i) {
+			sendto(fd, bytes.data(), bytes.size(), MSG_DONTWAIT,
+				reinterpret_cast<const sockaddr *>(&addr), sizeof(addr));
 			if(inter_frame.count() > 0) interruptible_sleep(inter_frame);
 		}
 

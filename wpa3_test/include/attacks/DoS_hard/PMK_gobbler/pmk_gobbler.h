@@ -28,7 +28,7 @@ void capture_cookies(const std::string &sniff_iface, const Tins::HWAddress<6> &a
 
 std::pair<ACMCookie, int> trigger_acm(const std::string &iface, const std::string &sniff_iface,
 	const std::string &att_mac, const Tins::HWAddress<6> &ap_mac, int acm_pause_millisec, int trigger_count,
-	const sae_helper::SAEPair &sae_params);
+	const sae_helper::SAEPair &sae_params, int burst_size = 1);
 void burst_with_cookies(const std::string &iface, const std::string &sta_mac, const Tins::HWAddress<6> &ap_mac,
 	CookieStore &store, int attack_time_sec, const sae_helper::SAEPair &sae_params, size_t burst_size,
 	size_t frames_per_second_limit, int cookie_wait_ms);

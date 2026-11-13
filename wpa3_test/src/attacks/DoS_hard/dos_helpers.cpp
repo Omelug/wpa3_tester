@@ -19,8 +19,11 @@ vector<HWAddress<6>> get_connected_stas(RunStatus &rs) {
 	const ActorPtr ap = rs.get_actor("ap");
 	vector<HWAddress<6>> result;
 
-	const string out =
-		ap->conn->exec("iw dev $(iw dev | awk '/Interface/{print $2}' | head -1) station dump 2>/dev/null");
+	const string ap_mac = ap.get(SK::mac);
+	const string out = ap->conn->exec(
+		"iw dev | awk '/Interface/{iface=$2} /type AP/{print iface}' | "
+		"while read i; do iw dev \"$i\" info | grep -qi '" + ap_mac + "' && echo \"$i\" && break; done | "
+		"xargs -r -I{} iw dev {} station dump 2>/dev/null");
 
 	istringstream ss(out);
 	string line;

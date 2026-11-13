@@ -170,11 +170,12 @@ unordered_map<uint16_t, sae_helper::SAEPair> get_commit_values_all_groups(RunSta
 	const ActorPtr att = rs.get_actor("attacker");
 	const Channel ch = rs.get_actor("ap")->get_channel();
 
-	// most mac80211 drivers: bringing managed iface UP resets the phy channel.
-	// Bring it DOWN for the probe so we can fix the monitor to the AP's channel, then restore.
 	att->set_mon_channel(ch);
 	auto result = probe_supported_groups(ap_mac, att.get(SK::mac), sniff_iface);
 	att->set_iface_up();
+	// set_iface_up() lets mac80211 reset the PHY channel
+	// re-pin before returning
+	att->set_mon_channel(ch);
 	return result;
 }
 }

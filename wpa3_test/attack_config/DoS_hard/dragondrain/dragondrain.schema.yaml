@@ -5,6 +5,12 @@ properties:
     type: object
     additionalProperties: false
     properties:
+      sleep_before_sec:
+        type: integer
+        default: 5
+      sleep_after_sec:
+        type: integer
+        default: 5
       bitrate:
         type: integer
         default: 54

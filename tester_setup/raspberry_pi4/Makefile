@@ -65,6 +65,7 @@ include mk/deploy.mk
 include mk/cross.mk
 include mk/kernel.mk
 include mk/results.mk
+include mk/tools.mk
 
 .PHONY: help
 #TODO nedát to jako file do doc abych to nemusel udržovat zvlášť (už jsou tu v2ci, co nejsou pravda)

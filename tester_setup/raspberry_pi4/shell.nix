@@ -16,6 +16,11 @@ in pkgs.mkShell {
     pkgs.rsync
     pkgs.git
     pkgs.iptables
+    pkgs.autoconf269
+    pkgs.automake
+    pkgs.libtool
+    pkgs.pkg-config
+    pkgs.patchelf
   ];
   shellHook = ''
     export CROSS_COMPILE=aarch64-unknown-linux-gnu-

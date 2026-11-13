@@ -34,6 +34,7 @@ deploy-cross:
 		$(SRC_ROOT)/wpa3_test/attack_config/ \
 		$(PI_USER)@$(PI):$(REMOTE)/wpa3_test/attack_config/
 	$(MAKE) ath_masker PI=$(PI)
+	$(MAKE) tools PI=$(PI)
 	@echo "==> Binary deployed. Run: make run"
 
 test-cross:

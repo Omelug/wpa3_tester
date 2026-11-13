@@ -88,6 +88,9 @@ properties:
     type: integer
     enum: [ 0, 1, 2, 3 ]
     description: "0=hunt-and-peck, 1=H2E, 2=H2E required, 3=both"
+  sae_groups:
+    type: string
+    description: "Space-separated DH group IDs (e.g. '19 20 21')"
   sae_password:
     type: string
     minLength: 1

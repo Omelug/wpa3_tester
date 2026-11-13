@@ -8,6 +8,9 @@ actors:
     $extends: ../../comp/Dlink/Dlink_wb.comp.yaml
   client:
     $extends: ../../comp/Dlink/mixed_client_2_4.comp.yaml
+    setup:
+      program_config:
+        ssid: test_wpa3_tester_Dlink
   attacker:
     source: internal
     selection:
@@ -32,7 +35,10 @@ observers:
     program_config:
       interval: 1
 attack_config:
+  sleep_before_sec: 5
+  sleep_after_sec: 5
   bitrate: 54
   number_of_random_mac: 1
   timeout_sec: 30
   r: 200
+rewrite: errors

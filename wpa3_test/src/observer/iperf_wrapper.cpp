@@ -27,8 +27,12 @@ IperfData parse_iperf_log(const path &log_path, const string &actor_tag) {
 		if(line.find("[" + actor_tag + "]") == string::npos) continue;
 		if(line.find("[cmd]") != string::npos) continue;
 		if(line.find("- - - - - - - - - - -") != string::npos) break;
-		const auto pos_rate = line.find("Kbits/sec");
-		if(pos_rate == string::npos) continue;
+		auto pos_rate = line.find("Mbits/sec");
+		bool is_mbits = pos_rate != string::npos;
+		if(!is_mbits) {
+			pos_rate = line.find("Kbits/sec");
+			if(pos_rate == string::npos) continue;
+		}
 
 		size_t end = pos_rate;
 		while(end > 0 && isspace(line[end - 1])) --end;
@@ -37,6 +41,7 @@ IperfData parse_iperf_log(const path &log_path, const string &actor_tag) {
 
 		try {
 			double bw = stod(line.substr(start, end - start));
+			if(is_mbits) bw *= 1000.0;
 			data.bandwidths.push_back(bw);
 			data.intervals.push_back(static_cast<double>(data.bandwidths.size()));
 		} catch(...) { log(LogLevel::ERROR, "iperf parsing error"); }

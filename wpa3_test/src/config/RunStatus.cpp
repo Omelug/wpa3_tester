@@ -387,6 +387,7 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const se
 		log_events(elements,
 			{
 				{ "ap", "did not acknowledge", "ACK_fail", "red" },
+				{ "ap", "AP-STA-DISCONNECTED", "AP DISCONN", "red" },
 				{ "client", "CTRL-EVENT-DISCONNECTED", "DISCONN", "red" },
 			},
 			window);

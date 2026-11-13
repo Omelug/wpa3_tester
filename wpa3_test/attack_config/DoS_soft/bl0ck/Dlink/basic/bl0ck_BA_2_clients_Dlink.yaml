@@ -1,0 +1,33 @@
+name: bl0ck_BA_2_clients_Dlink
+$extends: ../bl0ck_Dlink.comp.yaml
+$validator: ../../bl0ck.schema.yaml
+actors:
+  client:
+    setup:
+      program_config:
+        other_options: "-dd"
+  client2:
+    source: internal
+    setup:
+      program: wpa_supplicant
+      program_config:
+        other_options: "-d"
+        group: CCMP
+        ieee80211w: 2
+        key_mgmt: SAE
+        pairwise: CCMP
+        sae_password: password123
+        psk: password123
+        scan_freq: 5180
+        ssid: test_wpa3_tester_Dlink_5GHz
+        version: 2_10
+    selection:
+      permanent_mac: "90:de:80:de:ff:7b"
+      condition: [ managed, 80211ac, 5GHz, netns_change ]
+    netns: sta2
+attack_config:
+  attack_time_sec: 15
+  attack_variant: "BA"
+  random_MAC: false
+  frame_in_batch: 50
+  ms_interval: 100

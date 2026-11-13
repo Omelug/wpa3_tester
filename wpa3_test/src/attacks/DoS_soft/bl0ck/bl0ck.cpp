@@ -242,7 +242,7 @@ void setup_attack(RunStatus &rs) {
 	components::client_ap_setup_t(rs);
 	if(rs.actor("client2")) {
 		components::setup_STA(rs, "client2");
-		rs.process_manager.wait_for("client2", "EVENT-CONNECTED", seconds(40)); //FIXME hardcoded timeout
+		rs.process_manager.wait_for("client2", "EVENT-CONNECTED", seconds(80)); //FIXME hardcoded timeout
 		if(rs.get_actor("client2")[SK::ip_addr]) ip::set_ip(rs, "client2");
 	}
 	components::setup_rogue_ap(rs, nullopt);

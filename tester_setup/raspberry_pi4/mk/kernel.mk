@@ -87,7 +87,8 @@ kernel-deploy: $(KERNEL_OUT)/arch/arm64/boot/Image
 
 ATH_MASKER_SRC := $(CURDIR)/run/drivers-src/ath_masker
 
-ath_masker: $(KERNEL_OUT)/arch/arm64/boot/Image
+ath_masker:
+	@test -d "$(KERNEL_OUT)" || { echo "Error: kernel build tree missing - run 'make kernel' first"; exit 1; }
 	@[ -d $(ATH_MASKER_SRC) ] || git clone --depth=1 https://github.com/Omelug/ath_masker $(ATH_MASKER_SRC)
 	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=arm64 CROSS_COMPILE=$(CROSS_COMPILE) \
 	    M=$(ATH_MASKER_SRC) modules -j$(shell nproc)

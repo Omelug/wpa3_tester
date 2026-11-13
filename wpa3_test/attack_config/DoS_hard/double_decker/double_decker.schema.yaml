@@ -1,0 +1,42 @@
+title: Double Decker Config
+type: object
+$extends: ../dos_time.comp.schema.yaml
+properties:
+  attack_config:
+    type: object
+    required:
+      $UNION: [ acm_trigger_count, acm_threshold, burst_size, frames_per_second_limit, use_connected_stas ]
+    additionalProperties: false
+    properties:
+      attack_time_sec:
+        description: duration of the post-ACM phase
+      acm_threshold:
+        type: integer
+        minimum: 2
+        description: dot11RSNASAEAntiCloggingThreshold; pre-ACM pool = threshold - 1
+      acm_trigger_count:
+        type: integer
+        minimum: 1
+        description: max frames to send when triggering ACM
+      acm_pause_millisec:
+        type: integer
+        minimum: 0
+        default: 5
+      burst_size:
+        type: integer
+        minimum: 1
+      frames_per_second_limit:
+        type: integer
+        minimum: 1
+      cookie_wait_ms:
+        type: integer
+        minimum: 0
+        default: 50
+      use_connected_stas:
+        type: boolean
+        description: prefer connected STA MACs for pre-ACM pool (more impactful per paper)
+      refresh_pre_acm_interval_sec:
+        type: integer
+        minimum: 0
+        default: 60
+        description: re-send pre-ACM commits every N seconds to prevent inactivity expiry; 0 = disabled

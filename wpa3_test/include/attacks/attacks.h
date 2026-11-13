@@ -8,6 +8,7 @@
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h"
 #include "attacks/DoS_hard/dragondrain/dragondrain.h"
+#include "attacks/DoS_hard/double_decker/double_decker.h"
 #include "attacks/DoS_hard/memory_omnivore/memory_omnivore.h"
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h"
@@ -43,6 +44,7 @@ inline std::map<std::string, std::function<void(RunStatus &)>> setup_map = {
 	{ "cookie_guzzler", components::client_ap_setup_t },
 	{ "pmk_gobbler", components::client_ap_setup_t },
 	{ "memory_omnivore", components::client_ap_setup_t },
+	{ "double_decker", components::client_ap_setup_t },
 	{ "reflection_attack", reflection::setup_attack },
 	{ "invalid_curve", invalid_curve::setup_attack },
 	{ "invalid_curve_dragonslayer", invalid_curve_dragonslayer::setup_attack },
@@ -75,6 +77,7 @@ inline std::map<std::string, std::function<void(RunStatus &)>> run_map = {
 	{ "cookie_guzzler", cookie_guzzler::run_attack },
 	{ "pmk_gobbler", pmk_gobbler::run_attack },
 	{ "memory_omnivore", memory_omnivore::run_attack },
+	{ "double_decker", double_decker::run_attack },
 	{ "reflection_attack", reflection::run_attack },
 	{ "invalid_curve", invalid_curve::run_attack },
 	{ "invalid_curve_dragonslayer", invalid_curve_dragonslayer::run_attack },
@@ -101,6 +104,7 @@ inline std::map<std::string, std::function<void(const RunStatus &)>> stats_map =
 	{ "cookie_guzzler", cookie_guzzler::stats_attack },
 	{ "pmk_gobbler", pmk_gobbler::stats_attack },
 	{ "memory_omnivore", memory_omnivore::stats_attack },
+	{ "double_decker", double_decker::stats_attack },
 	//{"reflection_attack", reflection::stats}
 	//{"invalid_curve", invalid_curve::run_attack}
 	{ "dragondrain", dragondrain::stats_attack },

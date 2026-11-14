@@ -1,18 +1,16 @@
 #include "attacks/two_iface/active_test.h"
 #include <atomic>
 #include <chrono>
-#include <fstream>
-#include <thread>
 #include <nlohmann/json.hpp>
+#include <thread>
 #include <tins/tins.h>
+#include "attacks/two_iface/TwoIfaceActive.h"
 
 #include "config/Actor_Config/actor_keys.h"
 #include "config/RunStatus.h"
-#include "default.h"
 #include "interrupt.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
-#include "system/utils.h"
 
 namespace wpa3_tester::active_test{
 using namespace std;
@@ -80,5 +78,6 @@ void run_attack(RunStatus &rs){
 	const json result = {{"acked", acked}, {"not_acked", not_acked}, {"success", acked >= burst * ack_threshold_pct / 100},};
 
 	rs.save_result(result);
+	TwoIfaceActive::backfill_cache(rs.get_actor("transceiver"), rs.get_actor("receiver"), result);
 }
 }

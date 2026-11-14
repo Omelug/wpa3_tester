@@ -161,6 +161,7 @@ static void kill_iperf3_port(const RunStatus &rs, const string &actor_name) {
 
 void start_iperf3(RunStatus &rs, const string &actor_name, const string &src_name, const string &dst_name) {
 	kill_iperf3_port(rs, src_name);
+	rs.process_manager.stop(actor_name);
 	vector<string> command = {};
 	add_nets_header(rs, command, src_name);
 	command.insert(command.end(),
@@ -205,6 +206,7 @@ void start_iperf3_server(RunStatus &rs, const string &actor_name, const string &
 		return;
 	}
 	kill_iperf3_port(rs, server_name);
+	rs.process_manager.stop(actor_name);
 	vector<string> command = {};
 	add_nets_header(rs, command, server_name);
 	command.insert(command.end(),

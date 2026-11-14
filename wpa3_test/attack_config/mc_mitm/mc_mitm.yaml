@@ -105,6 +105,7 @@ observers: #(allow start_observers if used )
 attack_config:
   attack_time: 150
   only_to_mitm: true
+  prefer_active: false
   ssid: test_mc_mitm
   beacon_interval_ms: 100
   beacon_warning_sec: 2

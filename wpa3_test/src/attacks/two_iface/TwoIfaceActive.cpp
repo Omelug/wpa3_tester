@@ -53,6 +53,42 @@ json TwoIfaceActive::run(const ActorPtr &a1, const ActorPtr &a2) {
 	return result.is_discarded() ? json{ { "err_msg", "result is discarded" }, { "success", false } } : result;
 }
 
+void TwoIfaceActive::backfill_cache(const ActorPtr &a1, const ActorPtr &a2, const json &result) {
+	const TwoIfaceActive t;
+	t.write_cache(t.make_cache_key(a1, a2), result);
+}
+
+optional<bool> TwoIfaceActive::find_cache_needs_active(const ActorPtr &acker) {
+	TwoIfaceActive t;
+	const ParamFilter sk_only{t.cache_id.first, {}};
+	const string a1_prefix = acker->to_str(&sk_only);
+
+	const path cp = t.cache_path();
+	if(!exists(cp)) return nullopt;
+
+	ifstream ifs(cp);
+	string line;
+	while(getline(ifs, line)) {
+		if(line.empty()) continue;
+		const auto tab = line.find('\t');
+		if(tab == string::npos) continue;
+		const string key = line.substr(0, tab);
+		const auto sep = key.find('|');
+		if(sep == string::npos) continue;
+		// rogue_sta is the ACKer (receiver/a2) in the active_test
+		const string a2_part = key.substr(sep + 1);
+		if(a2_part.rfind(a1_prefix, 0) != 0) continue;
+
+		const auto j = json::parse(line.substr(tab + 1), nullptr, false);
+		if(j.is_discarded() || !j.value("success", false)) continue;
+
+		log(LogLevel::INFO, "prefer_active: found first successful cache entry: {}", key);
+		const auto pos = a2_part.find("active_monitor");
+		return pos != string::npos && (pos == 0 || a2_part[pos - 1] != '!');
+	}
+	return nullopt;
+}
+
 bool TwoIfaceActive::run_check(const ActorPtr &a1, const ActorPtr &a2, const CacheBehave behave) {
 	TwoIfaceActive t;
 	const auto [result, from_cache] = t.validate(a1, a2, behave);

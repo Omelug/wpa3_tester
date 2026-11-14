@@ -251,7 +251,7 @@ string hw_capabilities::detect_mac_layer(const std::string& interface) {
 			if (entry.path().filename().string() == module_name) return "SoftMAC";
 		return "FullMAC";
 	}
-	// mac80211 built into kernel (no /sys/module/mac80211) — fall back to debugfs
+	// mac80211 built into kernel (no /sys/module/mac80211) - fall back to debugfs
 	const path phy_dbg = path("/sys/kernel/debug/ieee80211") / get_phy(interface, nullopt);
 	if (!exists(phy_dbg)) return "unknown";
 	return exists(phy_dbg / "mac80211stats") ? "SoftMAC" : "FullMAC";

@@ -44,7 +44,7 @@ void run_attack(RunStatus &rs) {
 	interruptible_sleep(seconds(att_cfg.at("sleep_before_sec")));
 	rs.process_manager.write_log_all(ATTACK_START_tag);
 
-	// MAC rotates every burst — new unique source MAC per burst of burst_size frames
+	// MAC rotates every burst - new unique source MAC per burst of burst_size frames
 	dos_helpers::timed_burst(fd, sock_addr, att_cfg.at("attack_time_sec").get<int>(),
 		burst_size, att_cfg.at("frames_per_second_limit").get<size_t>(),
 		[&]() -> optional<RadioTap> {

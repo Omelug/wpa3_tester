@@ -15,6 +15,7 @@
 #include "enterprise/enterprise_filler_helper.h"
 #include "enterprise/invalid_curve/invalid_curve_filler.h"
 #include "enterprise/reflection_attack/reflection_attack_filler.h"
+#include "mc_mitm/amsdu_filler.h"
 #include "mc_mitm/ssid_confusion_filler.h"
 #include "scan/ap_info_filler.h"
 #include "scan/iface_info_filler.h"
@@ -33,6 +34,7 @@ inline std::map<std::string, std::function<void(RunSuiteStatus &)>> test_suite_s
 
 /* map of test_suite_name->post-run callback function */
 inline std::map<std::string, std::function<void(RunSuiteStatus &)>> test_suite_report_map = {
+	{ "amsdu_filler", amsdu_filler::AmsduEntry::generate_report },
 	{ "bl0ck_filler", bl0ck_test_suites::Bl0ckTestEntry::generate_report },
 	{ "channel_switch_versions", channel_switch_filler::CsaVersionTestEntry::generate_report },
 	{ "deauth_filler", deauth_suite::DeauthTestEntry::generate_report },

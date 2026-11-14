@@ -1,0 +1,9 @@
+name: amsdu_internal_filler
+config_type: test_suite
+suite_functions: amsdu_filler
+tests:
+  all_actors:
+    type: actor_filler
+    config: ./amsdu_internal.yaml
+delete_old: true
+rewrite: errors

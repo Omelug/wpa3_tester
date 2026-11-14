@@ -37,7 +37,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
         if(tim.size() >= 4)
             fill(tim.begin() + 3, tim.end(), 0xFF);
         confused_beacon->remove_option(Dot11ManagementFrame::TIM);
-        confused_beacon->add_option({Dot11ManagementFrame::TIM, (uint32_t)tim.size(), tim.data()});
+        confused_beacon->add_option({Dot11ManagementFrame::TIM, static_cast<uint32_t>(tim.size()), tim.data()});
     }
     probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*confused_beacon, netconfig.rogue_channel));
 

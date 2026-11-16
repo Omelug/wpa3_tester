@@ -6,6 +6,7 @@
 
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
+#include "attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "attacks/two_iface/TwoIfaceActive.h"
 #include "logger/error_log.h"
@@ -63,6 +64,7 @@ void McMitm::setup_real_AP_RSN_frames(int beacon_timeout_sec) {
 	probe_resp = make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
 	log(LogLevel::INFO, "Target network {} detected on channel {}", ap.get(SK::mac), netconfig.real_channel.ch_num);
 }
+//FIXME zkontrolovat, že nepřeposílám ACK
 const string nic_client_ap = AP_IFACE_PREFIX + "client_ack";
 void McMitm::run(RunStatus &rs, const int timeout_sec) {
 
@@ -101,13 +103,14 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		}
 	}
 
-	rogue_sta->set_mac_address(client_state.get_mac());
 	if(use_active_monitor) {
-		// active monitor: card ACKs frames addressed to client MAC directly (flag added if BK::active_monitor is set)
+		// mode change first; some drivers reset MAC on type switch so set MAC after
 		rogue_sta->set_monitor_mode(true);
+		rogue_sta->set_mac_address(client_state.get_mac());
 		rogue_sta->set_iface_up();
 		rogue_sta->set_channel(netconfig.real_channel);
 	} else {
+		rogue_sta->set_mac_address(client_state.get_mac());
 		// client need to ACK -> AP via hostapd VIF
 		start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
 	}

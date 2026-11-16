@@ -4,6 +4,9 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version  v 0.0.0.0:
+%TODO zkusit SSID vut.cz nevbo jak se to jmenuje / eduraom na VUT?
++: TODO zkusit s tím SAE , stejný commit?
++: PMK gobbler - proč jsou rozdělena get_commit a attacker, nejspíš to bude nějakou chybou v \ref[§3.6]{2023_testing_and_imroving}.
 +: function called in stats to catch https://www.kernel.org/doc/html/latest/driver-api/usb/error-codes.html
 (USB timeout při -ubytku napájení apod)
 f: iperf3 shut donw after mc_mitm (expected (need to be restarted in test) - or fail ?)

@@ -197,10 +197,6 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	options.stop.first = {reproc::stop::terminate, reproc::milliseconds(500)};
 	options.stop.second = {reproc::stop::kill, reproc::milliseconds(500)};
 	options.redirect.err.type = reproc::redirect::pipe;
-	// without nonblocking, reproc_read internally calls reproc_poll(INFINITE)
-	// while child.out handle is still open hangs forever if a grandchild (e.g. dumpcap spawned by tshark)
-	// holds the write-end of the pipe after the tracked process dies
-	options.nonblocking = true;
 
 	path log_dir = log_base_dir;
 
@@ -345,6 +341,14 @@ void ProcessManager::stop(const string &process_name) noexcept{
 			(void)killpg(mp->pgid, SIGKILL);
 		}
 		// mp->proc path: reproc::stop(operations) below handles SIGTERM->wait->SIGKILL
+	}
+
+	// close pipe read-ends so a drain thread blocked in read()
+	if(mp->proc){
+		if(const auto ec = mp->proc->close(reproc::stream::out); ec)
+			log(LogLevel::DEBUG, "close out for {}: {}", process_name, ec.message());
+		if(const auto ec = mp->proc->close(reproc::stream::err); ec)
+			log(LogLevel::DEBUG, "close err for {}: {}", process_name, ec.message());
 	}
 
 	if(mp->drain_thread.joinable()) mp->drain_thread.join();

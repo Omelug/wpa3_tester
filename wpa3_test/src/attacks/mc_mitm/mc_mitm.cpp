@@ -88,32 +88,8 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		rogue_ap->get_mon_iface(),
 		netconfig.rogue_channel.ch_num);
 
-	// use active_monitor ?
-	bool use_active_monitor = false;
-	if(prefer_active) {
-		if(const auto needs_active = TwoIfaceActive::find_cache_needs_active(rogue_sta)) {
-			if(*needs_active) {
-				rogue_sta->set(BK::active_monitor, true);
-			} else {
-				log(LogLevel::INFO, "prefer_active: active monitor works without active_monitor hw flag");
-			}
-			use_active_monitor = true;
-		} else {
-			log(LogLevel::WARNING, "prefer_active: no successful active_test cache for rogue_sta, using VIF fallback");
-		}
-	}
-
-	if(use_active_monitor) {
-		// mode change first; some drivers reset MAC on type switch so set MAC after
-		rogue_sta->set_monitor_mode(true);
-		rogue_sta->set_mac_address(client_state.get_mac());
-		rogue_sta->set_iface_up();
-		rogue_sta->set_channel(netconfig.real_channel);
-	} else {
-		rogue_sta->set_mac_address(client_state.get_mac());
-		// client need to ACK -> AP via hostapd VIF
-		start_ap(rs, nic_client_ap, rogue_sta, netconfig.real_channel, *beacon, client_state.get_mac());
-	}
+	setup_ack_iface(rs, rogue_sta, HWAddress<6>(client_state.get_mac()),
+		netconfig.real_channel, prefer_active, nic_client_ap, *beacon);
 
 
 	const string bpf = "(type data or type mgt) and"

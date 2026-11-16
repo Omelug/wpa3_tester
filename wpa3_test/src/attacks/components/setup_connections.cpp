@@ -42,7 +42,7 @@ void stop_AP(RunStatus &rs, const string &actor_name) {
 void setup_STA(RunStatus &rs, const string &actor_name) {
 	program::start(rs, actor_name);
 	rs.process_manager.wait_for(actor_name, "Successfully initialized wpa_supplicant", seconds(10));
-	rs.get_actor("client")->set_iface_up();
+	rs.get_actor(actor_name)->set_iface_up();
 }
 
 void client_ap_setup(RunStatus &rs, const bool check_way_eapol) {

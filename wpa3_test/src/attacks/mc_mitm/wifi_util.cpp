@@ -5,6 +5,8 @@
 #include <net/if.h>
 #include <sstream>
 
+#include "attacks/two_iface/TwoIfaceActive.h"
+#include "config/Actor_Config/actor_keys.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "interrupt.h"
 #include "logger/error_log.h"
@@ -317,6 +319,27 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 void stop_ap(const string &iface, const optional<string> &netns) {
 	log(LogLevel::INFO, "Stopping AP: iw dev {} del", iface);
 	hw_capabilities::run_cmd({ "iw", "dev", iface, "del" }, netns, true);
+}
+
+bool setup_ack_iface(RunStatus &rs, const ActorPtr &actor, const HWAddress<6> &mac,
+	const Channel &channel, const bool prefer_active,
+	const string &ap_iface, const Dot11Beacon &beacon) {
+	if(prefer_active) {
+		if(const auto needs_active = TwoIfaceActive::find_cache_needs_active(actor)) {
+			if(*needs_active) actor->set(BK::active_monitor, true);
+			else log(LogLevel::INFO, "prefer_active: active monitor works without active_monitor hw flag");
+			// mode change first; some drivers reset MAC on type switch so set MAC after
+			actor->set_monitor_mode(true);
+			actor->set_mac_address(mac);
+			actor->set_iface_up();
+			actor->set_channel(channel);
+			return true;
+		}
+		log(LogLevel::WARNING, "prefer_active: no cache for {}, using AP VIF fallback", actor.get(SK::iface));
+	}
+	actor->set_mac_address(mac);
+	start_ap(rs, ap_iface, actor, channel, beacon, mac);
+	return false;
 }
 
 void rewrite_ssid_in_frame(frame_raw_t &raw, const string &new_ssid) {

@@ -48,7 +48,8 @@ void SsidConfusion::send_to_rogue(PDU &pdu) const {
 }
 
 void SsidConfusion::send_to_rogue(const frame_raw_t &raw) const {
-	const auto translated = ensure_radiotap(raw);
+	auto translated = ensure_radiotap(raw);
+	translate_data_mac(translated, ap->get(SK::mac), rogue_ap->get(SK::mac));
 	sock_rogue->send(translated, netconfig.rogue_channel);
 }
 

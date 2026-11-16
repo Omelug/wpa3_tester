@@ -103,12 +103,24 @@ void run_attack(RunStatus &rs) {
 	try {
 		result["iw_info"] = hw_capabilities::run_cmd_output({ "iw", "dev", iface, "info" }, netns);
 	} catch(...) { result["iw_info"] = ""; }
+	try {
+		result["ethtool_i"] = hw_capabilities::run_cmd_output({ "ethtool", "-i", iface }, netns);
+	} catch(...) { result["ethtool_i"] = ""; }
 
 	const string phy = result.value("phy", "");
 	result["mac_layer"] = hw_capabilities::detect_mac_layer(iface);
 	result["driver_specific"] = driver_diag::collect_driver_specific(scanner->get(SK::driver_name), phy);
 	result["regulatory"] = driver_diag::collect_regulatory(phy, netns);
 	result["usb_info"] = driver_diag::collect_usb_info(iface);
+	try {
+		const auto &ui = result["usb_info"];
+		if(ui.value("is_usb", false)) {
+			const string vid = ui.value("id_vendor", "");
+			const string pid = ui.value("id_product", "");
+			if(!vid.empty() && !pid.empty())
+				result["lsusb"] = hw_capabilities::run_cmd_output({ "lsusb", "-v", "-d", vid + ":" + pid }, netns);
+		}
+	} catch(...) { result["lsusb"] = ""; }
 
 	// ----- channel switch timing -----
 	{
@@ -289,10 +301,8 @@ void generate_report(const RunStatus &rs) {
 		md << "| WPA3-SAE | " << scanner[BK::WPA3_SAE] << " |\n";
 		md << "| MFP (BIP-CMAC-128) | " << scanner[BK::MFP] << " |\n";
 		md << "| OCV | " << scanner[BK::OCV] << " |\n";
-		md << "| Beacon Protection | " << scanner[BK::beacon_prot] << " |\n\n";
-		md << "| Beacon Protection | " << scanner[BK::PBAC] << " |\n\n";
-		md << "- **Driver (nl80211)**: `" << scanner[SK::driver_name] << "`\n";
-		md << "\n";
+		md << "| Beacon Protection | " << scanner[BK::beacon_prot] << " |\n";
+		md << "| PBAC | " << scanner[BK::PBAC] << " |\n\n";
 
 		if(result.contains("usb_info") && !result["usb_info"].is_null()) {
 			if(result["usb_info"].value("is_usb", false)) {
@@ -329,8 +339,17 @@ void generate_report(const RunStatus &rs) {
 			md << "| Invalid filter rejected | " << (bf.value("invalid_rejected", false) ? "yes" : "**no**") << " |\n\n";
 		}
 
+		md << "## `ethtool -i " << iface << "`\n\n";
+		md << "```\n" << result.value("ethtool_i", "") << "```\n\n";
+
 		md << "## `iw dev " << iface << " info`\n\n";
 		md << "```\n" << iw_info << "```\n";
+
+		const string lsusb_out = result.value("lsusb", "");
+		if(!lsusb_out.empty()) {
+			md << "## `lsusb`\n\n";
+			md << "```\n" << lsusb_out << "```\n";
+		}
 	}
 
 	rename(rs.run_folder() / REPORT_NAME, out_path);

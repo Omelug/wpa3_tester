@@ -197,6 +197,10 @@ void ProcessManager::run(const string &process_name, const vector<string> &cmd, 
 	options.stop.first = {reproc::stop::terminate, reproc::milliseconds(500)};
 	options.stop.second = {reproc::stop::kill, reproc::milliseconds(500)};
 	options.redirect.err.type = reproc::redirect::pipe;
+	// without nonblocking, reproc_read internally calls reproc_poll(INFINITE)
+	// while child.out handle is still open hangs forever if a grandchild (e.g. dumpcap spawned by tshark)
+	// holds the write-end of the pipe after the tracked process dies
+	options.nonblocking = true;
 
 	path log_dir = log_base_dir;
 

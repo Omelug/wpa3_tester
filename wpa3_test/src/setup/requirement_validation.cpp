@@ -88,8 +88,14 @@ void kill_process_in_ns_name(const string &ns_name) {
 		}
 	}
 
+	// waitpid() returns ECHILD immediately for non-child processes (orphans)
+	// poll /proc/{pid} to confirm death regardless of parentage
+	const auto kill_deadline = chrono::steady_clock::now() + chrono::milliseconds(2000); //FIXME HARDCODED
 	for(const pid_t p: pids) {
-		waitpid(p, nullptr, 0);
+		waitpid(p, nullptr, WNOHANG); // reap own children; harmless ECHILD for orphans
+		while(exists("/proc/" + to_string(static_cast<long>(p))) &&
+		      chrono::steady_clock::now() < kill_deadline)
+			interruptible_sleep(chrono::milliseconds(10));  //FIXME HARDCODED
 		log(LogLevel::DEBUG, "Killed process {} from namespace {}", p, ns_name);
 	}
 }

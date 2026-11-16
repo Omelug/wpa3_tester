@@ -216,7 +216,7 @@ void MonitorSocket::set_filter(const string &bpf) const {
 			throw run_err("set_filter: pcap_compile failed (dlt={}): {}", pcap_datalink(handle), pcap_geterr(handle));
 		}
 		if(prog.bf_len <= 1)
-			log(LogLevel::WARNING, "set_filter: '{}' compiled to {} instruction(s) — DLT mismatch?", bpf, prog.bf_len);
+			log(LogLevel::WARNING, "set_filter: '{}' compiled to {} instruction(s) - DLT mismatch?", bpf, prog.bf_len);
 		pcap_freecode(&prog);
 	}
 

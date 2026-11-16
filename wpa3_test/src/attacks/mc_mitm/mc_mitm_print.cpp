@@ -66,6 +66,8 @@ string McMitm::frame_to_str(const Dot11 &frame) {
 	return "Frame(type=" + to_string(type) + ",sub=" + to_string(sub) + ")";
 }
 
+//TODO display traffci SAE
+//TODO  add possibility to use log map (mac-> actor names)
 void McMitm::print_rx(const LogLevel level, const string &prefix, const Dot11 &frame, const string &suffix) {
 	if(frame.type() == Dot11::CONTROL) return;
 

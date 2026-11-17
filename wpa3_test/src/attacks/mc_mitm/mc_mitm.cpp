@@ -6,9 +6,7 @@
 
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
-#include "attacks/DoS_soft/expected_vht_beacon/expected_vht_beacon.h"
 #include "attacks/mc_mitm/wifi_util.h"
-#include "attacks/two_iface/TwoIfaceActive.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "scan/active/scan_AP.h"

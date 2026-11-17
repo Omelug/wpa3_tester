@@ -53,7 +53,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 
 
 	// rogue channel ACKs: active monitor avoids AP VIF responding to client's SAE auth frames
-	const bool prefer_active = att_cfg.value("prefer_active", false);
+	const bool prefer_active = att_cfg.at("prefer_active");
 	setup_ack_iface(rs, rogue_ap, HWAddress<6>(rogue_ap.get(SK::mac)),
 		netconfig.rogue_channel, prefer_active, rogue_ap->get_ap_iface(), *confused_beacon);
 

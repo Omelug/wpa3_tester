@@ -171,7 +171,7 @@ public:
 	// inject pdu, capture frames containing the unique label, count=0 = no limit.
 	static std::vector<frame_raw_t> inject_and_capture(const MonitorSocket &sout, MonitorSocket &sin,
 		Tins::PDU &pdu, const Channel &ch, int count = 0, int retries = 1,
-		uint16_t tx_flags = MonitorSocket::TX_DEFAULT);
+		uint16_t tx_flags = TX_DEFAULT);
 	static void flush_socket(MonitorSocket &s);
 	static ProbeCapture capture_probe_response_ack(
 		const MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &probe_req, const Channel &ch, int retries = 1);
@@ -183,7 +183,7 @@ public:
 		const Dot11Ref &ref, const std::string &strtype, const Channel &ch);
 	static InjectionTestResult test_packet_injection(const MonitorSocket &sout, MonitorSocket &sin, Tins::PDU &pdu,
 		const std::function<bool(const frame_raw_t &)> &test_func, const std::string &name,
-		const std::string &msgfail, const Channel &ch, uint16_t tx_flags = MonitorSocket::TX_DEFAULT);
+		const std::string &msgfail, const Channel &ch, uint16_t tx_flags = TX_DEFAULT);
 	static InjectionTestResult test_injection_fields(
 		MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref, const std::string &strtype, const Channel &ch);
 	static InjectionTestResult test_injection_order(MonitorSocket &sout, MonitorSocket &sin, const Dot11Ref &ref,

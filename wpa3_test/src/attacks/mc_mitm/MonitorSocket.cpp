@@ -96,7 +96,7 @@ frame_raw_t MonitorSocket::build_inject_frame(
 	if(rt_len >= with_rt.size()) return {};
 
 	RadioTap rt{};
-	rt.tx_flags(0x28); // NOACK | ORDER
+	rt.tx_flags(TX_NOACK | TX_ORDER);
 	rt.inner_pdu(RawPDU(with_rt.data() + rt_len, with_rt.size() - rt_len));
 	return rt.serialize();
 }

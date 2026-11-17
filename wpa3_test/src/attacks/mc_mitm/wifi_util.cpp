@@ -171,7 +171,7 @@ vector<uint8_t> ensure_radiotap(const frame_raw_t &raw) {
 	const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
 	if(raw[0] == 0 && rt_len >= 8 && raw.size() >= rt_len) return raw;
 	if((raw[0] >> 2 & 0x03) > 2) throw run_err("ensure_radiotap: not a valid 802.11 frame, FC=0x{:02x}", raw[0]);
-	// present=FLAGS(bit1); flags=0x28 (short preamble + data pad, no FCS bit)
+	// minimal radiotap, no FCS bit)
 	static constexpr uint8_t RT_HDR[] = { 0x00, 0x00, 0x09, 0x00, 0x02, 0x00, 0x00, 0x00, 0x28 };
 	vector<uint8_t> result;
 	result.reserve(9 + raw.size());

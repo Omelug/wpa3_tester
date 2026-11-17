@@ -137,7 +137,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 
 	auto run =
 		[&](auto &pdu, const function<bool(const frame_raw_t &)> &fn, const string &name, const string &msg,
-			const uint16_t tx_flags = MonitorSocket::TX_DEFAULT) {
+			const uint16_t tx_flags = TX_DEFAULT) {
 			const auto r = test_packet_injection(sout, sin, pdu, fn, name, msg, ch, tx_flags);
 			if(r.result() != PASSED) {
 				if(result == PASSED) result = r.result();
@@ -166,7 +166,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 		},
 		"seq_num",
 		"sequence number overwritten",
-		MonitorSocket::TX_DEFAULT | MonitorSocket::TX_NOSEQ);
+		TX_DEFAULT | TX_NOSEQ);
 
 	// frag num preserved
 	Dot11Data p3;
@@ -184,7 +184,7 @@ InjectionTestResult hw_capabilities::test_injection_fields(
 		},
 		"frag_num",
 		"fragment number overwritten",
-		MonitorSocket::TX_DEFAULT | MonitorSocket::TX_NOSEQ);
+		 TX_DEFAULT|TX_NOSEQ);
 
 	// QoS TID preserved
 	Dot11QoSData p4;
@@ -286,7 +286,7 @@ InjectionTestResult hw_capabilities::test_injection_retrans(const MonitorSocket 
 	auto count = [&](const HWAddress<6> &a1, const HWAddress<6> &a2) -> int {
 		auto p = make_frame(a1, a2);
 		// TX_ORDER only (0x20), no NOACK - driver retransmits when ACK doesn't arrive
-		return static_cast<int>(inject_and_capture(sout, sin, p, ch, 0, 1, MonitorSocket::TX_ORDER).size());
+		return static_cast<int>(inject_and_capture(sout, sin, p, ch, 0, 1, TX_ORDER).size());
 	};
 
 	const int n_dummy = count({ "00:11:00:00:02:01" }, { "00:11:00:00:02:01" });

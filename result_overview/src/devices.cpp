@@ -71,6 +71,7 @@ struct IfaceData { //TODO ? -> IfaceInfoTestEntry (thsi is weird artefact)
 
 	string ethtool_i;
 	string kernel_version;
+	string lsusb;
 	optional<UsbInfo> usb;
 };
 
@@ -169,6 +170,7 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 		d.mac_layer      = j.value("mac_layer",      string{});
 		d.ethtool_i      = j.value("ethtool_i",      string{});
 		d.kernel_version = j.value("kernel_version", string{});
+		d.lsusb          = j.value("lsusb",          string{});
 		if(j.contains("bpf_filter")) {
 			const auto &bpf = j["bpf_filter"];
 			d.bpf_filter_ok = bpf.value("ok", false);
@@ -358,6 +360,10 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 		if(!iface.ethtool_i.empty()){
 			f << "<h3><code>ethtool -i</code></h3>"
 			  << "<pre>" << iface.ethtool_i << "</pre>";
+		}
+		if(!iface.lsusb.empty()){
+			f << "<h3><code>lsusb -v</code></h3>"
+			  << "<pre>" << iface.lsusb << "</pre>";
 		}
 		if(iface.usb){
 			const auto &u = *iface.usb;

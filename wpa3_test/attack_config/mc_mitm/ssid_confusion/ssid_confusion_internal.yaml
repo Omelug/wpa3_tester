@@ -137,5 +137,6 @@ attack_config:
   only_to_mitm: false
   beacon_timeout_sec: 10
   strip_pmkid_in_assoc: false
+  prefer_active: false #FIXME working?
 
 rewrite: errors

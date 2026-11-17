@@ -110,6 +110,19 @@ FrameProcess McMitm::handle_action_rogue(const HWAddress<6> addr2, PDU &pdu, con
 	return CONTINUE;
 }
 
+void McMitm::handle_disconnect_rogue(const Dot11 &dot11) {
+	if(!dot11.find_pdu<Dot11Deauthentication>() && !dot11.find_pdu<Dot11Disassoc>()) return;
+	if(const auto *deauth = dot11.find_pdu<Dot11Deauthentication>())
+		log(LogLevel::INFO, "Rogue channel: client Deauth reason={}", deauth->reason_code());
+	if(client_state.get_state() < ClientState::GotMitm) {
+		client_state.update_state(ClientState::Target_disconnected);
+	} else if(dot11.find_pdu<Dot11Disassoc>()) {
+		client_state.update_state(ClientState::Authenticated);
+	} else {
+		client_state.update_state(ClientState::Sent_to_rogue);
+	}
+}
+
 FrameProcess McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) {
 	// EAPOL STA -> AP
 	if(addr1 == ap.get(SK::mac) && addr2 == client_state.get_mac() && is_eapol(pdu)) {
@@ -121,6 +134,7 @@ FrameProcess McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddres
 		}
 		if(eapol_msg == 4 && client_state.get_state() >= ClientState::Sent_to_rogue) {
 			client_state.update_state(ClientState::GotMitm);
+			//set_station_authorized(rogue_ap->get_ap_iface(), client_state.get_mac(), rogue_ap[SK::netns]);
 			if(hooks) hooks->on_client_connected(*this);
 			if(only_to_mitm) stop_mitm = true;
 		}
@@ -184,8 +198,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const frame_raw_t 
 		}
 	} else if(dot11->addr1() == ap.get(SK::mac)) { // -> AP
 		if(client_state.get_mac() == addr2) {
-			if(const auto *deauth = dot11->find_pdu<Dot11Deauthentication>())
-				log(LogLevel::INFO, "Rogue channel: client Deauth reason={}", deauth->reason_code());
+			handle_disconnect_rogue(*dot11);
 			send_to_real(raw);
 			display_traffic(*pdu, "Rogue channel", " -- MitM'ing");
 			if(dot11->type() == Dot11::DATA && client_state.get_state() < ClientState::GotMitm) {

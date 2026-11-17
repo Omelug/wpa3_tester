@@ -190,12 +190,17 @@ void reset_usb_ifaces() {
 	// Driver bind happens before firmware upload (ath9k_htc)
 	// - checking net/ subdir is driver-agnostic and catches the firmware-upload gap
 	auto has_netdev = [](const UsbResetInfo &d) {
-		for(const auto &sub: directory_iterator(d.dev_path)) {
-			if(sub.path().filename().string().find(':') == string::npos) continue;
-			if(exists(sub.path() / "net")) return true;
-		}
-		return false;
+      for(const auto &sub: directory_iterator(d.dev_path)) {
+          if(sub.path().filename().string().find(':') == string::npos) continue;
+          const auto net = sub.path() / "net";
+          if(!exists(net)) continue;
+          for(const auto &ifd: directory_iterator(net))
+          	  // wait for renamed //FIXME hardcoded
+              if(ifd.path().filename().string().starts_with("wlx")) return true;
+      }
+      return false;
 	};
+
 	if(expected_with_driver > 0) {
 		const auto deadline = chrono::steady_clock::now() + chrono::seconds(60);
 		while(chrono::steady_clock::now() < deadline) {

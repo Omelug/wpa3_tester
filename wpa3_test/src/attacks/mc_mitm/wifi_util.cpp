@@ -2,7 +2,11 @@
 
 #include <fstream>
 #include <iomanip>
+#include <linux/nl80211.h>
 #include <net/if.h>
+#include <netlink/genl/ctrl.h>
+#include <netlink/genl/genl.h>
+#include <netlink/netlink.h>
 #include <sstream>
 
 #include "attacks/two_iface/TwoIfaceActive.h"
@@ -321,6 +325,115 @@ void stop_ap(const string &iface, const optional<string> &netns) {
 	hw_capabilities::run_cmd({ "iw", "dev", iface, "del" }, netns, true);
 }
 
+void set_station_authorized(const string &ap_iface, const HWAddress<6> &mac, const optional<string> &netns) {
+	netlink_helper::NetNSContext ns_guard(netns);
+
+	nl_sock *sock = nl_socket_alloc();
+	if(!sock) { log(LogLevel::WARNING, "set_station_authorized: nl_socket_alloc failed"); return; }
+
+	if(genl_connect(sock) != 0) {
+		nl_socket_free(sock);
+		log(LogLevel::WARNING, "set_station_authorized: genl_connect failed");
+		return;
+	}
+	const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
+	if(nl80211_id < 0) {
+		nl_socket_free(sock);
+		log(LogLevel::WARNING, "set_station_authorized: nl80211 not found");
+		return;
+	}
+	const uint32_t ifindex = if_nametoindex(ap_iface.c_str());
+	if(ifindex == 0) {
+		nl_socket_free(sock);
+		log(LogLevel::WARNING, "set_station_authorized: if_nametoindex({}) = 0", ap_iface);
+		return;
+	}
+
+	nl_msg *msg = nlmsg_alloc();
+	if(!msg) { nl_socket_free(sock); return; }
+
+	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_STATION, 0);
+	nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifindex);
+	nla_put(msg, NL80211_ATTR_MAC, 6, mac.begin());
+	nl80211_sta_flag_update flags{};
+	flags.mask = 1U << NL80211_STA_FLAG_AUTHORIZED;
+	flags.set  = 1U << NL80211_STA_FLAG_AUTHORIZED;
+	nla_put(msg, NL80211_ATTR_STA_FLAGS2, sizeof(flags), &flags);
+
+	// suppress libnl default error printing
+	nl_socket_modify_cb(sock, NL_CB_FINISH, NL_CB_DEFAULT, nullptr, nullptr);
+
+	const int ret = nl_send_auto(sock, msg);
+	if(ret >= 0) nl_recvmsgs_default(sock);
+
+	nlmsg_free(msg);
+	nl_socket_free(sock);
+
+	if(ret < 0)
+		log(LogLevel::WARNING, "set_station_authorized: {} on {}: {}", mac.to_string(), ap_iface, nl_geterror(ret));
+	else
+		log(LogLevel::INFO, "set_station_authorized: authorized {} on {}", mac.to_string(), ap_iface);
+}
+
+//FIXME needed?
+// register client in AP VIF station table as fully associated+authorized.
+// prevents mac80211 from sending CLASS3_FRAME_FROM_NONASSOC_STA deauth when
+// the client sends frames before the kernel knows about the association.
+void add_station_authorized(const string &ap_iface, const HWAddress<6> &mac, const optional<string> &netns) {
+	netlink_helper::NetNSContext ns_guard(netns);
+
+	nl_sock *sock = nl_socket_alloc();
+	if(!sock) { log(LogLevel::WARNING, "add_station_authorized: nl_socket_alloc failed"); return; }
+
+	if(genl_connect(sock) != 0) {
+		nl_socket_free(sock);
+		log(LogLevel::WARNING, "add_station_authorized: genl_connect failed");
+		return;
+	}
+	const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
+	if(nl80211_id < 0) {
+		nl_socket_free(sock);
+		log(LogLevel::WARNING, "add_station_authorized: nl80211 not found");
+		return;
+	}
+	const uint32_t ifindex = if_nametoindex(ap_iface.c_str());
+	if(ifindex == 0) {
+		nl_socket_free(sock);
+		log(LogLevel::DEBUG, "add_station_authorized: if_nametoindex({}) = 0 (no AP VIF?)", ap_iface);
+		return;
+	}
+
+	nl_msg *msg = nlmsg_alloc();
+	if(!msg) { nl_socket_free(sock); return; }
+
+	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_NEW_STATION, 0);
+	nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifindex);
+	nla_put(msg, NL80211_ATTR_MAC, 6, mac.begin());
+	nla_put_u16(msg, NL80211_ATTR_STA_AID, 1);
+	static constexpr uint8_t rates[] = {0x82, 0x84, 0x8b, 0x96};  // 1,2,5.5,11 Mbps basic
+	nla_put(msg, NL80211_ATTR_STA_SUPPORTED_RATES, sizeof(rates), rates);
+	nla_put_u16(msg, NL80211_ATTR_STA_LISTEN_INTERVAL, 0);
+	nl80211_sta_flag_update flags{};
+	flags.mask = (1U << NL80211_STA_FLAG_AUTHORIZED) | (1U << NL80211_STA_FLAG_AUTHENTICATED) |
+	             (1U << NL80211_STA_FLAG_ASSOCIATED)  | (1U << NL80211_STA_FLAG_WME);
+	flags.set  = flags.mask;
+	nla_put(msg, NL80211_ATTR_STA_FLAGS2, sizeof(flags), &flags);
+
+	const int send_ret = nl_send_auto(sock, msg);
+	int recv_ret = 0;
+	if(send_ret >= 0) recv_ret = nl_recvmsgs_default(sock);
+
+	nlmsg_free(msg);
+	nl_socket_free(sock);
+
+	if(send_ret < 0)
+		log(LogLevel::WARNING, "add_station_authorized: send {} on {}: {}", mac.to_string(), ap_iface, nl_geterror(send_ret));
+	else if(recv_ret < 0)
+		log(LogLevel::WARNING, "add_station_authorized: {} on {}: {}", mac.to_string(), ap_iface, nl_geterror(recv_ret));
+	else
+		log(LogLevel::INFO, "add_station_authorized: added+authorized {} on {}", mac.to_string(), ap_iface);
+}
+
 bool setup_ack_iface(RunStatus &rs, const ActorPtr &actor, const HWAddress<6> &mac,
 	const Channel &channel, const bool prefer_active,
 	const string &ap_iface, const Dot11Beacon &beacon) {
@@ -338,7 +451,12 @@ bool setup_ack_iface(RunStatus &rs, const ActorPtr &actor, const HWAddress<6> &m
 		log(LogLevel::WARNING, "prefer_active: no cache for {}, using AP VIF fallback", actor.get(SK::iface));
 	}
 	actor->set_mac_address(mac);
-	start_ap(rs, ap_iface, actor, channel, beacon, mac);
+	//TODO popsat v pdf
+	// strip RSN IE so this ack-only VIF runs as open AP - prevents mac80211 from applying
+	// dot11RSNAConfigSATimeout (30s deauth) when no PTK is ever installed via this VIF
+	Dot11Beacon open_beacon = beacon;
+	open_beacon.remove_option(Dot11ManagementFrame::RSN);
+	start_ap(rs, ap_iface, actor, channel, open_beacon, mac);
 	return false;
 }
 

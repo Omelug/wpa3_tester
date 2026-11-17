@@ -39,7 +39,8 @@ void start_ap(RunStatus &rs, const std::string &ap_iface, const ActorPtr &base_a
 void start_ap_hostapd(RunStatus &rs, const std::string &ap_iface, const ActorPtr &base_actor, const Channel &channel,
 	std::optional<Tins::HWAddress<6>> bssid = std::nullopt);
 void stop_ap(const std::string &iface, const std::optional<std::string> &netns);
-void data_unchanged(const std::string &ap_iface, const Tins::HWAddress<6> &mac, const std::optional<std::string> &netns);
+void set_station_authorized(const std::string &ap_iface, const Tins::HWAddress<6> &mac, const std::optional<std::string> &netns);
+void add_station_authorized(const std::string &ap_iface, const Tins::HWAddress<6> &mac, const std::optional<std::string> &netns);
 
 // Set up hardware ACK mechanism: active monitor if prefer_active + cache allows, else start_ap.
 // Returns true if active monitor was used (no AP VIF created).

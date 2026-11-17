@@ -198,6 +198,16 @@ void MonitorSocket::recv_loop(
 	}
 }
 //TODO test in sim possible?
+uint32_t MonitorSocket::log_drops(const char *tag) const {
+	if(!sniffer_) return 0;
+	pcap_stat ps{};
+	if(pcap_stats(sniffer_->get_pcap_handle(), &ps) != 0) return 0;
+	if(ps.ps_drop > last_drops_)
+		log(LogLevel::WARNING, "{}: pcap kernel_drops={} iface_drops={}", tag, ps.ps_drop, ps.ps_ifdrop);
+	last_drops_ = ps.ps_drop;
+	return ps.ps_drop;
+}
+
 void MonitorSocket::set_filter(const string &bpf) const {
 	if(!sniffer_) throw run_err("set_filter: not supported on remote socket");
 	pcap_t *handle = sniffer_->get_pcap_handle();

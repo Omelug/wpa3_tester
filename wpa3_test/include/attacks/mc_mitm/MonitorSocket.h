@@ -49,6 +49,7 @@ public:
 	[[nodiscard]] Tins::Sniffer &sniffer() const { return *sniffer_; }
 
 	void set_filter(const std::string &bpf) const;
+	uint32_t log_drops(const char *tag) const;
 private:
 	static Tins::SnifferConfiguration make_sniff_cfg();
 	std::unique_ptr<Tins::Sniffer> sniffer_; // nullptr when remote
@@ -62,6 +63,7 @@ private:
 
 	void fill_rx_buf();
 	RecvResult parse_remote_recv();
+	mutable uint32_t last_drops_ = 0;
 public:
 	bool mf_workaround = false;
 };

@@ -39,10 +39,11 @@ void generate_active_monitor_overview(const path &output_dir, const path &data_d
 )html";
 
 	const auto entries = visual::helper::get_results_default<ActiveTestEntry>(base);
-	if(entries.empty()) {
-		hg << "<p>No results found. Run active_test_filler to populate.</p>";
-	} else {
-		HtmlPathTable table(hg, entries, string("active_test_filler"));
+
+	auto render_table = [&](const vector<ActiveTestEntry> &rows, const string &title) {
+		if(rows.empty()) return;
+		hg << "<h2>" << title << "</h2>";
+		HtmlPathTable table(hg, rows, string("active_test_filler"));
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
 		table.build([&](auto col) {
 			col("Test",       &ActiveTestEntry::test_name);
@@ -52,8 +53,18 @@ void generate_active_monitor_overview(const path &output_dir, const path &data_d
 			col("Not Acked",  &ActiveTestEntry::not_acked);
 			col("Success", &ActiveTestEntry::success);
 		})->render({ "Test" });
-	}
 #undef COL
+	};
+
+	if(entries.empty()) {
+		hg << "<p>No results found. Run active_test_filler to populate.</p>";
+	} else {
+		vector<ActiveTestEntry> base_entries, spoofed_entries;
+		for(const auto &e: entries)
+			(e.test_name.contains("spoof") ? spoofed_entries : base_entries).push_back(e);
+		render_table(base_entries,    "Standard");
+		render_table(spoofed_entries, "Spoofed MAC");
+	}
 
 	hg << "</div></body></html>";
 }

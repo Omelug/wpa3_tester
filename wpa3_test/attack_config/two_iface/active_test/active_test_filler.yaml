@@ -8,5 +8,11 @@ tests:
   no_active_monitor:
     type: actor_filler
     config: ./no_active_test.yaml
+  active_monitor_spoofed_mac:
+    type: actor_filler
+    config: ./active_spoofed_mac.yaml
+  no_active_monitor_spoofed_mac:
+    type: actor_filler
+    config: ./no_active_spoofed_mac.yaml
 rewrite: errors
 

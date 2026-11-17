@@ -1,0 +1,7 @@
+name: active_spoofed_mac_example
+$extends: ./active_test.yaml
+actors:
+  receiver:
+    selection:
+      condition: [ active_monitor, 2_4GHz ]
+      mac: "de:ad:be:ef:00:01"

@@ -82,7 +82,7 @@ void Actor_config::real_actor_setup_base_keys(const ActorPtr &real_actor) {
 	if(get_or(BK::GHz5, false)) set(real_actor, BK::GHz5);
 	if(get_or(BK::GHz6, false)) set(real_actor, BK::GHz6);
 
-	if(!(*this)[SK::mac].has_value()) set(real_actor, SK::mac);
+	if(!(*this)[SK::mac].has_value()) set(SK::mac, real_actor.get(SK::permanent_mac));
 	set(real_actor, SK::permanent_mac);
 }
 

@@ -325,6 +325,9 @@ void stop_ap(const string &iface, const optional<string> &netns) {
 	hw_capabilities::run_cmd({ "iw", "dev", iface, "del" }, netns, true);
 }
 
+//FIXME needed?
+// authorize the station in the ack VIF so mac80211 does not apply dot11RSNAConfigSATimeout (30 s)
+// timer fires based on RSN IE in AssocReq, not on the beacon, so stripping RSN from the beacon alone is not enough
 void set_station_authorized(const string &ap_iface, const HWAddress<6> &mac, const optional<string> &netns) {
 	netlink_helper::NetNSContext ns_guard(netns);
 
@@ -376,7 +379,7 @@ void set_station_authorized(const string &ap_iface, const HWAddress<6> &mac, con
 }
 
 //FIXME needed?
-// register client in AP VIF station table as fully associated+authorized.
+// register client in AP VIF station table as fully associated+authorized
 // prevents mac80211 from sending CLASS3_FRAME_FROM_NONASSOC_STA deauth when
 // the client sends frames before the kernel knows about the association.
 void add_station_authorized(const string &ap_iface, const HWAddress<6> &mac, const optional<string> &netns) {

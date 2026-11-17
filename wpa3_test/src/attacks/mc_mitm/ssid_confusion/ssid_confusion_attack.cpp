@@ -30,10 +30,12 @@ void setup_attack(RunStatus &rs) {
 
 	components::client_ap_setup_t(rs); //TODO why this need to be before setup of fake MAC addresses?
 
+	//needs to be spoofed because PTK = PRF(PMK, ANonce, SNonce, AA, SPA)
 	const auto rogue_ap = rs.get_actor("rogue_ap");
 	rogue_ap->set_mac_address(rs.get_actor("ap").get(SK::permanent_mac));
 	rogue_ap->set_iface_up();
-    const auto rogue_client = rs.get_actor("rogue_client");
+
+	const auto rogue_client = rs.get_actor("rogue_client");
 	rogue_client->set_mac_address(rs.get_actor("client").get(SK::mac));
     rogue_client->set_iface_up();
 }

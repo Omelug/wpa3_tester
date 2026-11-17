@@ -37,6 +37,7 @@
       <w>akms</w>
       <w>algs</w>
       <w>ampdu</w>
+      <w>amsdu</w>
       <w>angriff</w>
       <w>anonce</w>
       <w>anypassword</w>
@@ -180,6 +181,7 @@
       <w>libwifi</w>
       <w>logread</w>
       <w>lsblk</w>
+      <w>lsusb</w>
       <w>m'ing</w>
       <w>macaddr</w>
       <w>manuf</w>

@@ -106,6 +106,9 @@ void run_attack(RunStatus &rs) {
 	try {
 		result["ethtool_i"] = hw_capabilities::run_cmd_output({ "ethtool", "-i", iface }, netns);
 	} catch(...) { result["ethtool_i"] = ""; }
+	try {
+		result["kernel_version"] = hw_capabilities::run_cmd_output({ "uname", "-r" }, nullopt);
+	} catch(...) { result["kernel_version"] = "n/a"; }
 
 	const string phy = result.value("phy", "");
 	result["mac_layer"] = hw_capabilities::detect_mac_layer(iface);

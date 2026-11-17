@@ -5,6 +5,7 @@
 #include "observer/dmesg_wrapper.h"
 #include "observer/iperf_wrapper.h"
 #include "observer/mausezahn_wrapper.h"
+#include "observer/ping_wrapper.h"
 #include "observer/resource_checker.h"
 #include "observer/station_counter.h"
 #include "observer/tcpdump_wrapper.h"

@@ -69,6 +69,8 @@ struct IfaceData { //TODO ? -> IfaceInfoTestEntry (thsi is weird artefact)
 	optional<bool> bpf_valid_filter_ok;
 	optional<bool> bpf_invalid_rejected;
 
+	string ethtool_i;
+	string kernel_version;
 	optional<UsbInfo> usb;
 };
 
@@ -164,7 +166,9 @@ static optional<IfaceData> find_iface_run(const path &all_actors, const string &
 			d.start_ap_hostapd_ok = s.value("ok", false);
 			if(s.contains("ms")) d.start_ap_hostapd_ms = s.value("ms", -1);
 		}
-		d.mac_layer = j.value("mac_layer", string{});
+		d.mac_layer      = j.value("mac_layer",      string{});
+		d.ethtool_i      = j.value("ethtool_i",      string{});
+		d.kernel_version = j.value("kernel_version", string{});
 		if(j.contains("bpf_filter")) {
 			const auto &bpf = j["bpf_filter"];
 			d.bpf_filter_ok = bpf.value("ok", false);
@@ -303,9 +307,11 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 	if(d.iface){
 		const auto &iface = *d.iface;
 		f << "<div class=\"card\"><h2>System Snapshot</h2><table>";
-		if(!iface.phy.empty())                              tr("PHY", iface.phy);
-		if(!iface.ip_addr.empty() && iface.ip_addr != "n/a") tr("IP Address", iface.ip_addr);
-		if(!iface.mac_layer.empty())                        tr("MAC Layer", iface.mac_layer);
+		if(!iface.phy.empty())                                   tr("PHY", iface.phy);
+		if(!iface.ip_addr.empty() && iface.ip_addr != "n/a")    tr("IP Address", iface.ip_addr);
+		if(!iface.mac_layer.empty())                             tr("MAC Layer", iface.mac_layer);
+		if(!iface.kernel_version.empty() && iface.kernel_version != "n/a")
+			tr("Kernel", iface.kernel_version);
 		if(iface.bpf_filter_ok.has_value()) {
 			string bpf_text = iface.bpf_filter_ok.value() ? "PASS" : "FAIL";
 
@@ -348,6 +354,10 @@ static void generate_device_page(const path &devices_dir, const DeviceInfo &d, c
 		if(!iface.iw_info.empty()){
 			f << "<h3><code>iw dev info</code></h3>"
 			  << "<pre>" << iface.iw_info << "</pre>";
+		}
+		if(!iface.ethtool_i.empty()){
+			f << "<h3><code>ethtool -i</code></h3>"
+			  << "<pre>" << iface.ethtool_i << "</pre>";
 		}
 		if(iface.usb){
 			const auto &u = *iface.usb;

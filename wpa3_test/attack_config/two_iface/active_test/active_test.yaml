@@ -24,3 +24,4 @@ attack_config:
   sleep_before_ms: 200
   sleep_after_ms: 200
   ack_threshold_pct: 80
+  use_spoofed: false

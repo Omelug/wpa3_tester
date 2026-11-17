@@ -80,7 +80,9 @@ optional<bool> TwoIfaceActive::find_cache_needs_active(const ActorPtr &acker) {
 		if(a2_part.rfind(a1_prefix, 0) != 0) continue;
 
 		const auto j = json::parse(line.substr(tab + 1), nullptr, false);
-		if(j.is_discarded() || !j.value("success", false)) continue;
+		// use_spoofed=true only: non-spoofed success is a false positive for mc_mitm,
+		// which spoofs the ACK-er's MAC (some drivers ACK only the EEPROM MAC)
+		if(j.is_discarded() || !j.value("success", false) || !j.value("use_spoofed", false)) continue;
 
 		log(LogLevel::INFO, "prefer_active: found first successful cache entry: {}", key);
 		const auto pos = a2_part.find("active_monitor");

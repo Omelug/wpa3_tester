@@ -45,6 +45,5 @@ dragondrain:
 	    $(PI_USER)@$(PI):$(REMOTE_ABS)/tools/dragondrain-and-time/src/libaircrack-osdep-1.3.0.so
 	@echo "==> dragondrain -> $(REMOTE_ABS)/tools/dragondrain-and-time/src/"
 
-# ponytail: add new tool deps here when needed
 tools: dragondrain
 	@echo "==> All tools deployed"

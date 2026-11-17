@@ -8,6 +8,7 @@
 
 #include "config/Actor_Config/actor_keys.h"
 #include "config/RunStatus.h"
+#include "config/global_config.h"
 #include "interrupt.h"
 #include "system/hw_capabilities.h"
 #include "system/netlink_guards.h"
@@ -26,12 +27,30 @@ void run_attack(RunStatus &rs){
 	const int sleep_before_ms   = att_cfg.at("sleep_before_ms").get<int>();
 	const int sleep_after_ms    = att_cfg.at("sleep_after_ms").get<int>();
 	const int ack_threshold_pct = att_cfg.at("ack_threshold_pct").get<int>();
+	const bool use_spoofed      = att_cfg.value("use_spoofed", false);
 
 	auto &actor_tx = rs.get_actor("transceiver");
 	auto &actor_rx = rs.get_actor("receiver");
 
 	const auto netns1 = actor_tx[SK::netns];
+
+	if(use_spoofed) {
+		// Override Actor_setup's default (SK::mac = SK::permanent_mac) with LAA/unicast MACs.
+		// This is what mc_mitm needs: drivers like mt76x2u ACK only the chip's EEPROM MAC
+		// regardless of active_monitor, and must be distinguished from the permanent-MAC case.
+		const HWAddress<6> spoof_tx("02:aa:aa:aa:aa:01");
+		const HWAddress<6> spoof_rx("02:aa:aa:aa:aa:02");
+		const auto ch_num = get_global_config().at("global_variables").at("default_channel_2_4").get<uint8_t>();
+		const Channel ch{ch_num, WifiBand::BAND_2_4, nullopt};
+		actor_tx->set_mac_address(spoof_tx);
+		actor_tx->set_iface_up();
+		actor_tx->set_channel(ch);
+		actor_rx->set_mac_address(spoof_rx);
+		actor_rx->set_iface_up();
+		actor_rx->set_channel(ch);
+	}
 	const HWAddress<6> tx_mac(actor_tx.get(SK::mac));
+	const HWAddress<6> rx_mac(actor_rx.get(SK::mac));
 
 	// Sniff ACK frames on the transceiver interface
 	atomic ack_count{0};
@@ -54,7 +73,7 @@ void run_attack(RunStatus &rs){
 
 	// Build a null data frame: transceiver -> receiver
 	RadioTap rt;
-	Dot11Data frame(actor_rx.get(SK::mac), tx_mac);
+	Dot11Data frame(rx_mac, tx_mac);
 	frame.addr3(tx_mac); // BSSID
 	frame.subtype(4);    // null data
 	rt.inner_pdu(frame);
@@ -75,7 +94,8 @@ void run_attack(RunStatus &rs){
 	const int acked = ack_count.load();
 	const int not_acked = burst - acked;
 
-	const json result = {{"acked", acked}, {"not_acked", not_acked}, {"success", acked >= burst * ack_threshold_pct / 100},};
+	const json result = {{"acked", acked}, {"not_acked", not_acked}, {"use_spoofed", use_spoofed},
+		{"success", acked >= burst * ack_threshold_pct / 100},};
 
 	rs.save_result(result);
 	TwoIfaceActive::backfill_cache(rs.get_actor("transceiver"), rs.get_actor("receiver"), result);

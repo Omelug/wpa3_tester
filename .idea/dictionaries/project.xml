@@ -208,6 +208,7 @@
       <w>multiarch</w>
       <w>musleabi</w>
       <w>musleabihf</w>
+      <w>nametoindex</w>
       <w>nblacklist</w>
       <w>nbytes</w>
       <w>netconsole</w>

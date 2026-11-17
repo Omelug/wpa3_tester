@@ -79,9 +79,19 @@ actors:
       channel: 1
 
 observers:
-  sta_ap_iperf3:
+  #client_mausezahn:
+  #  actor: client
+  #  program: mausezahn
+  #  program_config:
+  #    target_actor: ap
+  #sta_ap_iperf3: #FIXme dont work - dont know why
+  #  actor: client
+  #  program: iperf3
+  #  program_config:
+  #    target_actor: ap
+  client_ping:
     actor: client
-    program: iperf3
+    program: ping
     program_config:
       target_actor: ap
   watch_client:

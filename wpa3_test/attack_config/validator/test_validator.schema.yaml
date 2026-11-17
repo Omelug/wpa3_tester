@@ -467,7 +467,7 @@ $defs:
       program:
         type: string
         description: Program to use for observation
-        enum: [ "mausezahn", "tcpdump", "tshark", "resource_checker", "station_counter", "iperf3", "trace_cmd", "dmesg", "wpa_cli" ]
+        enum: [ "mausezahn", "tcpdump", "tshark", "resource_checker", "station_counter", "iperf3", "trace_cmd", "dmesg", "wpa_cli", "ping" ]
       program_config:
         type: object
     allOf:
@@ -551,3 +551,11 @@ $defs:
           properties:
             program_config:
               $ref: './programs/observer/wpa_cli.yaml'
+      - if:
+          properties:
+            program:
+              const: ping
+        then:
+          properties:
+            program_config:
+              $ref: './programs/observer/ping.yaml'

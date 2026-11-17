@@ -150,6 +150,7 @@ void generate_injection_overview(const path &output_dir, const path &data_dir) {
     }
 	f << "<small>data from injection_test_filler </small>";
     f << "</div></body></html>";
+     write_data_stamp(page_dir, cache_path.parent_path());
 }
 
 }

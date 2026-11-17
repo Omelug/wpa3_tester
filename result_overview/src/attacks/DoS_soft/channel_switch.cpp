@@ -79,6 +79,6 @@ Not very supported, mobile devices have better support.
 	emit_table("External Client", base / "external" / "client"/ "CSA_external_client_filler", "CSA_external_client_filler");
 
 	f << "</body></html>";
-
+	write_data_stamp(page_dir, base);
 }
 }

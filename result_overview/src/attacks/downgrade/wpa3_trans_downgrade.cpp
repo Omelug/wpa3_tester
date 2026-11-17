@@ -14,7 +14,8 @@ using visual::wpa3_downgrade_filler::Wpa3TransDowngradeTestEntry;
 void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir) {
 
 	const path page_dir = output_dir / "attacks" / "downgrade" / "wpa3_trans_downgrade";
-	if(data_unchanged(page_dir, data_dir / DATA_SUITE / "downgrade" / "wpa3_down")) return;
+	const path base = data_dir / DATA_SUITE / "downgrade" / "wpa3_down";
+	if(data_unchanged(page_dir, base)) return;
 
 	HtmlGuard f(page_dir);
 
@@ -59,6 +60,7 @@ void generate_wpa3_trans_downgrade(const path &output_dir, const path &data_dir)
 	emit_table("External client", wpa3_down_dir / "external" / "wpa3_down_ex_filler", "wpa3_down_ex_filler");
 
 	f << "</body></html>";
+	write_data_stamp(page_dir, base);
 }
 
 }

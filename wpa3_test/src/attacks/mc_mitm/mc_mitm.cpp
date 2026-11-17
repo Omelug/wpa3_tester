@@ -68,7 +68,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int beacon_interval_ms = att_cfg.at("beacon_interval_ms");
-	const bool prefer_active = att_cfg.value("prefer_active", false);
+	const bool prefer_active = att_cfg.at("prefer_active");
 
 	log(LogLevel::INFO,
 		"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");

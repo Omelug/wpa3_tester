@@ -140,8 +140,10 @@ vector<string> generate_targets(const path &output_dir, const path &data_dir) {
 		}
 	}
 
-	if(!data_unchanged(targets_dir, targets_data))
+	if(!data_unchanged(targets_dir, targets_data)) {
 		for(const auto &name: names) generate_target_page(output_dir, name, targets_data / name);
+		write_data_stamp(targets_dir, targets_data);
+	}
 
 	return names;
 }

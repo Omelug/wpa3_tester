@@ -22,10 +22,10 @@ TEST_CASE("data_unchanged") {
 		CHECK_FALSE(data_unchanged(page_dir, data_dir));
 	}
 
+	// fallback path (no stamp): compares newest mtime against index.html mtime
 	SUBCASE("index.html newer than data -> true") {
 		std::ofstream(data_dir / "result.json") << "{}";
 		std::ofstream(page_dir / "index.html") << "<html/>";
-		// touch index.html to ensure it's newer
 		last_write_time(page_dir / "index.html", file_time_type::clock::now() + std::chrono::seconds(5));
 		CHECK(data_unchanged(page_dir, data_dir));
 	}
@@ -34,6 +34,21 @@ TEST_CASE("data_unchanged") {
 		std::ofstream(page_dir / "index.html") << "<html/>";
 		last_write_time(page_dir / "index.html", file_time_type::clock::now() - std::chrono::seconds(5));
 		std::ofstream(data_dir / "result.json") << "{}";
+		CHECK_FALSE(data_unchanged(page_dir, data_dir));
+	}
+
+	// stamp path: compares newest mtime against stored stamp (clock-skew-safe)
+	SUBCASE("stamp matches -> true") {
+		std::ofstream(data_dir / "result.json") << "{}";
+		write_data_stamp(page_dir, data_dir);
+		CHECK(data_unchanged(page_dir, data_dir));
+	}
+
+	SUBCASE("stamp stale after new data -> false") {
+		std::ofstream(data_dir / "result.json") << "{}";
+		write_data_stamp(page_dir, data_dir);
+		std::ofstream(data_dir / "new.json") << "{}";
+		last_write_time(data_dir / "new.json", file_time_type::clock::now() + std::chrono::seconds(5));
 		CHECK_FALSE(data_unchanged(page_dir, data_dir));
 	}
 

@@ -54,6 +54,7 @@ void generate_malformed_eapol1(const path &output_dir, const path &data_dir) {
 
 
 	f << "</body></html>";
+	write_data_stamp(page_dir, base);
 }
 
 }

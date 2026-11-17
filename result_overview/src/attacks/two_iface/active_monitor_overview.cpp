@@ -67,6 +67,7 @@ void generate_active_monitor_overview(const path &output_dir, const path &data_d
 	}
 
 	hg << "</div></body></html>";
+	write_data_stamp(page_dir, base);
 }
 
 }

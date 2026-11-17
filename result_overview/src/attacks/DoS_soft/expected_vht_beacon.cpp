@@ -73,6 +73,7 @@ void generate_expected_vht_beacon(const path &output_dir, const path &data_dir) 
     emit_table("D-Link", base / "external" / "Dlink" / "expected_vht_beacon_ex_Dlink_filler", "expected_vht_beacon_ex_Dlink_filler");
 
     f << "</body></html>";
+    write_data_stamp(page_dir, base);
 }
 
 }

@@ -443,7 +443,7 @@ void generate_devices(const path &output_dir, const path &data_dir){
 	const path iface_all_actors = data_dir / "suite_data" / "scanner" / "iface_info" / "iface_info_filler" / "all_actors";
 	const path ap_info_all_aps  = data_dir / "suite_data" / "scanner" / "ap_info" / "ap_info_filler" / "all_APs";
 	create_public_dirs(devices_dir);
-	if(data_unchanged(devices_dir, dev_data) && data_unchanged(devices_dir, ap_info_all_aps)) return;
+	if(data_unchanged(devices_dir, dev_data, ap_info_all_aps)) return;
 
 	vector<DeviceInfo> devices;
 	if(exists(dev_data) && is_directory(dev_data)){
@@ -509,6 +509,7 @@ void generate_devices(const path &output_dir, const path &data_dir){
 
 	const path manuf_file = MANUF_FILE_PATH;
 	for(const auto &d : devices) generate_device_page(devices_dir, d, manuf_file);
+	write_data_stamp(devices_dir, dev_data, ap_info_all_aps);
 }
 
 }

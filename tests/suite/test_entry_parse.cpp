@@ -37,13 +37,12 @@ void write_result(const path &d, const json &j) {
 	ofstream(d / RESULT_NAME) << j.dump();
 }
 
-// actors: {name, driver, mac}
+// actors: {name, driver, mac}  — mac used as both SK::mac and SK::permanent_mac (mirrors production to_json after setup_actor)
 void write_mapping(const path &d, initializer_list<tuple<string, string, string>> actors) {
 	ofstream f(d / MAPPING_CSV);
 	f << "Type,ActorName,Interface,MAC,Driver,channel,json_obj\n";
 	for (auto &&[name, drv, mac] : actors) {
-		// sk_name(SK::driver_name) == "driver", not "driver_name"
-		json j = {{"selection", {{"driver", drv}, {"mac", mac}}}, {"source", "internal"}};
+		json j = {{"selection", {{"driver", drv}, {"permanent_mac", mac}, {"mac", mac}}}, {"source", "internal"}};
 		string raw = j.dump();
 		string q = "\"";
 		for (char c : raw) { if (c == '"') q += '"'; q += c; }

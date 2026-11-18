@@ -106,7 +106,7 @@ TEST_SUITE("handle_probe") {
 
 TEST_SUITE("handle_open_auth") {
 
-	TEST_CASE("Auth seq=1 algo=0 -> STOP, rogue+real send, state=Authenticated") {
+	TEST_CASE("Auth seq=1 algo=0 -> STOP, rogue send, state=Authenticated") {
 		auto m = make_fixture();
 		m->client_state.update_state(ClientState::Sent_to_rogue);
 
@@ -116,7 +116,7 @@ TEST_SUITE("handle_open_auth") {
 
 		CHECK_EQ(m->handle_open_auth(HWAddress<6>(CLIENT_MAC), auth), STOP);
 		CHECK_EQ(m->rogue_send_count, 1); // seq=2 reply to rogue
-		CHECK_EQ(m->real_send_count, 1);  // original forwarded to real
+		CHECK_EQ(m->real_send_count, 0);  // not forwarded to real (rogue terminates auth itself)
 		CHECK(m->client_state.is_state(ClientState::Authenticated));
 	}
 

@@ -154,7 +154,7 @@ TEST_SUITE("handle_from_ap_real") {
 		auto *dot11 = pdu->find_pdu<Dot11>();
 		REQUIRE_NE(dot11, nullptr);
 
-		m->handle_from_ap_real(pdu, *dot11, HWAddress<6>(AP_MAC));
+		m->handle_from_ap_real(*dot11, HWAddress<6>(AP_MAC), pdu->serialize());
 
 		CHECK_EQ(m->rogue_send_count, 0);
 		CHECK(m->client_state.is_state(ClientState::GotMitm)); // unchanged
@@ -172,7 +172,7 @@ TEST_SUITE("handle_from_ap_real") {
 		auto *dot11 = pdu->find_pdu<Dot11>();
 		REQUIRE_NE(dot11, nullptr);
 
-		m->handle_from_ap_real(pdu, *dot11, HWAddress<6>(CLIENT_MAC));
+		m->handle_from_ap_real(*dot11, HWAddress<6>(CLIENT_MAC), pdu->serialize());
 
 		CHECK_EQ(m->rogue_send_count, 0);
 	}
@@ -187,7 +187,7 @@ TEST_SUITE("handle_from_ap_real") {
 		auto *dot11 = pdu->find_pdu<Dot11>();
 		REQUIRE_NE(dot11, nullptr);
 
-		m->handle_from_ap_real(pdu, *dot11, HWAddress<6>(CLIENT_MAC));
+		m->handle_from_ap_real(*dot11, HWAddress<6>(CLIENT_MAC), pdu->serialize());
 
 		CHECK_EQ(m->rogue_send_count, 1);
 	}

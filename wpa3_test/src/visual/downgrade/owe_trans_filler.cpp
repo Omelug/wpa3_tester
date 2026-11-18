@@ -21,7 +21,7 @@ OweTransTestEntry OweTransTestEntry::parse(const path &test_folder) {
 	e.test_name = test_folder.filename().string();
 
 	const auto rs = helper::load_test_rs(test_folder);
-	e.ap_mac = rs->get_actor("ap").get(SK::mac);
+	e.ap_mac = rs->get_actor("ap").get(SK::permanent_mac);
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
 	e.client_driver = rs->get_actor("client").get(SK::driver_name);
 	e.attacker_mac = rs->get_actor("attacker").get(SK::mac);

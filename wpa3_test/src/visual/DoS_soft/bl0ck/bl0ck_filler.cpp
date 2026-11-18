@@ -38,15 +38,15 @@ Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder) {
 	rs.load_actor_interface_mapping();
 
 	const auto ap = rs.get_actor("ap");
-	e.ap_mac = ap->get(SK::mac);
+	e.ap_mac = ap->get(SK::permanent_mac);
 	e.ap_source = ap->get(SK::source);
 
 	const auto client = rs.get_actor("client");
-	e.client_mac = client->get(SK::mac);
+	e.client_mac = client->get(SK::permanent_mac);
 	e.client_source = client->get(SK::source);
 
 	const auto att = rs.get_actor("attacker");
-	e.attacker_mac = att->get(SK::mac);
+	e.attacker_mac = att->get(SK::permanent_mac);
 	e.attacker_driver = att->get(SK::driver_name);
 
 	if(const auto cfg = YAML::LoadFile(cfg_path); cfg["attack_config"]) {

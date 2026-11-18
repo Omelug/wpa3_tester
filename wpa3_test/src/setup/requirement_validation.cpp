@@ -89,13 +89,15 @@ void kill_process_in_ns_name(const string &ns_name) {
 	}
 
 	// waitpid() returns ECHILD immediately for non-child processes (orphans)
-	// poll /proc/{pid} to confirm death regardless of parentage
+	// Call it inside the loop so zombie children get reaped each iteration —
+	// /proc/{pid} only disappears after waitpid clears the zombie table entry.
 	const auto kill_deadline = chrono::steady_clock::now() + chrono::milliseconds(2000); //FIXME HARDCODED
 	for(const pid_t p: pids) {
-		waitpid(p, nullptr, WNOHANG); // reap own children; harmless ECHILD for orphans
-		while(exists("/proc/" + to_string(static_cast<long>(p))) &&
-		      chrono::steady_clock::now() < kill_deadline)
-			interruptible_sleep(chrono::milliseconds(10));  //FIXME HARDCODED
+		while(chrono::steady_clock::now() < kill_deadline) {
+			waitpid(p, nullptr, WNOHANG); // reap if our child; ECHILD harmless for orphans
+			if(!exists("/proc/" + to_string(static_cast<long>(p)))) break;
+			interruptible_sleep(chrono::milliseconds(10)); //FIXME HARDCODED
+		}
 		log(LogLevel::DEBUG, "Killed process {} from namespace {}", p, ns_name);
 	}
 }

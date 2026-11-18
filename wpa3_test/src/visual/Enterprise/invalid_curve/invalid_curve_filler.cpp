@@ -23,9 +23,9 @@ InvalidCurveTestEntry InvalidCurveTestEntry::parse(const path &test_folder) {
 	const auto rs = helper::load_test_rs(test_folder);
 	e.ap_openssl_version = hostapd::get_openssl_version(*rs, "ap");
 	e.ap_hostapd_version = hostapd::get_version(*rs, "ap");
-	e.ap_mac = rs->get_actor("ap").get(SK::mac);
+	e.ap_mac = rs->get_actor("ap").get(SK::permanent_mac);
 	e.ap_driver = rs->get_actor("ap").get(SK::driver_name);
-	e.attacker_mac = rs->get_actor("attacker").get(SK::mac);
+	e.attacker_mac = rs->get_actor("attacker").get(SK::permanent_mac);
 	e.attacker_driver = rs->get_actor("attacker").get(SK::driver_name);
 	return e;
 }

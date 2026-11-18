@@ -20,9 +20,10 @@ ActiveTestEntry ActiveTestEntry::parse(const path &test_folder) {
 	e.test_name = test_folder.filename().string();
 
 	const auto rs = helper::load_test_rs(test_folder);
+	const auto &rx = rs->get_actor("receiver");
 	e.tx_driver = rs->get_actor("transceiver").get(SK::driver_name);
-	e.rx_driver = rs->get_actor("receiver").get(SK::driver_name);
-	e.rx_mac = rs->get_actor("receiver")->get(SK::permanent_mac);
+	e.rx_driver = rx.get(SK::driver_name);
+	e.rx_mac = rx->get(SK::permanent_mac);
 
 	return e;
 }

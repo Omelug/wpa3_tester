@@ -226,3 +226,73 @@ TEST_CASE("load_actor_interface_mapping - malformed rows are skipped, not thrown
 
 	remove_all(test_dir);
 }
+
+// ---- write_error_log
+
+static string read_error_file(const path &dir) {
+	ifstream f(dir / ERROR_FILE);
+	return string(istreambuf_iterator(f), istreambuf_iterator<char>());
+}
+
+// verify that errors.txt is created in run_folder and contains the exception message
+TEST_CASE("write_error_log - creates errors.txt with exception message") {
+	const path dir = temp_directory_path() / "test_write_error_log_basic";
+	create_directories(dir);
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.write_error_log(runtime_error("test message"));
+
+	REQUIRE(exists(dir / ERROR_FILE));
+	const string content = read_error_file(dir);
+	CHECK_NE(content.find("test message"),  string::npos);
+
+	remove_all(dir);
+}
+
+TEST_CASE("write_error_log - tester_error writes Location field") {
+	const path dir = temp_directory_path() / "test_write_error_log_tester_error";
+	create_directories(dir);
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.write_error_log(run_err("tester error msg"));
+
+	const string content = read_error_file(dir);
+	CHECK_NE(content.find("Location:"), string::npos);
+	CHECK_NE(content.find("tester error msg"), string::npos);
+
+	remove_all(dir);
+}
+
+TEST_CASE("write_error_log - plain std::exception writes Stacktrace but no Location") {
+	const path dir = temp_directory_path() / "test_write_error_log_plain";
+	create_directories(dir);
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.write_error_log(runtime_error("plain error"));
+
+	const string content = read_error_file(dir);
+	CHECK_EQ(content.find("Location:"), string::npos);
+	CHECK_NE(content.find("Stacktrace:"),  string::npos);
+
+	remove_all(dir);
+}
+
+TEST_CASE("write_error_log - exception type is human-readable") {
+	const path dir = temp_directory_path() / "test_write_error_log_demangle";
+	create_directories(dir);
+
+	RunStatus rs;
+	rs.run_folder(dir);
+	rs.write_error_log(run_err("demangle check"));
+
+	const string content = read_error_file(dir);
+	const auto type_pos = content.find("Exception type: ");
+	REQUIRE_NE(type_pos, string::npos);
+	const string type_line = content.substr(type_pos + 16, content.find('\n', type_pos) - type_pos - 16);
+	CHECK_FALSE(type_line.starts_with("_Z"));
+
+	remove_all(dir);
+}

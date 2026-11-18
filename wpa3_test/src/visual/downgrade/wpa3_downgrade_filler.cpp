@@ -25,11 +25,11 @@ Wpa3TransDowngradeTestEntry Wpa3TransDowngradeTestEntry::parse(const path &test_
 	const auto rs = helper::load_test_rs(test_folder);
 
 	const auto ap = rs->get_actor("ap");
-	e.ap_mac = ap->get(SK::mac);
+	e.ap_mac = ap->get(SK::permanent_mac);
 	e.ap_driver = ap->get(SK::driver_name);
 
 	const auto client = rs->get_actor("client");
-	e.client_mac = client->get(SK::mac);
+	e.client_mac = client->get(SK::permanent_mac);
 	e.client_driver = client->get(SK::driver_name);
 
 	const auto window = helper::get_run_window(*rs);

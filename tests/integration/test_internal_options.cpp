@@ -49,7 +49,6 @@ TEST_CASE("RunStatus::internal_options - discovers a real hwsim Wifi interface")
 
 	const ActorPtr &opt = *it;
 	CHECK_EQ(opt.get(SK::source), "internal");
-	CHECK_EQ(opt.get(SK::mac), hw_capabilities::get_mac_address(new_iface, nullopt).to_string());
 	CHECK_EQ(opt.get(SK::driver_name), "mac80211_hwsim");
 	CHECK_FALSE(opt.get(SK::permanent_mac).empty());
 

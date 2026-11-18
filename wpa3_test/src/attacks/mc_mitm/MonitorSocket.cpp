@@ -1,4 +1,5 @@
 #include "attacks//mc_mitm/MonitorSocket.h"
+#include "net_parser/dot11_defs.h"
 #include <memory>
 #include <pcap/pcap.h>
 #include <string>
@@ -79,24 +80,22 @@ void MonitorSocket::send(PDU &pdu, const Channel &, const uint16_t tx_flags) con
 
 frame_raw_t MonitorSocket::build_inject_frame(
 	const frame_raw_t &frame_raw, const Channel &) {
-	if(frame_raw.size() < 4) return {};
-	// 0 -> rt_len means corrupted capture, log and ignore
-	if(frame_raw[0] == 0) {
-		const uint16_t rt_len = frame_raw[2] | static_cast<uint16_t>(frame_raw[3]) << 8;
-		if(rt_len >= frame_raw.size()) {
-			log(LogLevel::WARNING, "build_inject_frame: malformed RadioTap rt_len={} >= frame size={}, dropping", rt_len, frame_raw.size());
-			return {};
-		}
+	const uint16_t init_rt_len = radiotap::get_rt_len(frame_raw);
+	if(!init_rt_len) return {};
+	// guard against malformed it_len when frame is a radiotap capture
+	if(frame_raw[0] == PKTHDR_RADIOTAP_VERSION && init_rt_len >= frame_raw.size()) {
+		log(LogLevel::WARNING, "build_inject_frame: malformed RadioTap rt_len={} >= frame size={}, dropping", init_rt_len, frame_raw.size());
+		return {};
 	}
 
 	const auto with_rt = ensure_radiotap(frame_raw);
 
 	// Strip RX RT metadata, always inject with fresh minimal TX RT (NOACK|ORDER).
-	const uint16_t rt_len = with_rt[2] | static_cast<uint16_t>(with_rt[3]) << 8;
-	if(rt_len >= with_rt.size()) return {};
+	const uint16_t rt_len = radiotap::get_rt_len(with_rt);
+	if(!rt_len || rt_len >= with_rt.size()) return {};
 
 	RadioTap rt{};
-	rt.tx_flags(TX_NOACK | TX_ORDER);
+	rt.tx_flags(radiotap::TX_NOACK | radiotap::TX_ORDER);
 	rt.inner_pdu(RawPDU(with_rt.data() + rt_len, with_rt.size() - rt_len));
 	return rt.serialize();
 }
@@ -122,33 +121,29 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 	} catch(const std::exception &e) {
 		// Data frames: libtins throws when building SNAP/EAPOL inner PDU.
 		// Parse just the 802.11 header (no inner PDU) so addr extraction and relay still work.
-		if(frame.size() >= 4) {
-			const uint16_t rt_len = frame[2] | static_cast<uint16_t>(frame[3]) << 8;
-			// rt_len >= 8: minimum valid RT header; guards frame[rt_len] from reading inside RT hdr
-			if(rt_len >= 8 && static_cast<size_t>(rt_len) + 2 <= frame.size()) {
-				const uint8_t fc0 = frame[rt_len];
-				const uint8_t fc1 = frame[rt_len + 1];
-				if((fc0 >> 2 & 0x03) == 2) { // DATA frame type
-					const bool qos = (fc0 & 0x80) != 0;
-					const bool has_4addr = (fc1 & 0x03) == 0x03;
-					const size_t hdr = 24u + (qos ? 2u : 0u) + (has_4addr ? 6u : 0u);
-					const size_t trunc = rt_len + hdr;
-					if(trunc <= frame.size()) {
+		const uint16_t rt_len = radiotap::get_rt_len(frame);
+		if(rt_len && rt_len + dot11::DUR_OFFSET <= frame.size()) { // fc0+fc1 (Frame Control = 2 bytes)
+			const uint8_t fc0 = frame[rt_len];
+			const uint8_t fc1 = frame[rt_len + 1];
+			if((fc0 >> dot11::FC_TYPE_SHIFT & dot11::FC_TYPE_MASK) == dot11::TYPE_DATA) {
+				const bool qos     = (fc0 & 0x80) != 0;
+				const bool has_4addr = (fc1 & 0x03) == 0x03;
+				const size_t hdr  = dot11::MGMT_HDR_SIZE + (qos ? 2u : 0u) + (has_4addr ? 6u : 0u);
+				const size_t trunc = rt_len + hdr;
+				if(trunc <= frame.size()) {
+					try {
+						auto pdu = make_unique<RadioTap>(frame.data(), trunc);
+						// Reparse RT header only to check FCS flag (libtins threw on inner PDU, not RT).
+						uint32_t strip = 0;
 						try {
-							auto pdu = make_unique<RadioTap>(frame.data(), trunc);
-							// Reparse RT header only to check FCS flag (libtins threw on inner PDU, not RT).
-							uint32_t strip = 0;
-							try {
-								const RadioTap rt2(frame.data(), rt_len);
-								if(rt2.present() & RadioTap::FLAGS && (rt2.flags() & RadioTap::FCS)) strip = 4;
-							} catch(...) {}
-							//TODO ok ignore all other?
-							log(LogLevel::DEBUG, "SNAP/EAPOL inner PDU, type=0x{:02x}", trunc < frame.size() ? frame[trunc + 1] : 0xFF);
-							return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };
-						} catch(...) {
-							log(LogLevel::ERROR, "parse_frame: SNAP/EAPOL inner PDU");
-							return {};
-						}
+							const RadioTap rt2(frame.data(), rt_len);
+							if(rt2.present() & RadioTap::FLAGS && (rt2.flags() & RadioTap::FCS)) strip = 4;
+						} catch(...) {}
+						log(LogLevel::DEBUG, "SNAP/EAPOL inner PDU, type=0x{:02x}", trunc < frame.size() ? frame[trunc + 1] : 0xFF);
+						return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };
+					} catch(...) {
+						log(LogLevel::ERROR, "parse_frame: SNAP/EAPOL inner PDU");
+						return {};
 					}
 				}
 			}
@@ -248,22 +243,26 @@ void MonitorSocket::fill_rx_buf() {
 }
 
 MonitorSocket::RecvResult MonitorSocket::parse_remote_recv() {
+	// pcap file format: global header followed by packet records
+	// pcap_pkthdr uses struct timeval (16B on 64-bit), so its sizeof != wire format; use explicit constants
+	constexpr size_t PCAP_PKT_HDR    = 16; // wire: ts_sec(4)+ts_usec(4)+caplen(4)+len(4)
+	constexpr size_t PCAP_CAPLEN_OFF =  8; // offset of caplen within wire packet record
+
 	const uint8_t *buf = rx_buf_.data() + rx_head_;
 	size_t avail = rx_buf_.size() - rx_head_;
-	//TODO remove magic numbers
 	if(!pcap_hdr_done_) {
-		if(avail < 24) return {};
-		rx_head_ += 24;
-		buf += 24;
-		avail -= 24;
+		constexpr size_t PCAP_GLOBAL_HDR = sizeof(pcap_file_header);
+		if(avail < PCAP_GLOBAL_HDR) return {};
+		rx_head_ += PCAP_GLOBAL_HDR;
+		buf      += PCAP_GLOBAL_HDR;
+		avail    -= PCAP_GLOBAL_HDR;
 		pcap_hdr_done_ = true;
 	}
-	// pcap packet record: ts_sec(4) ts_usec(4) caplen(4) len(4)
-	if(avail < 16) return {};
+	if(avail < PCAP_PKT_HDR) return {};
 	uint32_t caplen;
-	memcpy(&caplen, buf + 8, 4); // both sides LE (OpenWrt + x86)
-	if(avail < 16 + caplen) return {};
-	auto r = parse_frame(frame_raw_t(buf + 16, buf + 16 + caplen));
+	memcpy(&caplen, buf + PCAP_CAPLEN_OFF, sizeof(caplen)); // both sides LE (OpenWrt + x86)
+	if(avail < PCAP_PKT_HDR + caplen) return {};
+	auto r = parse_frame(frame_raw_t(buf + PCAP_PKT_HDR, buf + PCAP_PKT_HDR + caplen));
 	rx_head_ += 16 + caplen;
 	// compact once head grows large - one memcpy beats per-packet erase
 	if(rx_head_ > 65536) {

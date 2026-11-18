@@ -5,7 +5,7 @@
 
 namespace wpa3_tester::eap {
 
-// IEEE 802.1X-2020, Section 11.3 — EtherType for EAPOL (assigned by IEEE Registration Authority)
+// IEEE 802.1X-2020, Section 11.3 - EtherType for EAPOL (assigned by IEEE Registration Authority)
 constexpr uint16_t ETHERTYPE_EAPOL    = 0x888E;
 constexpr uint8_t  ETHERTYPE_EAPOL_HI = 0x88;
 constexpr uint8_t  ETHERTYPE_EAPOL_LO = 0x8E;
@@ -26,7 +26,7 @@ enum EapCode : uint8_t {
 	CODE_FAILURE  = 4,
 };
 
-// EAP type numbers (IANA)
+// EAP type numbers (IANA) — NOTE: incomplete, only types used in this project
 enum EapType : uint8_t {
 	TYPE_IDENTITY  = 1,
 	TYPE_MD5       = 4,
@@ -88,7 +88,7 @@ inline const std::map<EapType, std::string_view> eap_type_names = {
 	{TYPE_EXPANDED,  "Expanded"},
 };
 
-// to_string — returns "<invalid …>" for unknown values; callers format fallback if needed
+// to_string - returns "<invalid …>" for unknown values; callers format fallback if needed
 inline std::string_view to_string(EapolType v) {
 	const auto it = eapol_type_names.find(v);
 	return it != eapol_type_names.end() ? it->second : "<invalid EapolType>";
@@ -102,6 +102,12 @@ inline std::string_view to_string(const EapType v) {
 	return it != eap_type_names.end() ? it->second : "<invalid EapType>";
 }
 
+// EAP body offsets within a serialized EAPOL frame (IEEE 802.1X-2020, Section 11.3; RFC 3748, Section 4)
+// EAPOL header: version(1) + type(1) + length(2) = 4 bytes; EAP body follows immediately
+constexpr uint8_t EAPOL_HDR_SIZE = 4;
+constexpr uint8_t EAP_CODE_OFF   = EAPOL_HDR_SIZE;     // = 4: EAP Code (1 byte)
+constexpr uint8_t EAP_TYPE_OFF   = EAPOL_HDR_SIZE + 4; // = 8: EAP Type (1 byte, Req/Resp only)
+
 // EAPOL-Key frame: field offsets from start of EAPOL body (byte after 0x888E ethertype)
 // IEEE 802.1X-2020, Section 11.9; IEEE 802.11-2020, Section 12.7.2
 constexpr uint8_t EAPOL_KEY_OFF_TYPE  = 1; // EAPOL packet type (must equal EAPOL_KEY=3)
@@ -109,7 +115,7 @@ constexpr uint8_t EAPOL_KEY_OFF_KI_HI = 5; // Key Information high byte (bits 15
 constexpr uint8_t EAPOL_KEY_OFF_KI_LO = 6; // Key Information low byte  (bits  7-0)
 constexpr uint8_t EAPOL_KEY_MIN_SIZE  = 7; // bytes needed to read key info
 
-// Key Information field bit masks — IEEE 802.11-2020, Section 12.7.2, Table 12-7
+// Key Information field bit masks - IEEE 802.11-2020, Section 12.7.2, Table 12-7
 // Stored big-endian; KI_HI = byte[5], KI_LO = byte[6] relative to EAPOL body
 constexpr uint8_t KI_HI_MIC    = 0x01; // bit  8: Key MIC
 constexpr uint8_t KI_HI_SECURE = 0x02; // bit  9: Secure

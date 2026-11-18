@@ -17,6 +17,7 @@
 #include "logger/report.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
+#include "net_parser/dot11_defs.h"
 #include "scan/active/scan_AP.h"
 #include "system/hw_capabilities.h"
 #include "visual/result_helper.h"
@@ -78,27 +79,27 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 		const auto id = static_cast<uint8_t>(o.option());
 
 		static constexpr array kept_ids = {
-			static_cast<uint8_t>(Dot11::OptionTypes::SSID),
-			static_cast<uint8_t>(Dot11::OptionTypes::SUPPORTED_RATES),
-			static_cast<uint8_t>(Dot11::OptionTypes::DS_SET),
-			static_cast<uint8_t>(Dot11::OptionTypes::TIM),
-			static_cast<uint8_t>(Dot11::OptionTypes::COUNTRY),
-			static_cast<uint8_t>(Dot11::OptionTypes::CHANNEL_SWITCH),
-			static_cast<uint8_t>(60), // ECSA
-			static_cast<uint8_t>(Dot11::OptionTypes::ERP_INFORMATION),
+			dot11::IE_SSID,
+			dot11::IE_RATES,
+			dot11::IE_DS_PARAM_SET,
+			dot11::IE_TIM,
+			dot11::IE_COUNTRY,
+			dot11::IE_CSA,
+			dot11::IE_ECSA,
+			dot11::IE_ERP_INFO,
 
-			static_cast<uint8_t>(Dot11::OptionTypes::HT_CAPABILITY),
-			static_cast<uint8_t>(Dot11::OptionTypes::HT_OPERATION),
-			static_cast<uint8_t>(Dot11::OptionTypes::VHT_CAP),
-			static_cast<uint8_t>(Dot11::OptionTypes::VHT_OP),
+			dot11::IE_HT_CAPS,
+			dot11::IE_HT_OPERATION,
+			dot11::IE_VHT_CAPS,
+			dot11::IE_VHT_OPERATION,
 
-			static_cast<uint8_t>(Dot11::OptionTypes::RSN),
-			static_cast<uint8_t>(Dot11::OptionTypes::EXT_SUPPORTED_RATES),
-			static_cast<uint8_t>(Dot11::OptionTypes::SUPPORTED_OP_CLASSES),
-			static_cast<uint8_t>(Dot11::OptionTypes::EXT_CAP),
-			static_cast<uint8_t>(Dot11::OptionTypes::VENDOR_SPECIFIC),
+			dot11::IE_RSN,
+			dot11::IE_EXT_RATES,
+			dot11::IE_SUPPORTED_OP_CLASSES,
+			dot11::IE_EXTENDED_CAPS,
+			dot11::IE_VENDOR_SPECIFIC,
 		};
-		if(ranges::find(kept_ids, id) == kept_ids.end()) return true; //erase
+		if(ranges::find(kept_ids, static_cast<dot11::IE>(id)) == kept_ids.end()) return true; //erase
 
 		// filter out useless VENDOR_SPECIFIC IE tags
 		// allow only  00:50:F2 (type 1 - Microsoft Qos, type 2- WMM/WME)

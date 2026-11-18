@@ -1,24 +1,20 @@
 #include "attacks/components/sniffer_helper.h"
-#include <algorithm>
 #include <string>
 #include "net_parser/eap_defs.h"
+#include "net_parser/radiotap_defs.h"
 
 namespace wpa3_tester::components {
 
 bool radiotap_bad_fcs(const frame_raw_t &p, const uint16_t rt_len) {
-	size_t off = 4;
-	uint32_t present0 = 0;
-	const size_t cap = std::min(static_cast<size_t>(rt_len), p.size());
-	while(off + 4 <= cap) {
-		const uint32_t w = static_cast<uint32_t>(p[off]) | static_cast<uint32_t>(p[off + 1]) << 8 |
-			static_cast<uint32_t>(p[off + 2]) << 16 | static_cast<uint32_t>(p[off + 3]) << 24;
-		if(off == 4) present0 = w;
-		off += 4;
-		if(!(w & 1u << 31)) break;
+	if(p.size() < sizeof(ieee80211_radiotap_header)) return false;
+	auto *hdr = const_cast<ieee80211_radiotap_header *>(reinterpret_cast<const ieee80211_radiotap_header *>(p.data()));
+	ieee80211_radiotap_iterator iter{};
+	if(ieee80211_radiotap_iterator_init(&iter, hdr, rt_len, nullptr) != 0) return false;
+	while(ieee80211_radiotap_iterator_next(&iter) == 0) {
+		if(iter.is_radiotap_ns && iter.this_arg_index == IEEE80211_RADIOTAP_FLAGS)
+			return *iter.this_arg & IEEE80211_RADIOTAP_F_BADFCS;
 	}
-	if(!(present0 & 1u << 1)) return false; // Flags field not present
-	if(present0 & 1u << 0) off += 8;		// skip TSFT (8 bytes) if present
-	return off < cap && p[off] & 0x40u;	// bit 6 = BAD_FCS
+	return false;
 }
 
 std::string eap_description_raw(const frame_raw_t &raw) {

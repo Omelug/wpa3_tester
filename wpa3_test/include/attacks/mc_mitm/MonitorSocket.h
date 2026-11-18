@@ -8,15 +8,10 @@
 #include <vector>
 
 #include "config/RunStatus.h"
+#include "net_parser/radiotap_defs.h"
 #include "system/wifi_channel.h"
 
 namespace wpa3_tester {
-
-// Radiotap TX flags (https://radiotap.org/fields/TX%20flags.html)
-static constexpr uint16_t TX_NOACK  = 0x0008; // don't wait for ACK
-static constexpr uint16_t TX_NOSEQ  = 0x0010; // preserve sequence number (only for kernel >= 5.9)
-static constexpr uint16_t TX_ORDER  = 0x0020; // don't reorder relative to other injected frames
-static constexpr uint16_t TX_DEFAULT = TX_NOACK | TX_ORDER;
 
 class MonitorSocket {
 public:
@@ -39,7 +34,7 @@ public:
 		explicit operator bool() const { return pdu != nullptr || !raw.empty(); }
 	};
 
-	void send(Tins::PDU &pdu, const Channel &ch, uint16_t tx_flags = TX_DEFAULT) const;
+	void send(Tins::PDU &pdu, const Channel &ch, uint16_t tx_flags = radiotap::TX_DEFAULT) const;
 	static frame_raw_t build_inject_frame(
 		const frame_raw_t &frame_raw, const Channel &ch);
 	void send(const frame_raw_t &raw, const Channel &ch) const;

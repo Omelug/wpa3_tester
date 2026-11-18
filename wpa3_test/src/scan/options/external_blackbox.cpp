@@ -110,8 +110,8 @@ void RunStatus::solve_new_pdu(PDU &pdu, ActorMACMap &seen, AssocMap &assoc){
 }
 
 void RunStatus::solve_new_pdu(const frame_raw_t &frame, ActorMACMap &seen, AssocMap &assoc){
-	if(frame.size() < 4) return;
-	const uint16_t rt_len = frame[2] | static_cast<uint16_t>(frame[3]) << 8;
+	const uint16_t rt_len = radiotap::get_rt_len(frame);
+	if(!rt_len) return;
 	if(components::radiotap_bad_fcs(frame, rt_len)) return;
 	try {
 		RadioTap rt(frame.data(), frame.size());
@@ -239,8 +239,8 @@ bool RunStatus::process_single_pdu(
 	const ActorMap &actors, const vector<pair<string,string>> &conn_conds,
 	const std::vector<std::string> &disabled_tests_hash_filler
 ) {
-	if(frame.size() < 4) return false;
-	const uint16_t rt_len = frame[2] | static_cast<uint16_t>(frame[3]) << 8;
+	const uint16_t rt_len = radiotap::get_rt_len(frame);
+	if(!rt_len) return false;
 	if(components::radiotap_bad_fcs(frame, rt_len)) return false;
 
 	const size_t before_seen = seen.size();

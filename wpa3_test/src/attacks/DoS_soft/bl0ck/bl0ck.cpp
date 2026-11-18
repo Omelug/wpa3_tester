@@ -83,7 +83,7 @@ RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, 
 		0x08,
 		0x80 };
 	RadioTap rt{};
-	rt.tx_flags(TX_NOACK|TX_ORDER);
+	rt.tx_flags(radiotap::TX_NOACK | radiotap::TX_ORDER);
 	return rt / bar / RawPDU(payload_data);
 }
 
@@ -100,7 +100,7 @@ RadioTap get_BA_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0x7f, 0x92, 0x08, 0x80 };
 	RadioTap rt{};
-	rt.tx_flags(TX_NOACK|TX_ORDER);
+	rt.tx_flags(radiotap::TX_NOACK | radiotap::TX_ORDER);
 	return rt / ba / RawPDU(padding);
 }
 

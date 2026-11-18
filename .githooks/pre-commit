@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+files=$(git diff --cached --name-only --diff-filter=ACM -- \
+  '*.c' '*.h' '*.cc' '*.cpp' '*.cxx' '*.hpp' '*.hxx' '*.hh' '*.inl' '*.cmake')
+
+[ -z "$files" ] && exit 0
+
+bad=$(echo "$files" | xargs -d'\n' grep -InP --color=always \
+  '[^\x00-\x7F]|^[ \t]*[\r\v\f][ \t\r\v\f]*$|[ \t]+$' 2>/dev/null || true)
+
+[ -z "$bad" ] && exit 0
+
+echo "$bad"
+
+if [ "${FIX:-0}" != "1" ]; then
+  echo ""
+  echo "  fix trailing whitespace / blank control-chars: FIX=1 git commit ..."
+  echo "  non-ASCII must be fixed manually"
+  exit 1
+fi
+
+# ponytail: re-stages whole file; unstaged hunks in same file get included
+echo "$files" | xargs -d'\n' perl -i -pe '
+  s/[ \t]+$//;        # trailing whitespace
+  s/^[ \t\r\v\f]+$//; # blank lines with control chars
+  s/\x{2014}/-/g;     # em dash → -
+  s/\x{2192}/->/g;    # → ->
+'
+echo "$files" | xargs -d'\n' git add
+
+remaining=$(echo "$files" | xargs -d'\n' grep -InP \
+  '[^\x00-\x7F]|^[ \t]*[\r\v\f][ \t\r\v\f]*$|[ \t]+$' 2>/dev/null || true)
+
+if [ -n "$remaining" ]; then
+  echo "auto-fixed whitespace; non-ASCII still present (fix manually):"
+  echo "$remaining"
+  exit 1
+fi
+
+echo "auto-fixed and re-staged"
+exit 0

@@ -15,6 +15,10 @@ namespace wpa3_tester {
 using namespace std;
 using namespace Tins;
 using namespace chrono;
+using radiotap::TX_NOACK;
+using radiotap::TX_NOSEQ;
+using radiotap::TX_ORDER;
+using radiotap::TX_DEFAULT;
 
 // label to identification  in result
 static vector<uint8_t> make_label() {
@@ -79,8 +83,8 @@ ProbeCapture hw_capabilities::capture_probe_response_ack(
 		flush_socket(sin);
 		sout.send(probe_req, ch);
 		sin.recv_loop(steady_clock::now() + seconds(1), [&](auto r) -> bool {
-			if(r.raw.size() < 4) return false;
-			const uint16_t rt_len = r.raw[2] | static_cast<uint16_t>(r.raw[3]) << 8;
+			const uint16_t rt_len = radiotap::get_rt_len(r.raw);
+			if(!rt_len) return false;
 			if(components::radiotap_bad_fcs(r.raw, rt_len)) return false;
 			try {
 				const RadioTap rt(r.raw.data(), r.raw.size());
@@ -248,7 +252,7 @@ InjectionTestResult hw_capabilities::test_injection_order(MonitorSocket &sout, M
 
 		sin.recv_loop(steady_clock::now() + milliseconds(2500), [&](auto r) -> bool {
 			if(ranges::search(r.raw, label).empty()) return false;
-			if(r.raw.size() < 4) return false;
+			if(r.raw.size() < sizeof(ieee80211_radiotap_header)) return false;
 
 			const RadioTap rt(r.raw.data(), r.raw.size());
 			const auto *q = rt.find_pdu<Dot11QoSData>();

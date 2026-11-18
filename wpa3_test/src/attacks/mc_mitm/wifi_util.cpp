@@ -1,12 +1,13 @@
 #include "attacks/mc_mitm/wifi_util.h"
-#include "80211_const/eap_defs.h"
+#include "net_parser/dot11_defs.h"
+#include "net_parser/eap_defs.h"
+#include "net_parser/radiotap_defs.h"
 
 #include <fstream>
 #include <iomanip>
 #include <linux/nl80211.h>
 #include <net/if.h>
 #include <netlink/genl/ctrl.h>
-#include <netlink/genl/genl.h>
 #include <netlink/netlink.h>
 #include <sstream>
 
@@ -46,12 +47,11 @@ Dot11Addrs get_addrs(const PDU &pdu, const frame_raw_t &raw) {
 	}
 
 	// fallback addresses from raw (libtins cant parse some encrypted frames)
-	if(addr2 == HWAddress<6>() && raw.size() >= 16) {
-		// skip RadioTap header
-		const uint16_t rt_len = *reinterpret_cast<const uint16_t *>(raw.data() + 2);
-		if(raw.size() >= static_cast<size_t>(rt_len) + 16) {
-			addr1 = HWAddress<6>(raw.data() + rt_len + 4);
-			addr2 = HWAddress<6>(raw.data() + rt_len + 10);
+	if(addr2 == HWAddress<6>()) {
+		const uint16_t rt_len = radiotap::get_rt_len(raw);
+		if(rt_len && raw.size() >= static_cast<size_t>(rt_len) + dot11::ADDR2_END) {
+			addr1 = HWAddress<6>(raw.data() + rt_len + dot11::ADDR1_OFFSET);
+			addr2 = HWAddress<6>(raw.data() + rt_len + dot11::ADDR2_OFFSET);
 		}
 	}
 
@@ -87,9 +87,7 @@ Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const Channel
 }
 
 Dot11AssocResponse *assoc_resp_channel_patch(const Dot11AssocResponse &assoc, const Channel &rogue_channel) {
-	auto *resp = new Dot11AssocResponse();
-	resp->addr1(assoc.addr1());
-	resp->addr2(assoc.addr2());
+	auto *resp = new Dot11AssocResponse(assoc.addr1(), assoc.addr2());
 	resp->addr3(assoc.addr3());
 	resp->capabilities() = assoc.capabilities();
 	resp->status_code(assoc.status_code());
@@ -141,6 +139,7 @@ EapolMsg get_eapol_msg_num(const frame_raw_t &raw, const bool print) {
 	if(!key_mic && key_ack && !install && !secure) return EapolMsg::Msg1;
 	if(key_mic && !key_ack && !install && !secure) return EapolMsg::Msg2;
 	if(key_mic && key_ack && install && secure)    return EapolMsg::Msg3;
+	// NOLINTNEXTLINE(clang-diagnostic-tautological-overlap-compare)
 	if(key_mic && !key_ack && !install && secure)  return EapolMsg::Msg4;
 	return EapolMsg::Unknown;
 }
@@ -150,31 +149,28 @@ string eap_description(const PDU &pdu) {
 	const auto *eapol = pdu.find_pdu<EAPOL>();
 	if(!eapol) return "EAPOL?";
 	const auto raw = const_cast<EAPOL *>(eapol)->serialize();
-	// raw: version(1) type(1) length(2) [EAP: code(1) id(1) len(2) type?(1) ...]
-	if(raw.size() < 2 || raw[1] != EAPOL_EAP) return "EAPOL type=" + std::to_string(raw.size() > 1 ? raw[1] : 0u);
-	if(raw.size() < 5) return "EAP";
-	const auto code = static_cast<EapCode>(raw[4]);
+	if(raw.size() < 2 || raw[1] != EAPOL_EAP) return "EAPOL type=" + std::to_string(raw[1]);
+	if(raw.size() <= EAP_CODE_OFF) return "EAP";
+	const auto code = static_cast<EapCode>(raw[EAP_CODE_OFF]);
 	if(code == CODE_SUCCESS || code == CODE_FAILURE) return "EAP " + string(to_string(code));
 	if(code == CODE_REQUEST || code == CODE_RESPONSE) {
-		const string dir(to_string(code));
-		if(raw.size() < 9) return "EAP " + dir;
-		const auto type = static_cast<EapType>(raw[8]);
-		const auto name = to_string(type);
-		return "EAP " + dir + " " + (name.empty() ? "type=" + std::to_string(raw[8]) : string(name));
+		if(raw.size() <= EAP_TYPE_OFF) return "EAP " + string(to_string(code));
+		return "EAP " + string(to_string(code)) + " " + string(to_string(static_cast<EapType>(raw[EAP_TYPE_OFF])));
 	}
-	return "EAP code=" + std::to_string(raw[4]);
+	return "EAP code=" + std::to_string(raw[EAP_CODE_OFF]);
 }
 
 vector<uint8_t> ensure_radiotap(const frame_raw_t &raw) {
-	if(raw.size() < 4) throw run_err("ensure_radiotap: frame too short ({} bytes)", raw.size());
-	const uint16_t rt_len = raw[2] | static_cast<uint16_t>(raw[3]) << 8;
-	if(raw[0] == 0 && rt_len >= 8 && raw.size() >= rt_len) return raw;
-	if((raw[0] >> 2 & 0x03) > 2) throw run_err("ensure_radiotap: not a valid 802.11 frame, FC=0x{:02x}", raw[0]);
-	// minimal radiotap, no FCS bit)
-	static constexpr uint8_t RT_HDR[] = { 0x00, 0x00, 0x09, 0x00, 0x02, 0x00, 0x00, 0x00, 0x28 };
+	if(raw.size() < sizeof(ieee80211_radiotap_header))
+		throw run_err("ensure_radiotap: frame too short ({} bytes)", raw.size());
+	const uint16_t rt_len = radiotap::get_rt_len(raw);
+	if(raw[0] == PKTHDR_RADIOTAP_VERSION && rt_len >= sizeof(ieee80211_radiotap_header) && raw.size() >= rt_len)
+		return raw;
+	if(((raw[0] >> dot11::FC_TYPE_SHIFT) & dot11::FC_TYPE_MASK) > dot11::TYPE_DATA)
+		throw run_err("ensure_radiotap: not a valid 802.11 frame, FC=0x{:02x}", raw[0]);
 	vector<uint8_t> result;
-	result.reserve(9 + raw.size());
-	result.insert(result.end(), RT_HDR, RT_HDR + 9);
+	result.reserve(radiotap::MINIMAL_INJECT_HDR.size() + raw.size());
+	result.insert(result.end(), radiotap::MINIMAL_INJECT_HDR.begin(), radiotap::MINIMAL_INJECT_HDR.end());
 	result.insert(result.end(), raw.begin(), raw.end());
 	return result;
 }
@@ -345,20 +341,24 @@ bool setup_ack_iface(RunStatus &rs, const ActorPtr &actor, const HWAddress<6> &m
 	return false;
 }
 
+// Returns the byte offset of the first IE in a raw management frame (past radiotap + 802.11 header + fixed fields).
+// Returns raw.size() on error (frame too short or unrecognised).
+static size_t mgmt_ie_start(const frame_raw_t &raw) {
+	const uint16_t rt_len = radiotap::get_rt_len(raw);
+	const size_t hdr = (rt_len >= sizeof(ieee80211_radiotap_header) && raw.size() >= rt_len && raw[0] == PKTHDR_RADIOTAP_VERSION) ? rt_len : 0;
+	if(hdr >= raw.size()) return raw.size();
+	// fixed-field sizes before IEs: AssocReq=4, ReassocReq=10, Beacon/ProbeResp=12
+	const uint8_t sub = (raw[hdr] >> dot11::FC_SUBTYPE_SHIFT) & dot11::FC_SUBTYPE_MASK;
+	const size_t fixed = (sub == 2) ? 10 : (sub == 5 || sub == 8) ? 12 : 4;
+	return hdr + dot11::MGMT_HDR_SIZE + fixed;
+}
+
 void rewrite_ssid_in_frame(frame_raw_t &raw, const string &new_ssid) {
-	if(raw.size() < 6) return;
-	const uint16_t rt_len_raw = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
-	const size_t rt_len = (raw[0] == 0 && rt_len_raw >= 8 && raw.size() >= rt_len_raw) ? rt_len_raw : 0;
-
-	// fixed-field sizes: AssocReq=4, ReassocReq=10, Beacon/ProbeResp=12
-	const uint8_t subtype = raw[rt_len] >> 4 & 0x0F;
-	const size_t fixed = (subtype == 2) ? 10 : (subtype == 5 || subtype == 8) ? 12 : 4;
-	const size_t ie_start = rt_len + 24 + fixed;
-
+	const size_t ie_start = mgmt_ie_start(raw);
 	if(raw.size() < ie_start + 2) return;
 
 	for(size_t i = ie_start; i + 1 < raw.size();) {
-		if(raw[i] == 0) { // SSID IE
+		if(raw[i] == dot11::IE_SSID) {
 			const size_t old_len = raw[i + 1];
 			const size_t new_len = min(new_ssid.size(), static_cast<size_t>(32));
 			const auto it = raw.begin() + static_cast<ptrdiff_t>(i + 2);
@@ -375,22 +375,16 @@ void rewrite_ssid_in_frame(frame_raw_t &raw, const string &new_ssid) {
 	}
 }
 
-// Strip PMKID list from RSN IE (tag 0x30) in a raw management frame.
+// Strip PMKID list from RSN IE in a raw management frame.
 // Zeroes PMKID Count and removes the 16-byte entries; fixes IE length field.
 void strip_pmkid_from_rsn_ie(frame_raw_t &raw) {
-	if(raw.size() < 6) return;
-	const uint16_t rt_len_raw = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
-	const size_t rt_len = (raw[0] == 0 && rt_len_raw >= 8 && raw.size() >= rt_len_raw) ? rt_len_raw : 0;
-
-	const uint8_t subtype = raw[rt_len] >> 4 & 0x0F;
-	const size_t fixed = (subtype == 2) ? 10 : (subtype == 5 || subtype == 8) ? 12 : 4;
-	const size_t ie_start = rt_len + 24 + fixed;
+	const size_t ie_start = mgmt_ie_start(raw);
 	if(raw.size() < ie_start + 2) return;
 
 	for(size_t i = ie_start; i + 1 < raw.size();) {
 		const uint8_t ie_len = raw[i + 1];
 		if(i + 2 + ie_len > raw.size()) break;
-		if(raw[i] == 0x30) { // RSN IE
+		if(raw[i] == dot11::IE_RSN) {
 			// version(2)+group(4)+pw_count(2)+pw(4n)+akm_count(2)+akm(4n)+caps(2)+pmkid_count(2)
 			size_t off = 6; // skip version + group cipher
 			if(off + 2 > ie_len) return;
@@ -413,13 +407,11 @@ void strip_pmkid_from_rsn_ie(frame_raw_t &raw) {
 }
 
 void rewrite_bssid_in_frame(frame_raw_t &raw, const HWAddress<6> &bssid) {
-	if(raw.size() < 4) return;
-	const uint16_t rt_len = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
-	const size_t hdr = (raw[0] == 0 && rt_len >= 8 && raw.size() >= rt_len) ? rt_len : 0;
-	// management frame: addr2 at hdr+10, addr3 at hdr+16
-	if(hdr + 22 > raw.size()) return;
-	ranges::copy(bssid, raw.begin() + static_cast<ptrdiff_t>(hdr + 10));
-	ranges::copy(bssid, raw.begin() + static_cast<ptrdiff_t>(hdr + 16));
+	const uint16_t rt_len = radiotap::get_rt_len(raw);
+	const size_t hdr = (rt_len >= sizeof(ieee80211_radiotap_header) && raw.size() >= rt_len && raw[0] == PKTHDR_RADIOTAP_VERSION) ? rt_len : 0;
+	if(hdr + dot11::ADDR3_END > raw.size()) return;
+	ranges::copy(bssid, raw.begin() + static_cast<ptrdiff_t>(hdr + dot11::ADDR2_OFFSET));
+	ranges::copy(bssid, raw.begin() + static_cast<ptrdiff_t>(hdr + dot11::ADDR3_OFFSET));
 }
 
 Dot11AssocRequest make_real_ssid_assoc_req(const Dot11AssocRequest &assoc, const string &real_ssid) {

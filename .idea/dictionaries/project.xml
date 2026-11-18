@@ -122,6 +122,7 @@
       <w>fcsfail</w>
       <w>fetchcontent</w>
       <w>fflush</w>
+      <w>fhss</w>
       <w>findmnt</w>
       <w>firmaware</w>
       <w>firstboot</w>
@@ -165,8 +166,10 @@
       <w>journalctl</w>
       <w>jsonfilter</w>
       <w>kdlen</w>
+      <w>keyack</w>
       <w>keydatalen</w>
       <w>keydes</w>
+      <w>keymic</w>
       <w>keyver</w>
       <w>killpg</w>
       <w>kname</w>
@@ -202,6 +205,7 @@
       <w>mmcnr</w>
       <w>modeswitch</w>
       <w>modinfo</w>
+      <w>mpdu</w>
       <w>mscha</w>
       <w>mschapv</w>
       <w>msdu</w>
@@ -265,6 +269,7 @@
       <w>pipefd</w>
       <w>pkgs</w>
       <w>pkname</w>
+      <w>pkthdr</w>
       <w>pktlen</w>
       <w>plotcmd</w>
       <w>pmkid</w>
@@ -310,6 +315,7 @@
       <w>rtmgrp</w>
       <w>rtnetlink</w>
       <w>rwxrwxrwx</w>
+      <w>seqctl</w>
       <w>setcap</w>
       <w>setnonblock</w>
       <w>setsid</w>

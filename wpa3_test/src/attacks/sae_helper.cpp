@@ -35,8 +35,8 @@ string bytes_to_hex_plain(const vector<uint8_t> &bytes) {
 }
 
 optional<AuthFrame> parse_auth_frame(const frame_raw_t &p) {
-	if(p.size() < 4) return nullopt;
-	const uint16_t rt_len = p[2] | (static_cast<uint16_t>(p[3]) << 8);
+	const uint16_t rt_len = radiotap::get_rt_len(p);
+	if(!rt_len) return nullopt;
 	constexpr size_t dot11_hdr = 24;
 	constexpr size_t auth_fields = 6; // algorithm(2) + seq(2) + status(2)
 	if(p.size() < rt_len + dot11_hdr + auth_fields) return nullopt;
@@ -51,9 +51,8 @@ optional<AuthFrame> parse_auth_frame(const frame_raw_t &p) {
 }
 
 optional<SAEPair> parse_sae_commit(const frame_raw_t &frame_rt) {
-	if(frame_rt.size() < 4) return nullopt;
-
-	const uint16_t radiotap_len = frame_rt[2] | (frame_rt[3] << 8);
+	const uint16_t radiotap_len = radiotap::get_rt_len(frame_rt);
+	if(!radiotap_len) return nullopt;
 	const bool has_fcs = dos_helpers::check_fcs_present(frame_rt);
 
 	constexpr size_t dot11_header = 24;

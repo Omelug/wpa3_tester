@@ -75,13 +75,13 @@ EAP_Info parse_eap_frame(const RawPDU &raw) {
 	} else if(const auto it = method_names.find(type); it != method_names.end()) {
 		info.method = it->second;
 	} else {
-		info.method = "Unknown-" + to_string(type);
+		info.method = "Unknown-" + std::to_string(type);
 	}
 
 	if(type == TYPE_EXPANDED && payload.size() >= 12) {
 		// bytes 5-7: Vendor-Id
 		// bytes 8-11: Vendor-Type
-		info.method = "Expanded-Method (Vendor: " + to_string(payload[5]) + ")";
+		info.method = "Expanded-Method (Vendor: " + std::to_string(payload[5]) + ")";
 	}
 	return info;
 }
@@ -123,7 +123,7 @@ static optional<monostate> handle_eap_pdu(
 			log(LogLevel::INFO, "[!] Auth FAILURE: Client {} was REJECTED.", client_mac);
 		}
 		break;
-	default: throw run_err("Unknown EAP code: " + to_string(code));
+	default: throw run_err("Unknown EAP code: " + std::to_string(code));
 	}
 
 	return nullopt; // until timeout

@@ -317,8 +317,8 @@ void send_eapol(const EAP_Att &eap_att, const frame_raw_t &eapol) {
 }
 
 vector<uint8_t> extract_eapol(const frame_raw_t &p, const HWAddress<6> &our_mac) {
-	if(p.size() < 4) return {};
-	const uint16_t rt_len = p[2] | static_cast<uint16_t>(p[3]) << 8;
+	const uint16_t rt_len = radiotap::get_rt_len(p);
+	if(!rt_len) return {};
 
 	if(components::radiotap_bad_fcs(p, rt_len)) return {};
 

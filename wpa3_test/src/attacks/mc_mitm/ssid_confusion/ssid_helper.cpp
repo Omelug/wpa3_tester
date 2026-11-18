@@ -24,7 +24,7 @@ void SsidConfusion::translate_data_mac(frame_raw_t& raw,
 	if(equal(from_bssid.begin(), from_bssid.end(), addr1))
 		ranges::copy(to_bssid, addr1);
 
-	// addr2 is BSSID in FromDS (AP->STA) frames — must be translated so the client
+	// addr2 is BSSID in FromDS (AP->STA) frames - must be translated so the client
 	// accepts frames from what it thinks is the rogue AP
 	if(equal(from_bssid.begin(), from_bssid.end(), addr2))
 		ranges::copy(to_bssid, addr2);

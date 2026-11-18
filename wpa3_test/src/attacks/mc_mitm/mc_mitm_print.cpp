@@ -20,8 +20,8 @@ static uint16_t get_seq_num(const Dot11 &frame) {
 }
 
 string McMitm::frame_to_str(const Dot11 &frame) {
-	const uint8_t type = static_cast<uint8_t>(frame.type());
-	const uint8_t sub  = static_cast<uint8_t>(frame.subtype());
+	const uint8_t type = frame.type();
+	const uint8_t sub  = frame.subtype();
 
 	const auto name = dot11::to_string(type, sub);
 	if(name[0] != '<') {

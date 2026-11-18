@@ -123,18 +123,16 @@ void McMitm::handle_disconnect_rogue(const Dot11 &dot11) {
 	}
 }
 
-FrameProcess McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) {
+FrameProcess McMitm::handle_eapol_rogue(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu, const frame_raw_t &raw) {
 	// EAPOL STA -> AP
 	if(addr1 == ap.get(SK::mac) && addr2 == client_state.get_mac() && is_eapol(pdu)) {
-
-		int eapol_msg = get_eapol_msg_num(pdu);
-		if(eapol_msg == 2 || eapol_msg == 4) {
-			log(LogLevel::INFO, "Rogue channel: EAPOL {} from STA -> AP real channel", eapol_msg);
+		const auto eapol_msg = get_eapol_msg_num(raw);
+		if(eapol_msg == EapolMsg::Msg2 || eapol_msg == EapolMsg::Msg4) {
+			log(LogLevel::INFO, "Rogue channel: EAPOL {}/4 from STA -> AP real channel", static_cast<int>(eapol_msg));
 			send_to_real(pdu);
 		}
-		if(eapol_msg == 4 && client_state.get_state() >= ClientState::Sent_to_rogue) {
+		if(eapol_msg == EapolMsg::Msg4 && client_state.get_state() >= ClientState::Sent_to_rogue) {
 			client_state.update_state(ClientState::GotMitm);
-			//set_station_authorized(rogue_ap->get_ap_iface(), client_state.get_mac(), rogue_ap[SK::netns]);
 			if(hooks) hooks->on_client_connected(*this);
 			if(only_to_mitm) stop_mitm = true;
 		}
@@ -187,7 +185,7 @@ void McMitm::handle_rx_rogue_chan(const unique_ptr<PDU> &pdu, const frame_raw_t 
 	SOLVE_OR_CONTINUE(handle_probe(addr2, pdu.get(), *dot11))
 	SOLVE_OR_CONTINUE(handle_open_auth(addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_assoc_request(addr2, *dot11))
-	SOLVE_OR_CONTINUE(handle_eapol_rogue(addr1, addr2, *pdu))
+	SOLVE_OR_CONTINUE(handle_eapol_rogue(addr1, addr2, *pdu, raw))
 
 #undef SOLVE_OR_CONTINUE
 

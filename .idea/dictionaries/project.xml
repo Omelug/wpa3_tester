@@ -43,6 +43,7 @@
       <w>anypassword</w>
       <w>arphrd</w>
       <w>arrowstyle</w>
+      <w>atim</w>
       <w>attackhead</w>
       <w>autoconnect</w>
       <w>autoprobe</w>
@@ -115,6 +116,7 @@
       <w>errbuf</w>
       <w>essid</w>
       <w>ethernet</w>
+      <w>ethertype</w>
       <w>exch</w>
       <w>fcommon</w>
       <w>fcsfail</w>

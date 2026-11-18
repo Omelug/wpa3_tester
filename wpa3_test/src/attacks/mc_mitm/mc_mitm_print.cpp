@@ -5,6 +5,7 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/wifi_util.h"
 #include "logger/log.h"
+#include "net_parser/dot11_defs.h"
 #include "system/hw_capabilities.h"
 
 namespace wpa3_tester {
@@ -19,48 +20,14 @@ static uint16_t get_seq_num(const Dot11 &frame) {
 }
 
 string McMitm::frame_to_str(const Dot11 &frame) {
-	const auto type = frame.type();
-	const auto sub = frame.subtype();
+	const uint8_t type = static_cast<uint8_t>(frame.type());
+	const uint8_t sub  = static_cast<uint8_t>(frame.subtype());
 
-	static const unordered_map<int, string> mgmt_names = {
-		{ Dot11::BEACON, "Beacon" },
-		{ Dot11::PROBE_REQ, "ProbeReq" },
-		{ Dot11::PROBE_RESP, "ProbeResp" },
-		{ Dot11::AUTH, "Auth" },
-		{ Dot11::DEAUTH, "Deauth" },
-		{ Dot11::ASSOC_REQ, "AssoReq" },
-		{ Dot11::REASSOC_REQ, "ReassoReq" },
-		{ Dot11::ASSOC_RESP, "AssoResp" },
-		{ Dot11::REASSOC_RESP, "ReassoResp" },
-		{ Dot11::DISASSOC, "Disas" },
-		{ 13, "Action" },
-	};
-	static const unordered_map<int, string> ctrl_names = {
-		{ Dot11::BLOCK_ACK, "BlockAck" },
-		{ Dot11::RTS, "RTS" },
-		{ Dot11::ACK, "Ack" },
-	};
-
-	static const unordered_map<int, string> data_names = {
-		{ Dot11::DATA_DATA, "Data" },
-		{ Dot11::DATA_NULL, "Null" },
-		{ Dot11::QOS_DATA_DATA, "QoS-Data" },
-		{ Dot11::QOS_DATA_NULL, "QoS-Null" },
-		{ Dot11::CF_ACK, "CF-Ack" },
-		{ Dot11::CF_POLL, "CF-Poll" },
-	};
-
-	const auto *names = type == Dot11::MANAGEMENT ? &mgmt_names
-		: type == Dot11::CONTROL				  ? &ctrl_names
-		: type == Dot11::DATA					  ? &data_names
-												  : nullptr;
-
-	if(names) {
-		if(const auto it = names->find(sub); it != names->end()) {
-			auto s = it->second;
-			if(type != Dot11::CONTROL) s += "(seq=" + to_string(get_seq_num(frame)) + ")";
-			return s;
-		}
+	const auto name = dot11::to_string(type, sub);
+	if(name[0] != '<') {
+		auto s = string(name);
+		if(type != dot11::TYPE_CTRL) s += "(seq=" + to_string(get_seq_num(frame)) + ")";
+		return s;
 	}
 
 	return "Frame(type=" + to_string(type) + ",sub=" + to_string(sub) + ")";
@@ -96,10 +63,14 @@ void McMitm::display_traffic(const PDU &pdu, const string &prefix, const string 
 
 	const auto level = is_eapol(pdu) || (dot11->type() == Dot11::DATA && !is_null) ? LogLevel::INFO : LogLevel::DEBUG;
 
-	const int eapol_msg = is_eapol(pdu) ? get_eapol_msg_num(pdu) : -2;
-	const string eap = eapol_msg == -2 ? ""
-		: eapol_msg == -1 ? " [" + eap_description(pdu) + "]"
-		: " [EAPOL " + to_string(eapol_msg) + "/4]";
+	string eap;
+	if(is_eapol(pdu)) {
+		const auto it = eapol_msg_labels.find(get_eapol_msg_num(pdu.serialize()));
+		eap = it != eapol_msg_labels.end()
+			? " [" + string(it->second) + "]"
+			: " [" + eap_description(pdu) + "]";
+	}
+
 	print_rx(level, prefix, *dot11, eap + suffix);
 }
 }

@@ -4,7 +4,6 @@
 #include <cerrno>
 #include <cstring>
 #include <netinet/in.h>
-#include <numeric>
 #include <sys/socket.h>
 #include <tins/tins.h>
 

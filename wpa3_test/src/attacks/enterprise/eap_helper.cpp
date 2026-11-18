@@ -299,7 +299,7 @@ bool do_assoc(EAP_Att &eap_att) {
 
 void send_eapol(const EAP_Att &eap_att, const frame_raw_t &eapol) {
 	// SNAP OUI(3) + EtherType(2)
-	vector<uint8_t> snap_eapol = { 0x00, 0x00, 0x00, 0x88, 0x8e };
+	vector<uint8_t> snap_eapol = { 0x00, 0x00, 0x00, eap::ETHERTYPE_EAPOL_HI, eap::ETHERTYPE_EAPOL_LO };
 	snap_eapol.insert(snap_eapol.end(), eapol.begin(), eapol.end());
 
 	LLC llc(0xAA, 0xAA);

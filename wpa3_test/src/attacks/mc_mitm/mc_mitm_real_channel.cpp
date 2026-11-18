@@ -42,13 +42,13 @@ FrameProcess McMitm::handle_auth_from_client_real(const HWAddress<6> addr1, cons
 	return CONTINUE;
 }
 
-FrameProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu) const{
+FrameProcess McMitm::handle_eapol_real(const HWAddress<6> addr1, const HWAddress<6> addr2, PDU &pdu, const frame_raw_t &raw) const{
 	// EAPOL AP -> STA on real channel
 	if(addr1 == sta.get(SK::mac) && addr2 == ap.get(SK::mac) && is_eapol(pdu)){
-		int eapol_msg = get_eapol_msg_num(pdu);
-		if(eapol_msg == 1 || eapol_msg == 3) {
+		const auto eapol_msg = get_eapol_msg_num(raw);
+		if(eapol_msg == EapolMsg::Msg1 || eapol_msg == EapolMsg::Msg3) {
 			send_to_rogue(pdu);
-			log(LogLevel::INFO, "Real channel: EAPOL {} AP -> STA", eapol_msg);
+			log(LogLevel::INFO, "Real channel: EAPOL {}/4 AP -> STA", static_cast<int>(eapol_msg));
 		}
 		return STOP;
 	}
@@ -120,7 +120,7 @@ void McMitm::handle_rx_real_chan(const unique_ptr<PDU> &pdu, const frame_raw_t &
 
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
-	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *dot11))
+	SOLVE_OR_CONTINUE(handle_eapol_real(addr1, addr2, *dot11, raw))
 	SOLVE_OR_CONTINUE(handle_auth_from_client_real(addr1, *dot11))
 	#undef SOLVE_OR_CONTINUE
 

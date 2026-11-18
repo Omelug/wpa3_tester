@@ -90,35 +90,34 @@ TEST_SUITE("get_eapol_msg_num") {
 	TEST_CASE("M1: key_ack=1 key_mic=0 install=0 secure=0") {
 		auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M1);
 		REQUIRE(is_eapol(rt));
-		CHECK_EQ(get_eapol_msg_num(rt), 1);
+		CHECK_EQ(get_eapol_msg_num(raw), EapolMsg::Msg1);
 	}
 
 	TEST_CASE("M2: key_mic=1 key_ack=0 install=0 secure=0") {
 		auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M2);
 		REQUIRE(is_eapol(rt));
-		CHECK_EQ(get_eapol_msg_num(rt), 2);
+		CHECK_EQ(get_eapol_msg_num(raw), EapolMsg::Msg2);
 	}
 
 	TEST_CASE("M3: key_mic=1 key_ack=1 install=1 secure=1") {
 		auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M3);
 		REQUIRE(is_eapol(rt));
-		CHECK_EQ(get_eapol_msg_num(rt), 3);
+		CHECK_EQ(get_eapol_msg_num(raw), EapolMsg::Msg3);
 	}
 
 	TEST_CASE("M4: key_mic=1 key_ack=0 install=0 secure=1") {
 		auto [rt, raw] = test_helpers::load_frame(PCAP_EAPOL_M4);
 		REQUIRE(is_eapol(rt));
-		CHECK_EQ(get_eapol_msg_num(rt), 4);
+		CHECK_EQ(get_eapol_msg_num(raw), EapolMsg::Msg4);
 	}
 
-	TEST_CASE("non-EAPOL frame returns -1") {
-		// beacon has no RSNEAPOL layer
+	TEST_CASE("non-EAPOL frame returns Unknown") {
 		auto [rt, raw] = test_helpers::load_frame(PCAP_BEACON);
-		CHECK_EQ(get_eapol_msg_num(rt), -1);
+		CHECK_EQ(get_eapol_msg_num(raw), EapolMsg::Unknown);
 	}
 
-	TEST_CASE("plain PDU with no RSNEAPOL returns -1") {
+	TEST_CASE("bytes with no EAPOL ethertype returns Unknown") {
 		IP ip("1.2.3.4", "5.6.7.8");
-		CHECK_EQ(get_eapol_msg_num(ip), -1);
+		CHECK_EQ(get_eapol_msg_num(ip.serialize()), EapolMsg::Unknown);
 	}
 }

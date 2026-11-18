@@ -3,9 +3,13 @@
 #include <string>
 #include <tins/tins.h>
 #include "config/RunStatus.h"
+#include "net_parser/eap_defs.h"
 #include "system/wifi_channel.h"
 
 namespace wpa3_tester {
+using eap::EapolMsg;
+using eap::eapol_msg_labels;
+
 int get_channel(const std::string &iface);
 
 int chan2freq(Channel ch);
@@ -20,8 +24,9 @@ struct Dot11Addrs {
 Dot11Addrs get_addrs(const Tins::PDU &pdu, const frame_raw_t &raw);
 Tins::Dot11ProbeResponse beacon_to_probe_resp(const Tins::Dot11Beacon &beacon, const Channel &rogue_channel);
 Tins::Dot11AssocResponse *assoc_resp_channel_patch(const Tins::Dot11AssocResponse &assoc, const Channel &rogue_channel);
+
 bool is_eapol(const Tins::PDU &pdu);
-int get_eapol_msg_num(const Tins::PDU &pdu, bool print = false);
+EapolMsg get_eapol_msg_num(const frame_raw_t &raw, bool print = false);
 std::string eap_description(const Tins::PDU &pdu);
 
 // return raw bytes guaranteed to start with a RadioTap header

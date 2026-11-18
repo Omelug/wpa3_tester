@@ -1,4 +1,5 @@
 #include "attacks/mc_mitm/wifi_util.h"
+#include "80211_const/eap_defs.h"
 
 #include <fstream>
 #include <iomanip>
@@ -110,64 +111,58 @@ Dot11AssocResponse *assoc_resp_channel_patch(const Dot11AssocResponse &assoc, co
 
 bool is_eapol(const PDU &pdu) {
 	const auto snap = pdu.find_pdu<SNAP>();
-	if(snap && snap->eth_type() == 0x888e) return true;
+	if(snap && snap->eth_type() == eap::ETHERTYPE_EAPOL) return true;
 	return pdu.find_pdu<EAPOL>() != nullptr;
 }
 
-int get_eapol_msg_num(const PDU &pdu, bool print) {
-	const auto *rsneapol = pdu.find_pdu<RSNEAPOL>();
-	if(!rsneapol) return -1;
-	const uint8_t key_ack = rsneapol->key_ack();
-	const uint8_t key_mic = rsneapol->key_mic();
-	const uint8_t install = rsneapol->install();
-	const uint8_t secure = rsneapol->secure();
-	const uint8_t key_type = rsneapol->key_t();
-
+EapolMsg get_eapol_msg_num(const frame_raw_t &raw, const bool print) {
+	static constexpr uint8_t snap_eapol[] = { eap::ETHERTYPE_EAPOL_HI, eap::ETHERTYPE_EAPOL_LO };
+	const auto it = std::ranges::search(raw, snap_eapol).begin();
+	if(it == raw.end()) return EapolMsg::Unknown;
+	const size_t off = static_cast<size_t>(it - raw.begin()) + 2;
+	if(off + eap::EAPOL_KEY_MIN_SIZE > raw.size()) return EapolMsg::Unknown;
+	if(raw[off + eap::EAPOL_KEY_OFF_TYPE] != eap::EAPOL_KEY) return EapolMsg::Unknown;
+	const uint8_t ki_hi = raw[off + eap::EAPOL_KEY_OFF_KI_HI];
+	const uint8_t ki_lo = raw[off + eap::EAPOL_KEY_OFF_KI_LO];
+	const bool key_type = ki_lo & eap::KI_LO_TYPE;
+	const bool key_ack  = ki_lo & eap::KI_LO_ACK;
+	const bool install  = ki_lo & eap::KI_LO_INSTALL;
+	const bool key_mic  = ki_hi & eap::KI_HI_MIC;
+	const bool secure   = ki_hi & eap::KI_HI_SECURE;
 	if(print) {
 		log(LogLevel::DEBUG,
 			"EAPOL key_info bits: type={} mic={} ack={} install={} secure={}",
-			key_type,
-			key_mic,
-			key_ack,
-			install,
-			secure);
+			key_type, key_mic, key_ack, install, secure);
 	}
-
-	// group Key handshake  FIXME ignore, is forwarded?
-	if(key_type == 0) {
-		log(LogLevel::DEBUG, "EAPOL: Group Key Handshake frame, ignoring");
-		return -1;
+	if(!key_type) {
+		log(LogLevel::DEBUG, "EAPOL: Group Key Handshake frame");
+		return EapolMsg::Group;
 	}
-
-	if(key_mic && !key_ack && !install && !secure) return 2; // M2
-	if(key_mic && key_ack && install && secure) return 3;	 // M3
-	if(key_mic && !key_ack && !install && secure) return 4;	 // M4
-	if(!key_mic && key_ack && !install && !secure) return 1; // M1
-
-	return -1;
+	if(!key_mic && key_ack && !install && !secure) return EapolMsg::Msg1;
+	if(key_mic && !key_ack && !install && !secure) return EapolMsg::Msg2;
+	if(key_mic && key_ack && install && secure)    return EapolMsg::Msg3;
+	if(key_mic && !key_ack && !install && secure)  return EapolMsg::Msg4;
+	return EapolMsg::Unknown;
 }
 
 string eap_description(const PDU &pdu) {
+	using namespace eap;
 	const auto *eapol = pdu.find_pdu<EAPOL>();
 	if(!eapol) return "EAPOL?";
 	const auto raw = const_cast<EAPOL *>(eapol)->serialize();
 	// raw: version(1) type(1) length(2) [EAP: code(1) id(1) len(2) type?(1) ...]
-	if(raw.size() < 2 || raw[1] != 0) return "EAPOL type=" + to_string(raw.size() > 1 ? raw[1] : 0u);
+	if(raw.size() < 2 || raw[1] != EAPOL_EAP) return "EAPOL type=" + std::to_string(raw.size() > 1 ? raw[1] : 0u);
 	if(raw.size() < 5) return "EAP";
-	const uint8_t code = raw[4];
-	if(code == 3) return "EAP Success";
-	if(code == 4) return "EAP Failure";
-	if(code == 1 || code == 2) {
-		const string dir = code == 1 ? "Request" : "Response";
+	const auto code = static_cast<EapCode>(raw[4]);
+	if(code == CODE_SUCCESS || code == CODE_FAILURE) return "EAP " + string(to_string(code));
+	if(code == CODE_REQUEST || code == CODE_RESPONSE) {
+		const string dir(to_string(code));
 		if(raw.size() < 9) return "EAP " + dir;
-		const uint8_t type = raw[8];
-		if(type ==  1) return "EAP " + dir + " Identity";
-		if(type == 21) return "EAP " + dir + " TTLS";
-		if(type == 25) return "EAP " + dir + " PEAP";
-		if(type == 52) return "EAP " + dir + " PWD";
-		return "EAP " + dir + " type=" + to_string(type);
+		const auto type = static_cast<EapType>(raw[8]);
+		const auto name = to_string(type);
+		return "EAP " + dir + " " + (name.empty() ? "type=" + std::to_string(raw[8]) : string(name));
 	}
-	return "EAP code=" + to_string(code);
+	return "EAP code=" + std::to_string(raw[4]);
 }
 
 vector<uint8_t> ensure_radiotap(const frame_raw_t &raw) {
@@ -202,13 +197,12 @@ void start_ap(RunStatus &rs, const string &ap_iface, const ActorPtr &base_actor,
 
 	// split beacon into head (before TIM) and tail (after TIM)
 
-	Dot11Beacon head;
 	const auto bssid = mac.has_value() ? HWAddress(*mac) : beacon.addr2();
-	head.addr1(beacon.addr1());
-	head.addr2(bssid);
+	Dot11Beacon head(beacon.addr1(), bssid);
 	head.addr3(bssid);
 	head.interval(beacon.interval());
 	head.capabilities() = beacon.capabilities();
+
 	vector<uint8_t> tail_bytes;
 	bool past_tim = false;
 
@@ -323,118 +317,6 @@ void start_ap_hostapd(RunStatus &rs, const string &ap_iface, const ActorPtr &bas
 void stop_ap(const string &iface, const optional<string> &netns) {
 	log(LogLevel::INFO, "Stopping AP: iw dev {} del", iface);
 	hw_capabilities::run_cmd({ "iw", "dev", iface, "del" }, netns, true);
-}
-
-//FIXME needed?
-// authorize the station in the ack VIF so mac80211 does not apply dot11RSNAConfigSATimeout (30 s)
-// timer fires based on RSN IE in AssocReq, not on the beacon, so stripping RSN from the beacon alone is not enough
-void set_station_authorized(const string &ap_iface, const HWAddress<6> &mac, const optional<string> &netns) {
-	netlink_helper::NetNSContext ns_guard(netns);
-
-	nl_sock *sock = nl_socket_alloc();
-	if(!sock) { log(LogLevel::WARNING, "set_station_authorized: nl_socket_alloc failed"); return; }
-
-	if(genl_connect(sock) != 0) {
-		nl_socket_free(sock);
-		log(LogLevel::WARNING, "set_station_authorized: genl_connect failed");
-		return;
-	}
-	const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
-	if(nl80211_id < 0) {
-		nl_socket_free(sock);
-		log(LogLevel::WARNING, "set_station_authorized: nl80211 not found");
-		return;
-	}
-	const uint32_t ifindex = if_nametoindex(ap_iface.c_str());
-	if(ifindex == 0) {
-		nl_socket_free(sock);
-		log(LogLevel::WARNING, "set_station_authorized: if_nametoindex({}) = 0", ap_iface);
-		return;
-	}
-
-	nl_msg *msg = nlmsg_alloc();
-	if(!msg) { nl_socket_free(sock); return; }
-
-	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_SET_STATION, 0);
-	nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifindex);
-	nla_put(msg, NL80211_ATTR_MAC, 6, mac.begin());
-	nl80211_sta_flag_update flags{};
-	flags.mask = 1U << NL80211_STA_FLAG_AUTHORIZED;
-	flags.set  = 1U << NL80211_STA_FLAG_AUTHORIZED;
-	nla_put(msg, NL80211_ATTR_STA_FLAGS2, sizeof(flags), &flags);
-
-	// suppress libnl default error printing
-	nl_socket_modify_cb(sock, NL_CB_FINISH, NL_CB_DEFAULT, nullptr, nullptr);
-
-	const int ret = nl_send_auto(sock, msg);
-	if(ret >= 0) nl_recvmsgs_default(sock);
-
-	nlmsg_free(msg);
-	nl_socket_free(sock);
-
-	if(ret < 0)
-		log(LogLevel::WARNING, "set_station_authorized: {} on {}: {}", mac.to_string(), ap_iface, nl_geterror(ret));
-	else
-		log(LogLevel::INFO, "set_station_authorized: authorized {} on {}", mac.to_string(), ap_iface);
-}
-
-//FIXME needed?
-// register client in AP VIF station table as fully associated+authorized
-// prevents mac80211 from sending CLASS3_FRAME_FROM_NONASSOC_STA deauth when
-// the client sends frames before the kernel knows about the association.
-void add_station_authorized(const string &ap_iface, const HWAddress<6> &mac, const optional<string> &netns) {
-	netlink_helper::NetNSContext ns_guard(netns);
-
-	nl_sock *sock = nl_socket_alloc();
-	if(!sock) { log(LogLevel::WARNING, "add_station_authorized: nl_socket_alloc failed"); return; }
-
-	if(genl_connect(sock) != 0) {
-		nl_socket_free(sock);
-		log(LogLevel::WARNING, "add_station_authorized: genl_connect failed");
-		return;
-	}
-	const int nl80211_id = genl_ctrl_resolve(sock, "nl80211");
-	if(nl80211_id < 0) {
-		nl_socket_free(sock);
-		log(LogLevel::WARNING, "add_station_authorized: nl80211 not found");
-		return;
-	}
-	const uint32_t ifindex = if_nametoindex(ap_iface.c_str());
-	if(ifindex == 0) {
-		nl_socket_free(sock);
-		log(LogLevel::DEBUG, "add_station_authorized: if_nametoindex({}) = 0 (no AP VIF?)", ap_iface);
-		return;
-	}
-
-	nl_msg *msg = nlmsg_alloc();
-	if(!msg) { nl_socket_free(sock); return; }
-
-	genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, nl80211_id, 0, 0, NL80211_CMD_NEW_STATION, 0);
-	nla_put_u32(msg, NL80211_ATTR_IFINDEX, ifindex);
-	nla_put(msg, NL80211_ATTR_MAC, 6, mac.begin());
-	nla_put_u16(msg, NL80211_ATTR_STA_AID, 1);
-	static constexpr uint8_t rates[] = {0x82, 0x84, 0x8b, 0x96};  // 1,2,5.5,11 Mbps basic
-	nla_put(msg, NL80211_ATTR_STA_SUPPORTED_RATES, sizeof(rates), rates);
-	nla_put_u16(msg, NL80211_ATTR_STA_LISTEN_INTERVAL, 0);
-	nl80211_sta_flag_update flags{};
-	flags.mask = (1U << NL80211_STA_FLAG_AUTHORIZED) | (1U << NL80211_STA_FLAG_AUTHENTICATED) |
-	             (1U << NL80211_STA_FLAG_ASSOCIATED)  | (1U << NL80211_STA_FLAG_WME);
-	flags.set  = flags.mask;
-	nla_put(msg, NL80211_ATTR_STA_FLAGS2, sizeof(flags), &flags);
-
-	const int send_ret = nl_send_auto(sock, msg);
-	int recv_ret = 0;
-	if(send_ret >= 0) recv_ret = nl_recvmsgs_default(sock);
-
-	nlmsg_free(msg);
-	nl_socket_free(sock);
-
-	if(send_ret < 0)
-		log(LogLevel::WARNING, "add_station_authorized: send {} on {}: {}", mac.to_string(), ap_iface, nl_geterror(send_ret));
-	else if(recv_ret < 0)
-		log(LogLevel::WARNING, "add_station_authorized: {} on {}: {}", mac.to_string(), ap_iface, nl_geterror(recv_ret));
-	else
-		log(LogLevel::INFO, "add_station_authorized: added+authorized {} on {}", mac.to_string(), ap_iface);
 }
 
 bool setup_ack_iface(RunStatus &rs, const ActorPtr &actor, const HWAddress<6> &mac,

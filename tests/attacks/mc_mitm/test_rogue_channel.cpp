@@ -192,7 +192,7 @@ TEST_SUITE("handle_eapol_rogue") {
 		auto m = make_fixture();
 		Dot11Beacon beacon;
 
-		CHECK_EQ(m->handle_eapol_rogue(HWAddress<6>("00:00:00:00:00:01"), HWAddress<6>(CLIENT_MAC), beacon), CONTINUE);
+		CHECK_EQ(m->handle_eapol_rogue(HWAddress<6>("00:00:00:00:00:01"), HWAddress<6>(CLIENT_MAC), beacon, {}), CONTINUE);
 		CHECK_EQ(m->real_send_count, 0);
 	}
 
@@ -200,7 +200,7 @@ TEST_SUITE("handle_eapol_rogue") {
 		auto m = make_fixture();
 		Dot11Beacon beacon;
 
-		CHECK_EQ(m->handle_eapol_rogue(HWAddress<6>(AP_MAC), HWAddress<6>("00:00:00:00:00:02"), beacon), CONTINUE);
+		CHECK_EQ(m->handle_eapol_rogue(HWAddress<6>(AP_MAC), HWAddress<6>("00:00:00:00:00:02"), beacon, {}), CONTINUE);
 		CHECK_EQ(m->real_send_count, 0);
 	}
 
@@ -208,7 +208,7 @@ TEST_SUITE("handle_eapol_rogue") {
 		auto m = make_fixture();
 		Dot11Beacon beacon;
 
-		CHECK_EQ(m->handle_eapol_rogue(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC), beacon), CONTINUE);
+		CHECK_EQ(m->handle_eapol_rogue(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC), beacon, {}), CONTINUE);
 	}
 
 	TEST_CASE("EAPOL M2 from pcap, correct addrs -> STOP, 1 real send") {
@@ -219,7 +219,7 @@ TEST_SUITE("handle_eapol_rogue") {
 		auto [rt, raw] = test_helpers::load_frame("test_data/wifi_util/eapol_m2.pcapng");
 		REQUIRE(is_eapol(rt));
 
-		CHECK_EQ(m->handle_eapol_rogue(addr1, addr2, rt), STOP);
+		CHECK_EQ(m->handle_eapol_rogue(addr1, addr2, rt, raw), STOP);
 		CHECK_EQ(m->real_send_count, 1); // M2 forwarded to real
 	}
 
@@ -232,7 +232,7 @@ TEST_SUITE("handle_eapol_rogue") {
 		auto [rt, raw] = test_helpers::load_frame("test_data/wifi_util/eapol_m4.pcapng");
 		REQUIRE(is_eapol(rt));
 
-		CHECK_EQ(m->handle_eapol_rogue(addr1, addr2, rt), STOP);
+		CHECK_EQ(m->handle_eapol_rogue(addr1, addr2, rt, raw), STOP);
 		CHECK_EQ(m->real_send_count, 1); // M4 forwarded
 		CHECK(m->client_state.is_state(ClientState::GotMitm));
 	}

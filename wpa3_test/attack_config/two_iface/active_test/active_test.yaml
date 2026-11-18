@@ -16,7 +16,7 @@ actors:
     source: internal
 attacker_module: active_test
 name: active_test_example
-rewrite: all
+rewrite: errors
 delete_old: true
 attack_config:
   burst: 50

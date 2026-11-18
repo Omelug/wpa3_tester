@@ -1,9 +1,10 @@
-#include <optional>
 #include <nlohmann/json.hpp>
+#include <optional>
 #include <tins/hw_address.h>
 #include <tins/llc.h>
 #include <tins/packet_sender.h>
 #include <tins/rawpdu.h>
+#include "net_parser/eap_defs.h"
 
 #include "attacks/components/setup_connections.h"
 #include "ex_program/external_actors/ExternalConn.h"
@@ -57,7 +58,7 @@ RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta
 	while(eapol_bytes.size() < 8) eapol_bytes.push_back(0x00);
 
 	// Prepend SNAP bytes directly: OUI (3) + Type (2)
-	vector<uint8_t> snap_bytes = {0x00, 0x00, 0x00, 0x88, 0x8e};
+	vector<uint8_t> snap_bytes = { 0x00, 0x00, 0x00, eap::ETHERTYPE_EAPOL_HI, eap::ETHERTYPE_EAPOL_LO };
 	eapol_bytes.insert(eapol_bytes.begin(), snap_bytes.begin(), snap_bytes.end());
 
 	RawPDU raw_eapol(eapol_bytes);

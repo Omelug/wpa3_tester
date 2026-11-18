@@ -45,7 +45,7 @@ void McMitm::print_rx(const LogLevel level, const string &prefix, const Dot11 &f
 		addr2 = data->addr2();
 	} else if(frame.type() == Dot11::MANAGEMENT) {
 		const auto raw = const_cast<Dot11 &>(frame).serialize();
-		if(raw.size() >= 16) addr2 = HWAddress<6>(raw.data() + 10);
+		if(raw.size() >= dot11::ADDR2_END) addr2 = HWAddress<6>(raw.data() + dot11::ADDR2_OFFSET);
 	}
 
 	string msg = prefix + ": " + addr2.to_string() + " -> " + frame.addr1().to_string() + ": " + frame_to_str(frame);
@@ -54,23 +54,29 @@ void McMitm::print_rx(const LogLevel level, const string &prefix, const Dot11 &f
 	log(level, msg);
 }
 
-void McMitm::display_traffic(const PDU &pdu, const string &prefix, const string &suffix) {
-	const auto *dot11 = pdu.find_pdu<Dot11>();
+void McMitm::display_traffic(const frame_raw_t &raw, const string &prefix, const string &suffix) {
+	const RadioTap rt(raw.data(), raw.size());
+	const auto *dot11 = rt.find_pdu<Dot11>();
 	if(!dot11) return;
 
-	const auto *data = pdu.find_pdu<Dot11Data>();
+	const auto *data = rt.find_pdu<Dot11Data>();
 	const bool is_null = data && (data->subtype() == Dot11::DATA_NULL || data->subtype() == Dot11::QOS_DATA_NULL);
+	const bool eapol = is_eapol(rt);
 
-	const auto level = is_eapol(pdu) || (dot11->type() == Dot11::DATA && !is_null) ? LogLevel::INFO : LogLevel::DEBUG;
+	const auto level = eapol || (dot11->type() == Dot11::DATA && !is_null) ? LogLevel::INFO : LogLevel::DEBUG;
 
 	string eap;
-	if(is_eapol(pdu)) {
-		const auto it = eapol_msg_labels.find(get_eapol_msg_num(pdu.serialize()));
+	if(eapol) {
+		const auto it = eapol_msg_labels.find(get_eapol_msg_num(raw));
 		eap = it != eapol_msg_labels.end()
 			? " [" + string(it->second) + "]"
-			: " [" + eap_description(pdu) + "]";
+			: " [" + eap_description(rt) + "]";
 	}
 
 	print_rx(level, prefix, *dot11, eap + suffix);
+}
+
+void McMitm::display_traffic(const PDU &pdu, const string &prefix, const string &suffix) {
+	display_traffic(const_cast<PDU &>(pdu).serialize(), prefix, suffix);
 }
 }

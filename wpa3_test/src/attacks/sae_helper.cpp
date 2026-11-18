@@ -145,7 +145,7 @@ RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac
 
 	auth.inner_pdu(RawPDU(payload));
 	RadioTap rt{};
-	rt.tx_flags(TX_NOACK|TX_ORDER);
+	rt.tx_flags(radiotap::TX_NOACK | radiotap::TX_ORDER);
 	rt.inner_pdu(auth);
 	return rt;
 }
@@ -159,7 +159,7 @@ RadioTap make_sae_confirm(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_ma
 	// SC (2 bytes) + verifier (32 bytes zeros - garbage, AP will reject but still process)
 	auth.inner_pdu(RawPDU(vector<uint8_t>(34, 0)));
 	RadioTap rt{};
-	rt.tx_flags(TX_NOACK|TX_ORDER);
+	rt.tx_flags(radiotap::TX_NOACK | radiotap::TX_ORDER);
 	rt.inner_pdu(auth);
 	return rt;
 }

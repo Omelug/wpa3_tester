@@ -85,6 +85,7 @@ private:
 	static void print_rx(
 		LogLevel level, const std::string &prefix, const Tins::Dot11 &frame, const std::string &suffix = "");
 public:
+	static void display_traffic(const frame_raw_t &raw, const std::string &prefix, const std::string &suffix = "");
 	static void display_traffic(const Tins::PDU &pdu, const std::string &prefix, const std::string &suffix = "");
 };
 }

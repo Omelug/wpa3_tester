@@ -77,6 +77,23 @@ void McMitm::display_traffic(const frame_raw_t &raw, const string &prefix, const
 }
 
 void McMitm::display_traffic(const PDU &pdu, const string &prefix, const string &suffix) {
-	display_traffic(const_cast<PDU &>(pdu).serialize(), prefix, suffix);
+	const auto *dot11 = pdu.find_pdu<Dot11>();
+	if(!dot11) return;
+
+	const auto *data = pdu.find_pdu<Dot11Data>();
+	const bool is_null = data && (data->subtype() == Dot11::DATA_NULL || data->subtype() == Dot11::QOS_DATA_NULL);
+	const bool eapol = is_eapol(pdu);
+	const auto level = eapol || (dot11->type() == Dot11::DATA && !is_null) ? LogLevel::INFO : LogLevel::DEBUG;
+
+	string eap;
+	if(eapol) {
+		const auto raw = const_cast<PDU &>(pdu).serialize();
+		const auto it = eapol_msg_labels.find(get_eapol_msg_num(raw));
+		eap = it != eapol_msg_labels.end()
+			? " [" + string(it->second) + "]"
+			: " [" + eap_description(pdu) + "]";
+	}
+
+	print_rx(level, prefix, *dot11, eap + suffix);
 }
 }

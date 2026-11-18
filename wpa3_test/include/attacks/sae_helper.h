@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "config/RunStatus.h"
+#include "net_parser/dot11_defs.h"
+#include "net_parser/sae_defs.h"
 
 namespace wpa3_tester::sae_helper {
 std::string bytes_to_hex(const frame_raw_t &bytes);
@@ -18,10 +20,10 @@ struct SAEPair {
 
 	bool is_valid() const {
 		switch(status) {
-		case 0:
-		case 126: return !scalar.empty() && !element.empty();
-		case 76: return !token.empty();
-		case 77: return group_id != 0;
+		case dot11::STATUS_SUCCESS:
+		case sae_defs::STATUS_REJECTED_WITH_SUGGESTION: return !scalar.empty() && !element.empty();
+		case sae_defs::STATUS_ANTI_CLOGGING:            return !token.empty();
+		case sae_defs::STATUS_UNSUPPORTED_GROUP:        return group_id != 0;
 		default: return false;
 		}
 	}

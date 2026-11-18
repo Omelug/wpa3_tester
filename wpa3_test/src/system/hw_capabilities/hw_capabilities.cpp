@@ -217,7 +217,7 @@ string hw_capabilities::get_iface(const string &ip_address, const optional<strin
 	return match[1].str();
 }
 
-// return mac adress (actual if spoofed, return spoofed )
+// return mac address (actual if spoofed, return spoofed )
 Tins::HWAddress<6> hw_capabilities::get_mac_address(const string &iface, const optional<string> &netns){
 	netlink_helper::NetNSContext ns_guard(netns);
 
@@ -273,7 +273,6 @@ string hw_capabilities::get_permanent_mac(const string &iface, const optional<st
 	return {};
 }
 
-//synchronous
 void hw_capabilities::set_mac_address(const string &iface, const Tins::HWAddress<6> &new_mac,
 									const optional<string> &netns
 ){
@@ -303,13 +302,15 @@ string get_iface_type(const string &iface, const optional<string> &netns){
 }
 
 void hw_capabilities::set_iface_down(const string &iface, const optional<string> &netns){
-	run_cmd({"ip", "link", "set", iface, "down"}, netns);
+	if(run_cmd({"ip", "link", "set", iface, "down"}, netns) != 0)
+		throw run_err("Failed to set '{}' down", iface);
 	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, false); res)
 		throw timeout_err("Timeout waiting for '" + iface + "' to go DOWN:" + res.message());
 }
 
 void hw_capabilities::set_iface_up(const string &iface, const optional<string> &netns) {
-	run_cmd({"ip", "link", "set", iface, "up"}, netns, true);
+	if(run_cmd({"ip", "link", "set", iface, "up"}, netns) != 0)
+		throw run_err("Failed to set '{}' up", iface);
 	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, true); res)
 		throw timeout_err("Timeout waiting for '" + iface + "' to go UP:" + res.message());
 }

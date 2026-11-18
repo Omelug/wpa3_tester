@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <cstdint>
 #include <map>
 #include <string_view>
@@ -10,17 +11,18 @@ namespace wpa3_tester::dot11 {
 
 // MAC frame header field offsets from the start of the 802.11 frame
 // IEEE 802.11-2020, Section 9.3.3.2, Figure 9-1
-constexpr size_t FC_OFFSET    = 0;  // Frame Control (2 bytes)
-constexpr size_t DUR_OFFSET   = 2;  // Duration/ID (2 bytes)
-constexpr size_t ADDR1_OFFSET = 4;  // Address 1 - receiver (6 bytes)
-constexpr size_t ADDR2_OFFSET = 10; // Address 2 - transmitter (6 bytes)
-constexpr size_t ADDR3_OFFSET = 16; // Address 3 - BSSID/SA/DA (6 bytes)
-constexpr size_t SEQCTL_OFFSET = 22; // Sequence Control (2 bytes)
+constexpr size_t MAC_ADDRESS_SIZE = 6;
+constexpr size_t FC_OFFSET        = 0;  // Frame Control (2 bytes)
+constexpr size_t DUR_OFFSET       = 2;  // Duration/ID (2 bytes)
+constexpr size_t ADDR1_OFFSET     = 4;  // Address 1 - receiver (6 bytes)
+constexpr size_t ADDR2_OFFSET     = 10; // Address 2 - transmitter (6 bytes)
+constexpr size_t ADDR3_OFFSET     = 16; // Address 3 - BSSID/SA/DA (6 bytes)
+constexpr size_t SEQCTL_OFFSET    = 22; // Sequence Control (2 bytes)
 
 // minimum bytes needed to access each address field
-constexpr size_t ADDR1_END = ADDR1_OFFSET + 6; // 10
-constexpr size_t ADDR2_END = ADDR2_OFFSET + 6; // 16
-constexpr size_t ADDR3_END = ADDR3_OFFSET + 6; // 22
+constexpr size_t ADDR1_END = ADDR1_OFFSET + MAC_ADDRESS_SIZE;
+constexpr size_t ADDR2_END = ADDR2_OFFSET + MAC_ADDRESS_SIZE;
+constexpr size_t ADDR3_END = ADDR3_OFFSET + MAC_ADDRESS_SIZE;
 
 // Frame Type field (FC bits 3-2) - IEEE 802.11-2020, Section 9.2.4.1.3
 constexpr uint8_t TYPE_MGMT = 0;
@@ -32,65 +34,89 @@ constexpr uint8_t FC_TYPE_MASK     = 0x03;
 constexpr uint8_t FC_SUBTYPE_SHIFT = 4;
 constexpr uint8_t FC_SUBTYPE_MASK  = 0x0F;
 // 802.11 management frame header: FC(2)+Dur(2)+Addr1(6)+Addr2(6)+Addr3(6)+SeqCtrl(2)
-constexpr size_t  MGMT_HDR_SIZE    = 24;
+constexpr size_t   MGMT_HDR_SIZE   = 24;
+// Authentication frame fixed fields: algorithm(2)+seq(2)+status(2)
+constexpr size_t   AUTH_FIXED_SIZE = 6;
+constexpr uint16_t STATUS_SUCCESS  = 0; // IEEE 802.11-2020, Table 9-50
 
 // Management frame subtypes (FC bits 7-4, Type=0b00)
-inline const std::map<uint8_t, std::string_view> mgmt_subtype_names = {
-	{0,  "AssocReq"},
-	{1,  "AssocResp"},
-	{2,  "ReassocReq"},
-	{3,  "ReassocResp"},
-	{4,  "ProbeReq"},
-	{5,  "ProbeResp"},
-	{6,  "TimingAdv"},
+enum MgmtSubtype : uint8_t {
+	MGMT_ASSOC_REQ     = 0,
+	MGMT_ASSOC_RESP    = 1,
+	MGMT_REASSOC_REQ   = 2,
+	MGMT_REASSOC_RESP  = 3,
+	MGMT_PROBE_REQ     = 4,
+	MGMT_PROBE_RESP    = 5,
+	MGMT_TIMING_ADV    = 6,
 	// 7 reserved
-	{8,  "Beacon"},
-	{9,  "ATIM"},
-	{10, "Disassoc"},
-	{11, "Auth"},
-	{12, "Deauth"},
-	{13, "Action"},
-	{14, "ActionNoAck"},
+	MGMT_BEACON        = 8,
+	MGMT_ATIM          = 9,
+	MGMT_DISASSOC      = 10,
+	MGMT_AUTH          = 11,
+	MGMT_DEAUTH        = 12,
+	MGMT_ACTION        = 13,
+	MGMT_ACTION_NO_ACK = 14,
 	// 15 reserved
 };
 
+inline constexpr std::array<std::string_view, 16> mgmt_subtype_names = {
+	"AssocReq",    "AssocResp",   "ReassocReq",   "ReassocResp",
+	"ProbeReq",    "ProbeResp",   "TimingAdv",    "Reserved(7)",
+	"Beacon",      "ATIM",        "Disassoc",     "Auth",
+	"Deauth",      "Action",      "ActionNoAck",  "Reserved(15)",
+};
+
 // Control frame subtypes (FC bits 7-4, Type=0b01)
-inline const std::map<uint8_t, std::string_view> ctrl_subtype_names = {
+enum CtrlSubtype : uint8_t {
 	// 0-1 reserved
-	{2,  "Trigger"},
-	{3,  "TACK"},
-	{4,  "BFReportPoll"},
-	{5,  "NDPAnnounce"},
-	{6,  "CtrlExt"},
-	{7,  "CtrlWrapper"},
-	{8,  "BAR"},
-	{9,  "BA"},
-	{10, "PS-Poll"},
-	{11, "RTS"},
-	{12, "CTS"},
-	{13, "ACK"},
-	{14, "CF-End"},
-	{15, "CF-End+CF-Ack"},
+	CTRL_TRIGGER         = 2,
+	CTRL_TACK            = 3,
+	CTRL_BF_REPORT_POLL  = 4,
+	CTRL_NDP_ANNOUNCE    = 5,
+	CTRL_EXT             = 6,
+	CTRL_WRAPPER         = 7,
+	CTRL_BAR             = 8,
+	CTRL_BA              = 9,
+	CTRL_PS_POLL         = 10,
+	CTRL_RTS             = 11,
+	CTRL_CTS             = 12,
+	CTRL_ACK             = 13,
+	CTRL_CF_END          = 14,
+	CTRL_CF_END_CF_ACK   = 15,
+};
+
+inline constexpr std::array<std::string_view, 16> ctrl_subtype_names = {
+	"Reserved(0)", "Reserved(1)", "Trigger",      "TACK",
+	"BFReportPoll","NDPAnnounce", "CtrlExt",      "CtrlWrapper",
+	"BAR",         "BA",          "PS-Poll",      "RTS",
+	"CTS",         "ACK",         "CF-End",       "CF-End+CF-Ack",
 };
 
 // Data frame subtypes (FC bits 7-4, Type=0b10)
-inline const std::map<uint8_t, std::string_view> data_subtype_names = {
-	{0,  "Data"},
-	{1,  "Data+CF-Ack"},
-	{2,  "Data+CF-Poll"},
-	{3,  "Data+CF-Ack+CF-Poll"},
-	{4,  "Null"},
-	{5,  "CF-Ack"},
-	{6,  "CF-Poll"},
-	{7,  "CF-Ack+CF-Poll"},
-	{8,  "QoS-Data"},
-	{9,  "QoS-Data+CF-Ack"},
-	{10, "QoS-Data+CF-Poll"},
-	{11, "QoS-Data+CF-Ack+CF-Poll"},
-	{12, "QoS-Null"},
+enum DataSubtype : uint8_t {
+	DATA                     = 0,
+	DATA_CF_ACK              = 1,
+	DATA_CF_POLL             = 2,
+	DATA_CF_ACK_POLL         = 3,
+	DATA_NULL                = 4,
+	CF_ACK                   = 5,
+	CF_POLL                  = 6,
+	CF_ACK_POLL              = 7,
+	QOS_DATA                 = 8,
+	QOS_DATA_CF_ACK          = 9,
+	QOS_DATA_CF_POLL         = 10,
+	QOS_DATA_CF_ACK_POLL     = 11,
+	QOS_NULL                 = 12,
 	// 13 reserved
-	{14, "QoS-CF-Poll"},
-	{15, "QoS-CF-Ack+CF-Poll"},
+	QOS_CF_POLL              = 14,
+	QOS_CF_ACK_POLL          = 15,
+};
+
+inline constexpr std::array<std::string_view, 16> data_subtype_names = {
+	"Data",      "Data+CF-Ack",          "Data+CF-Poll",         "Data+CF-Ack+CF-Poll",
+	"Null",      "CF-Ack",               "CF-Poll",              "CF-Ack+CF-Poll",
+	"QoS-Data",  "QoS-Data+CF-Ack",      "QoS-Data+CF-Poll",     "QoS-Data+CF-Ack+CF-Poll",
+	"QoS-Null",  "Reserved(13)",         "QoS-CF-Poll",          "QoS-CF-Ack+CF-Poll",
 };
 
 // Information Element tag IDs — IEEE 802.11-2020, Section 9.4.2, Table 9-92
@@ -136,16 +162,15 @@ inline const std::map<IE, std::string_view> ie_names = {
 };
 
 inline std::string_view to_string(uint8_t type, uint8_t subtype) {
-	const std::map<uint8_t, std::string_view> *names =
-		type == TYPE_MGMT ? &mgmt_subtype_names :
-		type == TYPE_CTRL ? &ctrl_subtype_names :
-		type == TYPE_DATA ? &data_subtype_names : nullptr;
-	if(names) {
-		const auto it = names->find(subtype);
-		if(it != names->end()) return it->second;
-	}
-	return "<invalid Dot11 frame>";
+	if(subtype >= 16) return "<invalid subtype>";
+	if(type == TYPE_MGMT) return mgmt_subtype_names[subtype];
+	if(type == TYPE_CTRL) return ctrl_subtype_names[subtype];
+	if(type == TYPE_DATA) return data_subtype_names[subtype];
+	return "<invalid type>";
 }
+inline std::string_view to_string(MgmtSubtype s) { return mgmt_subtype_names[s]; }
+inline std::string_view to_string(CtrlSubtype s) { return ctrl_subtype_names[s]; }
+inline std::string_view to_string(DataSubtype s) { return data_subtype_names[s]; }
 
 inline std::string_view ie_to_string(const IE tag) {
 	const auto it = ie_names.find(tag);

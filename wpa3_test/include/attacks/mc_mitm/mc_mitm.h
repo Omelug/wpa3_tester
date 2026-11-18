@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
+// TODO: remove libtins dependency
 #include <tins/tins.h>
 #include "MonitorSocket.h"
 #include "client_state.h"

@@ -406,7 +406,7 @@ void OpenWrtConn::logger(RunStatus &rs, const string &actor_name){
 	const string remote_log = "/tmp/logread_" + actor_name + ".log";
 	const string remote_pid = "/tmp/logread_" + actor_name + ".pid";
 
-	exec("kill $(pidof logread) 2>/dev/null; logread -f -l 100 >" + remote_log + " 2>&1 & echo $! >" + remote_pid);
+	exec("kill $(pidof logread) 2>/dev/null; logread -f -l 100 2>&1 | tee " + remote_log + " >/dev/null & echo $! >" + remote_pid);
 
 	ap->conn->on_disconnect([this, remote_log, remote_pid, log_dir, actor_name](){
 		exec("kill $(cat " + remote_pid + ") 2>/dev/null; rm " + remote_pid);

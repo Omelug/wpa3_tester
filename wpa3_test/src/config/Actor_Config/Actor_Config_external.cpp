@@ -1,7 +1,6 @@
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/ExternalConn.h"
-#include "system/hw_capabilities.h"
 
 namespace wpa3_tester {
 using namespace std;

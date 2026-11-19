@@ -185,6 +185,7 @@
       <w>libtins</w>
       <w>libusb</w>
       <w>libwifi</w>
+      <w>linespoints</w>
       <w>logread</w>
       <w>lsblk</w>
       <w>lsusb</w>

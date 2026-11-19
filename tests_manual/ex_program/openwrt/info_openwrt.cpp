@@ -3,7 +3,6 @@
 #include <doctest.h>
 #include <iostream>
 #include <string>
-#include <thread>
 
 #include "../../manual_test_core/manual_test_wizards.h"
 #include "config/RunStatus.h"

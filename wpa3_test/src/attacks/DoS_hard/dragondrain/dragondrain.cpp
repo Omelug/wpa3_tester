@@ -4,7 +4,6 @@
 
 #include "config/global_config.h"
 #include "ex_program/external_actors/ExternalConn.h"
-#include "ex_program/hostapd/hostapd.h"
 #include "observer/observers.h"
 #include "observer/resource_checker.h"
 #include "system/hw_capabilities.h"

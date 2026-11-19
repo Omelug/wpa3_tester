@@ -1,10 +1,8 @@
 #include "attacks/DoS_soft/expected_vht_beacon.h"
-#include "overview/html_utils.h"
-#include "page_cache.h"
-#include "system/utils.h"
-#include "visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h"
 #include <filesystem>
 #include <string>
+#include "page_cache.h"
+#include "visual/DoS_soft/expected_vht_beacon/expected_vht_beacon_suite.h"
 
 namespace wpa3_tester::overview {
 using namespace std;

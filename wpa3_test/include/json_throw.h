@@ -4,7 +4,6 @@
 #include <cxxabi.h>
 #include <format>
 #include <stacktrace>
-#include <stdexcept>
 #include <string>
 
 #define JSON_THROW_USER(ex)                                                                                            \

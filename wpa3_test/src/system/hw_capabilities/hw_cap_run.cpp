@@ -1,15 +1,13 @@
 #include <cstdlib>
-#include <random>
-#include <sstream>
-#include <string>
-#include <vector>
 #include <poll.h>
+#include <random>
 #include <reproc++/drain.hpp>
 #include <reproc++/reproc.hpp>
-#include <sys/syscall.h>
+#include <sstream>
+#include <string>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
+#include <vector>
 
 #include "config/RunStatus.h"
 #include "logger/error_log.h"

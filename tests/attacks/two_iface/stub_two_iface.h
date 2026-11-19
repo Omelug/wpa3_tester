@@ -4,7 +4,6 @@
 #include "attacks/two_iface/TwoIface.h"
 #include "config/Actor_Config/ActorPtr.h"
 #include "config/Actor_Config/Actor_Config_sim.h"
-#include "logger/error_log.h"
 
 namespace wpa3_tester {
 

@@ -13,7 +13,6 @@
 //   AP then processes second subframe (ICMPv6 RA) and broadcasts it.
 //   No external server needed.
 #include "visual/mc_mitm/amsdu_filler.h"
-#include "visual/mc_mitm/mc_mitm_filler.h"
 
 #include <filesystem>
 #include <string>

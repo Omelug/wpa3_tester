@@ -3,7 +3,6 @@
 #include "config/global_config.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
-#include "system/hw_info.h"
 #include "system/utils.h"
 
 namespace wpa3_tester {

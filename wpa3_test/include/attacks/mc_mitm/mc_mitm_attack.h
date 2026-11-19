@@ -1,6 +1,5 @@
 #pragma once
 #include "attacks/mc_mitm/mc_mitm.h"
-#include "config/RunStatus.h"
 
 using namespace std;
 using namespace filesystem;

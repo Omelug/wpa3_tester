@@ -1,9 +1,8 @@
-#include "page_cache.h"
-#include "system/utils.h"
-#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
-#include "visual/suite_helper.h"
 #include <filesystem>
 #include <string>
+#include "page_cache.h"
+#include "visual/enterprise/invalid_curve/invalid_curve_filler.h"
+#include "visual/suite_helper.h"
 
 namespace wpa3_tester::overview {
 using namespace std;

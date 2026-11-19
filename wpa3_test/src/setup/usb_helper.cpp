@@ -5,7 +5,6 @@
 #include <fstream>
 #include <set>
 #include <sstream>
-#include <thread>
 #include <vector>
 #include "config/Observer_config.h"
 #include "config/RunStatus.h"

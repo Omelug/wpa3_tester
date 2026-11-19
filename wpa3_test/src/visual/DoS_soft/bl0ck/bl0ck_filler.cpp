@@ -5,7 +5,6 @@
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "default.h"
-#include "ex_program/external_actors/openwrt/openwrt_helper.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "logger/report.h"

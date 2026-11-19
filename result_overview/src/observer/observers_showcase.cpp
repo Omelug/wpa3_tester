@@ -3,9 +3,7 @@
 #include <format>
 #include "config/Actor_Config/actor_keys.h"
 #include "config/RunStatus.h"
-#include "logger/log.h"
 #include "observer/graph/graph_elements.h"
-#include "observer/iperf_wrapper.h"
 #include "observer/resource_checker.h"
 #include "observer/state_log_graph.h"
 #include "observer/station_counter.h"

@@ -1,6 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <chrono>
-#include <cstdint>
 #include <ctime>
 #include <doctest.h>
 #include <filesystem>

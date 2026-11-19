@@ -1,3 +1,5 @@
+#include <fstream>
+#include <sstream>
 #include "config/Actor_Config/Actor_Config_external.h"
 #include "config/RunStatus.h"
 #include "config/global_config.h"
@@ -6,11 +8,8 @@
 #include "logger/log.h"
 #include "scan/scan.h"
 #include "system/hw_capabilities.h"
-#include "system/hw_info.h"
 #include "system/ip.h"
 #include "system/utils.h"
-#include <fstream>
-#include <sstream>
 
 namespace wpa3_tester{
 using namespace std;

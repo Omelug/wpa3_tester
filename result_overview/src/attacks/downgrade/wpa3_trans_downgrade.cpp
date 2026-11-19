@@ -1,10 +1,9 @@
 #include "attacks/downgrade/wpa3_trans_downgrade.h"
-#include "page_cache.h"
-#include "system/utils.h"
-#include "visual/downgrade/wpa3_downgrade_filler.h"
-#include "visual/suite_helper.h"
 #include <filesystem>
 #include <string>
+#include "page_cache.h"
+#include "visual/downgrade/wpa3_downgrade_filler.h"
+#include "visual/suite_helper.h"
 
 namespace wpa3_tester::overview {
 using namespace std;

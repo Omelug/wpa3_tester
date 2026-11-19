@@ -10,7 +10,6 @@
 #include "config/RunSuiteStatus.h"
 #include "logger/error_log.h"
 #include "setup/config_parser.h"
-#include "system/ProcessManager.h"
 
 using namespace wpa3_tester;
 using namespace std;

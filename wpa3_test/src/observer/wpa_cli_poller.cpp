@@ -1,9 +1,8 @@
 #include "observer/wpa_cli_poller.h"
-#include "config/RunStatus.h"
-#include "observer/observers.h"
-#include "system/utils.h"
 #include <string>
 #include <vector>
+#include "config/RunStatus.h"
+#include "observer/observers.h"
 
 namespace wpa3_tester::observer::wpa_cli_poller {
 using namespace std;

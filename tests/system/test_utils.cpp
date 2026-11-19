@@ -119,7 +119,7 @@ TEST_CASE("join - strings") {
 }
 
 TEST_CASE("join - proj") {
-	CHECK_EQ(join(vector<int>{1, 6, 11}, " ", [](int i) { return to_string(i); }), "1 6 11");
+	CHECK_EQ(join(vector{ 1, 6, 11}, " ", [](int i) { return to_string(i); }), "1 6 11");
 	CHECK_EQ(join(vector<int>{}, " ", [](int i) { return to_string(i); }), "");
 }
 

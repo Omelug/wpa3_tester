@@ -362,7 +362,7 @@ TEST_CASE("ProcessManager - drain thread natural exit path") {
 		this_thread::sleep_for(400ms);
 
 		ifstream f(pm.log_base_dir / "outputter.log");
-		const string content(istreambuf_iterator<char>(f), istreambuf_iterator<char>{});
+		const string content(istreambuf_iterator(f), istreambuf_iterator<char>{});
 		CHECK(content.contains("stdout_marker"));
 		CHECK(content.contains("stderr_marker"));
 

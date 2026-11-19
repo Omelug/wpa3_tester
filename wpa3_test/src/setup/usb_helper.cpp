@@ -211,7 +211,7 @@ void reset_usb_ifaces() {
 				"reset_usb_ifaces: {}/{} adapters net-ready, waiting...",
 				net_ready,
 				expected_with_driver);
-			interruptible_sleep(chrono::seconds(3));
+			interruptible_sleep(chrono::seconds(3)); //TODo hardcoded
 		}
 	} else {
 		log(LogLevel::WARNING, "Reset USB fallback");

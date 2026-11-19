@@ -64,7 +64,7 @@ inline void to_json(nlohmann::json &j, const described_bool::pair_t &p) {
 inline void from_json(const nlohmann::json &j, described_bool::pair_t &p) {
 	j.at("description").get_to(p.description);
 	const auto &v = j.at("value");
-	p.value = v.is_null() ? std::nullopt : std::optional<bool>(v.get<bool>());
+	p.value = v.is_null() ? std::nullopt : std::optional(v.get<bool>());
 }
 inline void to_json(nlohmann::json &j, const described_bool &d) { j = d.pairs; }
 inline void from_json(const nlohmann::json &j, described_bool &d) {

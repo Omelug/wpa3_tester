@@ -170,7 +170,7 @@ YAMLValidator::YAMLValidator(const path &schema_path){
 	r_schema = wpa3_tester::yaml_to_json(YAML::LoadFile(schema_path.string()));
 	const auto &ext = r_schema.contains("$extends") ? r_schema["$extends"] : json{};
 	if(ext.is_string() || ext.is_array()) {
-		std::vector<std::string> hierarchy = { absolute(schema_path).string() };
+		std::vector hierarchy = { absolute(schema_path).string() };
 		r_schema = wpa3_tester::resolve_extends(r_schema, schema_dir_, hierarchy);
 	}
 	validator = json_validator(r_schema, make_loader(schema_dir_));

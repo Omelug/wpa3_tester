@@ -152,7 +152,7 @@ TEST_CASE("setup_actor - band set if actor_opt has it") {
 	nlohmann::json config = { { "actors", { { "actor_opt_test", {} } } } };
 	actor_opt->setup_actor(config, actor_rule);
 
-	CHECK_EQ(actor_opt[BK::GHz2_4], optional<bool>{ true });
+	CHECK_EQ(actor_opt[BK::GHz2_4], optional{ true });
 	CHECK_EQ(actor_opt[BK::GHz5], nullopt);
 	CHECK_EQ(actor_opt[BK::GHz6], nullopt);
 }

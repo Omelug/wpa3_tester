@@ -5,6 +5,7 @@
 #include "attacks/mc_mitm/wifi_util.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "mitm_helpers.h"
+#include "net_parser/dot11_defs.h"
 #include "pcap_helper.h"
 
 using namespace std;
@@ -111,8 +112,8 @@ TEST_SUITE("handle_open_auth") {
 		m->client_state.update_state(ClientState::Sent_to_rogue);
 
 		auto auth = Dot11Authentication(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC));
-		auth.auth_algorithm(0);
-		auth.auth_seq_number(1);
+		auth.auth_algorithm(dot11::AUTH_ALG_OPEN);
+		auth.auth_seq_number(dot11::AUTH_SEQ_REQ);
 
 		CHECK_EQ(m->handle_open_auth(HWAddress<6>(CLIENT_MAC), auth), STOP);
 		CHECK_EQ(m->rogue_send_count, 1); // seq=2 reply to rogue
@@ -123,8 +124,8 @@ TEST_SUITE("handle_open_auth") {
 	TEST_CASE("Auth seq=2 -> CONTINUE, no send") {
 		auto m = make_fixture();
 		auto auth = Dot11Authentication(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC));
-		auth.auth_algorithm(0);
-		auth.auth_seq_number(2);
+		auth.auth_algorithm(dot11::AUTH_ALG_OPEN);
+		auth.auth_seq_number(dot11::AUTH_SEQ_RESP);
 
 		CHECK_EQ(m->handle_open_auth(HWAddress<6>(CLIENT_MAC), auth), CONTINUE);
 		CHECK_EQ(m->rogue_send_count, 0);
@@ -134,8 +135,8 @@ TEST_SUITE("handle_open_auth") {
 	TEST_CASE("Auth algo=1 (SAE) seq=1 -> CONTINUE, no send") {
 		auto m = make_fixture();
 		auto auth = Dot11Authentication(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC));
-		auth.auth_algorithm(1); // SAE, not Open System
-		auth.auth_seq_number(1);
+		auth.auth_algorithm(dot11::AUTH_ALG_SAE);
+		auth.auth_seq_number(dot11::AUTH_SEQ_REQ);
 
 		CHECK_EQ(m->handle_open_auth(HWAddress<6>(CLIENT_MAC), auth), CONTINUE);
 		CHECK_EQ(m->rogue_send_count, 0);

@@ -163,7 +163,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 
 		// OWE BSS (hidden)
 		exec("uci delete wireless." + section + " 2>/dev/null");
-		vector<string> owe_cmds = {
+		vector owe_cmds = {
 			"set wireless." + section + "=wifi-iface",
 			"set wireless." + section + ".device=" + radio_name,
 		};
@@ -179,7 +179,7 @@ void OpenWrtConn::setup_iface(const string &radio_name, ActorPtr &actor, const n
 
 		// Open BSS
 		exec("uci delete wireless." + open_section + " 2>/dev/null");
-		vector<string> open_cmds = {
+		vector open_cmds = {
 			"set wireless." + open_section + "=wifi-iface",
 			"set wireless." + open_section + ".device=" + radio_name,
 		};
@@ -359,7 +359,7 @@ void OpenWrtConn::setup_ap(const RunStatus &rs, ActorPtr &actor){
 	exec("uci -q delete wireless." + actor.get(SK::radio) + ".ocv");
 	exec("uci -q delete wireless." + actor.get(SK::radio) + ".transition_disable");
 
-	vector<string> cmds = {format("set wireless.{}.disabled=0", actor.get(SK::radio))};
+	vector cmds = {format("set wireless.{}.disabled=0", actor.get(SK::radio))};
 	for(const auto &[key, val]: program_config.items()){
 		const string value = val.is_string() ? val.get<string>() : val.dump();
 		if(key == "eap_user_file"){

@@ -126,7 +126,7 @@ void Graph::add_stairs(const GraphStairs<Enum> &stairs) {
 	yrange << yrange_cmd << " [" << fixed << setprecision(2) << stairs.y_min() << ":" << stairs.y_max() << "]";
 	gpcmd(yrange.str());
 
-	// Plot part
+	// plot part
 	ostringstream part;
 	part << "$" << stairs.label << " using 1:2" << " with lines lw 2" << " lc rgb '" << stairs.color << "'"
 		 << (stairs.axis == YAxis::Y2 ? " axes x1y2" : " axes x1y1") << " title '" << stairs.label << "'";

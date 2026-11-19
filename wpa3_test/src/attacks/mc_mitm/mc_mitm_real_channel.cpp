@@ -3,6 +3,7 @@
 #include "attacks/DoS_soft/channel_switch/channel_switch.h"
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
+#include "net_parser/dot11_defs.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -72,7 +73,7 @@ void McMitm::handle_from_ap_real(const Dot11 &dot11, const HWAddress<6> &addr1, 
 
 		// Open-System Auth from real AP: rogue hostapd handles auth/assoc directly - ignore
 		if(const auto *auth = dot11.find_pdu<Dot11Authentication>();
-			auth && auth->auth_seq_number() == 2 && auth->auth_algorithm() == 0){
+			auth && auth->auth_seq_number() == dot11::AUTH_SEQ_RESP && auth->auth_algorithm() == dot11::AUTH_ALG_OPEN){
 			log(LogLevel::DEBUG, "Real channel: dropping Open-System Auth(seq=2) relay to rogue");
 			return;
 		}

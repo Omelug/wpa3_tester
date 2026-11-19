@@ -178,7 +178,7 @@ TEST_CASE("hw_capabilities::check_req_options - empty rules returns empty map") 
 	ActorMap rules{};
 	vector options{ make_actor({ { BK::AP, true } }) };
 	RunStatus status{};
-	const auto result = status.check_req_options(rules, options);
+	const auto result = RunStatus::check_req_options(rules, options);
 	CHECK(result.empty());
 }
 
@@ -190,7 +190,7 @@ TEST_CASE("hw_capabilities::check_req_options - single rule single matching opti
 	vector options{ option };
 
 	RunStatus status{};
-	const auto result = status.check_req_options(rules, options);
+	const auto result = RunStatus::check_req_options(rules, options);
 	REQUIRE(result.contains("attacker"));
 	CHECK_EQ(result.at("attacker").get(), option.get());
 }
@@ -216,7 +216,7 @@ TEST_CASE("hw_capabilities::check_req_options - two rules two distinct options")
 	vector options{ opt_ap, opt_sta };
 
 	RunStatus status{};
-	const auto result = status.check_req_options(rules, options);
+	const auto result = wpa3_tester::RunStatus::check_req_options(rules, options);
 	CHECK_EQ(result.size(), 2u);
 	CHECK(result.contains("ap_role"));
 	CHECK(result.contains("sta_role"));
@@ -241,7 +241,7 @@ TEST_CASE("hw_capabilities::check_req_options - string key matching") {
 
 	ActorMap rules{ { "dev", rule } };
 	RunStatus status{};
-	const auto result = status.check_req_options(rules, { match, nomatch });
+	const auto result = RunStatus::check_req_options(rules, { match, nomatch });
 	REQUIRE(result.contains("dev"));
 	CHECK_EQ(result.at("dev").get(), match.get());
 }

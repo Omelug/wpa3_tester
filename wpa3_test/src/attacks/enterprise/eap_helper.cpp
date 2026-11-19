@@ -9,6 +9,7 @@
 #include "attacks/mc_mitm/MonitorSocket.h"
 #include "attacks/sae_helper.h"
 #include "logger/log.h"
+#include "net_parser/dot11_defs.h"
 
 namespace wpa3_tester::eap_helper {
 using namespace std;
@@ -56,23 +57,18 @@ using namespace wpa3_tester::eap;
 // +--------+                                     +--------+
 //	   Figure 2: A Successful EAP-pwd Exchange
 
-static constexpr size_t EAPOL_HDR = 4;						// version+type+len(2)
-static constexpr size_t EAP_HDR = 4;						// code+id+len(2)
-static constexpr size_t EAP_TYPE_OFF = EAPOL_HDR + EAP_HDR; // offset of EAP type byte
-static constexpr size_t PWD_EXCH_OFF = EAP_TYPE_OFF + 1;	// offset of PWD-Exch byte
-static constexpr size_t PWD_DATA_OFF = PWD_EXCH_OFF + 1;	// offset of PWD payload
 
 optional<EapPwdFrame> parse_eap_pwd(const frame_raw_t &eapol) {
 	if(eapol.size() <= PWD_EXCH_OFF) return nullopt;
-	if(eapol[1] != 0x00) return nullopt; // not EAP packet
-	if(eapol[EAPOL_HDR] != CODE_REQUEST) return nullopt;
+	if(eapol[EAPOL_TYPE_OFF] != EAPOL_EAP) return nullopt;
+	if(eapol[EAPOL_HDR_SIZE] != CODE_REQUEST) return nullopt;
 	if(eapol[EAP_TYPE_OFF] != TYPE_PWD) return nullopt;
 
 	EapPwdFrame f;
-	f.eap_id = eapol[EAPOL_HDR + 1];
+	f.eap_id = eapol[EAPOL_HDR_SIZE + 1];
 	const uint8_t exch = eapol[PWD_EXCH_OFF];
-	f.opcode = static_cast<PwdOpcode>(exch & 0x3f);
-	const bool L_bit = exch >> 7 & 1;
+	f.opcode = static_cast<PwdOpcode>(exch & PWD_OPCODE_MASK);
+	const bool L_bit = exch >> PWD_L_BIT & 1;
 
 	const size_t data_start = L_bit ? PWD_DATA_OFF + 2 : PWD_DATA_OFF;
 	if(eapol.size() < data_start) return nullopt;
@@ -82,28 +78,28 @@ optional<EapPwdFrame> parse_eap_pwd(const frame_raw_t &eapol) {
 
 bool is_identity_request(const frame_raw_t &eapol, uint8_t &out_eap_id) {
 	if(eapol.size() < EAP_TYPE_OFF + 1) return false;
-	if(eapol[1] != 0x00) return false;
-	if(eapol[EAPOL_HDR] != CODE_REQUEST) return false;
+	if(eapol[EAPOL_TYPE_OFF] != EAPOL_EAP) return false;
+	if(eapol[EAPOL_HDR_SIZE] != CODE_REQUEST) return false;
 	if(eapol[EAP_TYPE_OFF] != TYPE_IDENTITY) return false;
-	out_eap_id = eapol[EAPOL_HDR + 1];
+	out_eap_id = eapol[EAPOL_HDR_SIZE + 1];
 	return true;
 }
 
 bool is_eap_success(const frame_raw_t &eapol) {
-	if(eapol.size() < EAPOL_HDR + EAP_HDR) return false;
-	if(eapol[1] != 0x00) return false;
-	return eapol[EAPOL_HDR] == CODE_SUCCESS;
+	if(eapol.size() < EAPOL_HDR_SIZE + EAP_HDR_SIZE) return false;
+	if(eapol[EAPOL_TYPE_OFF] != EAPOL_EAP) return false;
+	return eapol[EAPOL_HDR_SIZE] == CODE_SUCCESS;
 }
 
 static frame_raw_t build_eapol_eap(const uint8_t eap_id, const vector<uint8_t> &eap_body) {
 	// eap_body = everything after code/id/length (type byte onwards)
-	const auto eap_len = static_cast<uint16_t>(EAP_HDR + eap_body.size());
+	const auto eap_len = static_cast<uint16_t>(EAP_HDR_SIZE + eap_body.size());
 	const uint16_t eapol_len = eap_len;
 
 	frame_raw_t out;
-	out.reserve(EAPOL_HDR + eap_len);
-	out.push_back(0x01); // EAPOL version
-	out.push_back(0x00); // EAPOL type: EAP
+	out.reserve(EAPOL_HDR_SIZE + eap_len);
+	out.push_back(EAPOL_VERSION);
+	out.push_back(EAPOL_EAP);
 	out.push_back(static_cast<uint8_t>(eapol_len >> 8));
 	out.push_back(static_cast<uint8_t>(eapol_len & 0xff));
 	out.push_back(CODE_RESPONSE); // EAP response
@@ -123,12 +119,11 @@ frame_raw_t build_identity_response(const uint8_t eap_id, const string_view iden
 
 frame_raw_t build_pwd_id_response(const EapPwdFrame &request, const string_view peer_identity) {
 	// PWD-ID data: Group(2) + RF(1) + PRF(1) + Token(4) + Prep(1) = 9 bytes fixed prefix
-	constexpr size_t FIXED = 9;
 	vector<uint8_t> body;
 	body.push_back(TYPE_PWD);
 	body.push_back(PWD_OPCODE_ID); // PWD-Exch flags (opcode=1, no L/M)
 	// echo fixed prefix
-	const size_t copy_len = min(FIXED, request.pwd_data.size());
+	const size_t copy_len = min(PWD_ID_PREFIX, request.pwd_data.size());
 	body.insert(body.end(), request.pwd_data.begin(), request.pwd_data.begin() + static_cast<ptrdiff_t>(copy_len));
 	// peer identity instead of server identity
 	body.insert(body.end(), peer_identity.begin(), peer_identity.end());
@@ -197,9 +192,9 @@ bool eap_pwd_wait_for_success(EAP_Att &eap_att) {
 bool do_auth(EAP_Att &eap_att) {
 	Dot11Authentication auth(eap_att.ap_mac, eap_att.att_mac);
 	auth.addr3(eap_att.ap_mac);
-	auth.auth_algorithm(0); // Open System
-	auth.auth_seq_number(1);
-	auth.status_code(0);
+	auth.auth_algorithm(dot11::AUTH_ALG_OPEN);
+	auth.auth_seq_number(dot11::AUTH_SEQ_REQ);
+	auth.status_code(dot11::STATUS_SUCCESS);
 
 	const auto deadline = steady_clock::now() + eap_att.timeout;
 
@@ -215,13 +210,13 @@ bool do_auth(EAP_Att &eap_att) {
 		const auto r = components::poll_sniffer<bool>(
 			eap_att.sock.get_pcap_handle(), eap_att.timeout, [&](const frame_raw_t &p) -> optional<bool> {
 				const auto f = sae_helper::parse_auth_frame(p);
-				if(!f || f->addr1 != eap_att.att_mac || f->seq != 2) return nullopt;
+				if(!f || f->addr1 != eap_att.att_mac || f->seq != dot11::AUTH_SEQ_RESP) return nullopt;
 				log(LogLevel::DEBUG,
 					"Auth response: algo={} seq={} status={}",
 					static_cast<int>(f->algorithm),
 					static_cast<int>(f->seq),
 					static_cast<int>(f->status));
-				if(f->status != 0) {
+				if(f->status != dot11::STATUS_SUCCESS) {
 					log(LogLevel::WARNING, "Auth rejected, status={}", static_cast<int>(f->status));
 					result = false;
 					return true;
@@ -278,7 +273,7 @@ bool do_assoc(EAP_Att &eap_att) {
 				if(!pdu) return nullopt;
 				const auto *resp = pdu->find_pdu<Dot11AssocResponse>();
 				if(!resp || resp->addr1() != eap_att.att_mac) return nullopt;
-				if(resp->status_code() != 0) {
+				if(resp->status_code() != dot11::STATUS_SUCCESS) {
 					log(LogLevel::WARNING, "Assoc rejected, status={}", static_cast<int>(resp->status_code()));
 					result = false;
 					return true;
@@ -325,27 +320,27 @@ vector<uint8_t> extract_eapol(const frame_raw_t &p, const HWAddress<6> &our_mac)
 	// FC byte 0: bits 3-2 = type, must be 0b10 (data); bit 7 = QoS subtype flag
 	if(p.size() <= rt_len + 1u) return {};
 	const uint8_t fc0 = p[rt_len];
-	if((fc0 & 0x0c) != 0x08) return {}; // filter out data frames
+	if((fc0 >> dot11::FC_TYPE_SHIFT & dot11::FC_TYPE_MASK) != dot11::TYPE_DATA) return {};
 
 	// addr1 = FC(2) + Duration(2) = offset 4 inside dot11 header
-	if(p.size() < rt_len + 10u) return {};
+	if(p.size() < rt_len + dot11::ADDR1_END) return {};
 	const HWAddress<6> addr1(p.data() + rt_len + 4);
 	if(addr1 != our_mac && addr1 != HWAddress<6>::broadcast) return {};
 
 	// QoS Data (subtype bit 7 set) adds 2-byte QoS Control field
-	const size_t dot11_hdr = fc0 & 0x80 ? 26u : 24u;
+	const size_t dot11_hdr = fc0 & dot11::FC_QOS_BIT ? dot11::QOS_DATA_HDR_SIZE : dot11::MGMT_HDR_SIZE;
 
 	// LLC+SNAP: AA AA 03 | OUI(3) | EtherType(2) = 8 bytes total
 	const size_t llc_off = rt_len + dot11_hdr;
-	if(p.size() < llc_off + 8u) return {};
-	if(p[llc_off] != 0xAA || p[llc_off + 1] != 0xAA || p[llc_off + 2] != 0x03) return {};
-	if(p[llc_off + 6] != 0x88 || p[llc_off + 7] != 0x8e) return {};
+	if(p.size() < llc_off + LLC_SNAP_SIZE) return {};
+	if(p[llc_off] != LLC_SNAP_DSAP || p[llc_off + 1] != LLC_SNAP_DSAP || p[llc_off + 2] != LLC_SNAP_CTRL) return {};
+	if(p[llc_off + SNAP_ETYPE_OFF] != ETHERTYPE_EAPOL_HI || p[llc_off + SNAP_ETYPE_OFF + 1] != ETHERTYPE_EAPOL_LO) return {};
 
 	// EAPOL: version(1) + type(1) + length(2) + body; use length field to trim
-	const size_t eapol_off = llc_off + 8;
-	if(p.size() < eapol_off + 4u) return {};
-	const uint16_t body_len = (static_cast<uint16_t>(p[eapol_off + 2]) << 8) | p[eapol_off + 3];
-	const size_t eapol_end = eapol_off + 4 + body_len;
+	const size_t eapol_off = llc_off + LLC_SNAP_SIZE;
+	if(p.size() < eapol_off + EAPOL_HDR_SIZE) return {};
+	const uint16_t body_len = (static_cast<uint16_t>(p[eapol_off + EAPOL_LEN_OFF]) << 8) | p[eapol_off + EAPOL_LEN_OFF + 1];
+	const size_t eapol_end = eapol_off + EAPOL_HDR_SIZE + body_len;
 	if(eapol_end > p.size()) return {};
 
 	return { p.begin() + static_cast<ptrdiff_t>(eapol_off), p.begin() + static_cast<ptrdiff_t>(eapol_end) };

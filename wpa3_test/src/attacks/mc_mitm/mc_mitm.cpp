@@ -86,7 +86,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		rogue_ap->get_mon_iface(),
 		netconfig.rogue_channel.ch_num);
 
-	setup_ack_iface(rs, rogue_sta, HWAddress<6>(client_state.get_mac()),
+	setup_ack_iface(rs, rogue_sta, HWAddress(client_state.get_mac()),
 		netconfig.real_channel, prefer_active, nic_client_ap, *beacon);
 
 

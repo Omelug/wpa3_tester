@@ -8,6 +8,7 @@
 
 #include "config/Actor_Config/actor_keys.h"
 #include "config/RunStatus.h"
+#include "net_parser/dot11_defs.h"
 #include "config/global_config.h"
 #include "interrupt.h"
 #include "system/hw_capabilities.h"
@@ -72,10 +73,10 @@ void run_attack(RunStatus &rs){
 	});
 
 	// Build a null data frame: transceiver -> receiver
-	RadioTap rt;
+	RadioTap rt{};
 	Dot11Data frame(rx_mac, tx_mac);
 	frame.addr3(tx_mac); // BSSID
-	frame.subtype(4);    // null data
+	frame.subtype(dot11::DATA_NULL);
 	rt.inner_pdu(frame);
 
 	PacketSender sender(actor_tx.get(SK::iface));

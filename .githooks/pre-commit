@@ -24,7 +24,7 @@ fi
 echo "$files" | xargs -d'\n' perl -i -pe '
   s/[ \t]+$//;        # trailing whitespace
   s/^[ \t\r\v\f]+$//; # blank lines with control chars
-  s/\x{2014}/-/g;     # em dash → -
+  s/\x{2014}/-/g;     # em dash -> -
   s/\x{2192}/->/g;    # → ->
 '
 echo "$files" | xargs -d'\n' git add

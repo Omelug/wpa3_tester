@@ -69,12 +69,13 @@ void start_trace_cmd(RunStatus &rs, const string &actor_name, const vector<strin
 }
 
 // "action:N" field - skips "drv_ampdu_action: " (space after colon, not digit)
-static AmpduAction parse_action(const string &line){ //FIXMe magic number 7
-	for(size_t p = 0; (p = line.find("action:", p)) != string::npos; p += 7){
-		if(p + 7 < line.size() && isdigit(static_cast<unsigned char>(line[p + 7]))){
+static AmpduAction parse_action(const string &line) {
+	const size_t prefix_size = string("action:").size();
+	for(size_t p = 0; (p = line.find("action:", p)) != string::npos; p += prefix_size){
+		if(p + prefix_size < line.size() && isdigit(static_cast<unsigned char>(line[p + prefix_size]))){
 			try{
 				const int v = stoi(line.substr(p + 7));
-				if(v <= 7) return static_cast<AmpduAction>(v);
+				if(v >= 0 && static_cast<size_t>(v) <= prefix_size) return static_cast<AmpduAction>(v);
 			} catch(...){}
 			break;
 		}

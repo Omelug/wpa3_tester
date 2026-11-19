@@ -10,6 +10,8 @@ constexpr uint16_t ETHERTYPE_EAPOL    = 0x888E;
 constexpr uint8_t  ETHERTYPE_EAPOL_HI = 0x88;
 constexpr uint8_t  ETHERTYPE_EAPOL_LO = 0x8E;
 
+constexpr uint8_t EAPOL_VERSION = 1; // IEEE 802.1X-2020, Section 11.3
+
 // EAPOL packet types (IEEE 802.1X-2020, Section 11.3)
 enum EapolType : uint8_t {
 	EAPOL_EAP    = 0,
@@ -104,9 +106,22 @@ inline std::string_view to_string(const EapType v) {
 
 // EAP body offsets within a serialized EAPOL frame (IEEE 802.1X-2020, Section 11.3; RFC 3748, Section 4)
 // EAPOL header: version(1) + type(1) + length(2) = 4 bytes; EAP body follows immediately
-constexpr uint8_t EAPOL_HDR_SIZE = 4;
-constexpr uint8_t EAP_CODE_OFF   = EAPOL_HDR_SIZE;     // = 4: EAP Code (1 byte)
-constexpr uint8_t EAP_TYPE_OFF   = EAPOL_HDR_SIZE + 4; // = 8: EAP Type (1 byte, Req/Resp only)
+constexpr uint8_t EAPOL_HDR_SIZE  = 4;
+constexpr uint8_t EAPOL_TYPE_OFF  = 1; // EAPOL type byte (version=0, type=1, len=2-3)
+constexpr uint8_t EAPOL_LEN_OFF   = 2; // EAPOL body length (big-endian uint16)
+constexpr uint8_t EAP_HDR_SIZE    = 4;                             // code(1)+id(1)+length(2)
+constexpr uint8_t EAP_CODE_OFF    = EAPOL_HDR_SIZE;                // = 4: EAP Code (1 byte)
+constexpr uint8_t EAP_TYPE_OFF    = EAPOL_HDR_SIZE + EAP_HDR_SIZE; // = 8: EAP Type (1 byte, Req/Resp only)
+constexpr uint8_t PWD_EXCH_OFF    = EAP_TYPE_OFF + 1;              // offset of PWD-Exch byte
+constexpr uint8_t PWD_DATA_OFF    = PWD_EXCH_OFF + 1;              // offset of PWD payload
+constexpr uint8_t PWD_OPCODE_MASK = 0x3F; // lower 6 bits of PWD-Exch byte (RFC 5931, Section 3.1)
+constexpr uint8_t PWD_L_BIT       = 7;    // L-bit position in PWD-Exch byte (length-included flag)
+constexpr size_t  PWD_ID_PREFIX   = 9;    // PWD-ID fixed prefix: Group(2)+RF(1)+PRF(1)+Token(4)+Prep(1)
+// LLC+SNAP encapsulation for EAPOL-over-802.11 (IEEE 802.1H / RFC 1042)
+constexpr uint8_t LLC_SNAP_DSAP  = 0xAA;
+constexpr uint8_t LLC_SNAP_CTRL  = 0x03; // Unnumbered Information
+constexpr size_t  LLC_SNAP_SIZE  = 8;    // LLC(3) + OUI(3) + EtherType(2)
+constexpr size_t  SNAP_ETYPE_OFF = 6;    // EtherType offset within LLC+SNAP block
 
 // EAPOL-Key frame: field offsets from start of EAPOL body (byte after 0x888E ethertype)
 // IEEE 802.1X-2020, Section 11.9; IEEE 802.11-2020, Section 12.7.2

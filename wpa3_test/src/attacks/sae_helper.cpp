@@ -63,7 +63,7 @@ optional<SAEPair> parse_sae_commit(const frame_raw_t &frame_rt) {
 	const uint16_t seq = frame_rt[auth_offset + 2] | (frame_rt[auth_offset + 3] << 8);
 	const uint16_t status = frame_rt[auth_offset + 4] | (frame_rt[auth_offset + 5] << 8);
 
-	if(algo != sae_defs::SAE_ALGORITHM || seq != sae_defs::SAE_COMMIT_SEQ) return nullopt;
+	if(algo != dot11::AUTH_ALG_SAE || seq != sae_defs::SAE_COMMIT_SEQ) return nullopt;
 
 	// Use span to avoid copying sae data
 	const auto sae_data = span(frame_rt).subspan(sae_offset);
@@ -114,15 +114,15 @@ RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac
 
 	Dot11Authentication auth(ap_mac, sta_mac);
 	auth.addr3(ap_mac);
-	auth.auth_algorithm(sae_defs::SAE_ALGORITHM);
+	auth.auth_algorithm(dot11::AUTH_ALG_SAE);
 	auth.auth_seq_number(sae_defs::SAE_COMMIT_SEQ);
 	auth.status_code(sae_params.status);
 
 	// group 19 (P-256) | optional ACM token | dummy scalar | dummy element
 	vector<uint8_t> payload;
 	payload.reserve(2 + sae_params.token.size() + sae_params.scalar.size() + sae_params.element.size());
-	payload.push_back(sae_params.group_id & 0xFF);
-	payload.push_back(sae_params.group_id >> 8 & 0xFF);
+	payload.insert(payload.end(), {static_cast<uint8_t>(sae_params.group_id),
+	                               static_cast<uint8_t>(sae_params.group_id >> 8)});
 	payload.insert(payload.end(), sae_params.token.begin(), sae_params.token.end());
 	payload.insert(payload.end(), sae_params.scalar.begin(), sae_params.scalar.end());
 	payload.insert(payload.end(), sae_params.element.begin(), sae_params.element.end());
@@ -137,11 +137,12 @@ RadioTap make_sae_commit(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac
 RadioTap make_sae_confirm(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 	Dot11Authentication auth(ap_mac, sta_mac);
 	auth.addr3(ap_mac);
-	auth.auth_algorithm(sae_defs::SAE_ALGORITHM);
+	auth.auth_algorithm(dot11::AUTH_ALG_SAE);
 	auth.auth_seq_number(sae_defs::SAE_CONFIRM_SEQ);
 	auth.status_code(dot11::STATUS_SUCCESS);
 	// SC (2 bytes) + verifier (32 bytes zeros - garbage, AP will reject but still process)
-	auth.inner_pdu(RawPDU(vector<uint8_t>(34, 0)));
+	const size_t conf_size = sizeof(SaeSeq) + sae_defs::group_params.at(19).scalar_len; // P-256
+	auth.inner_pdu(RawPDU(vector<uint8_t>(conf_size, 0)));
 	RadioTap rt{};
 	rt.tx_flags(radiotap::TX_NOACK | radiotap::TX_ORDER);
 	rt.inner_pdu(auth);

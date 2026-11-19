@@ -148,6 +148,7 @@
       <w>hwinfo</w>
       <w>hwsim</w>
       <w>ibss</w>
+      <w>icmpv</w>
       <w>idxs</w>
       <w>ieee</w>
       <w>iface</w>
@@ -289,6 +290,7 @@
       <w>radiotap</w>
       <w>raspbian</w>
       <w>rawpdu</w>
+      <w>rdnss</w>
       <w>readlink</w>
       <w>reassoc</w>
       <w>recv</w>

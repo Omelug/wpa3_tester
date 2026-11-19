@@ -7,11 +7,11 @@
 
 namespace wpa3_tester::sae_defs {
 
-// Authentication algorithm number — IEEE 802.11-2020, Table 9-36
-constexpr uint16_t SAE_ALGORITHM  = 3;
 // Sequence numbers — IEEE 802.11-2020, Section 12.4.4
-constexpr uint16_t SAE_COMMIT_SEQ  = 1;
-constexpr uint16_t SAE_CONFIRM_SEQ = 2;
+enum SaeSeq : uint16_t {
+	SAE_COMMIT_SEQ  = 1,
+	SAE_CONFIRM_SEQ = 2,
+};
 
 // SAE-related status codes — IEEE 802.11-2020, Table 9-50
 // SAE-specific status codes — IEEE 802.11-2020, Table 9-50

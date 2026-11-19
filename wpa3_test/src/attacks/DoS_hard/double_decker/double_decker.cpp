@@ -161,7 +161,7 @@ void run_attack(RunStatus &rs) {
 
 	// Optional refresh thread: re-send pre-ACM commits every refresh_interval seconds
 	// to reset the inactivity timer on APs with short AP_MAX_INACTIVITY (<300s)
-	atomic<bool> refresh_stop{false};
+	atomic refresh_stop{false};
 	thread refresh_thread;
 	if(refresh_interval > 0) {
 		refresh_thread = thread([&] {

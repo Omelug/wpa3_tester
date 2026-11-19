@@ -25,19 +25,43 @@ constexpr size_t ADDR2_END = ADDR2_OFFSET + MAC_ADDRESS_SIZE;
 constexpr size_t ADDR3_END = ADDR3_OFFSET + MAC_ADDRESS_SIZE;
 
 // Frame Type field (FC bits 3-2) - IEEE 802.11-2020, Section 9.2.4.1.3
-constexpr uint8_t TYPE_MGMT = 0;
-constexpr uint8_t TYPE_CTRL = 1;
-constexpr uint8_t TYPE_DATA = 2;
-constexpr uint8_t TYPE_EXT  = 3;
+enum FrameType : uint8_t {
+	TYPE_MGMT = 0,
+	TYPE_CTRL = 1,
+	TYPE_DATA = 2,
+	TYPE_EXT  = 3,
+};
 constexpr uint8_t FC_TYPE_SHIFT    = 2;
 constexpr uint8_t FC_TYPE_MASK     = 0x03;
 constexpr uint8_t FC_SUBTYPE_SHIFT = 4;
 constexpr uint8_t FC_SUBTYPE_MASK  = 0x0F;
 // 802.11 management frame header: FC(2)+Dur(2)+Addr1(6)+Addr2(6)+Addr3(6)+SeqCtrl(2)
-constexpr size_t   MGMT_HDR_SIZE   = 24;
+constexpr size_t  MGMT_HDR_SIZE    = 24;
+constexpr uint8_t FC_QOS_BIT       = 0x80; // subtype bit 3 in FC byte 0 — set for QoS subtypes (8-15)
+constexpr size_t  QOS_DATA_HDR_SIZE = MGMT_HDR_SIZE + 2; // adds 2-byte QoS-Control field
+
+constexpr uint16_t SEQ_NUM_MOD     = 4096; // 12-bit sequence number field — IEEE 802.11-2020, Section 9.3.2.3
+// IEEE 802.11-2020, Table 9-50 — NOTE: incomplete, only values used in this project
+enum Status : uint16_t {
+	STATUS_SUCCESS = 0,
+};
+// IEEE 802.11-2020, Table 9-49 — NOTE: incomplete, only values used in this project
+enum ReasonCode : uint16_t {
+	REASON_CLASS3_FRAME_NONASSOC = 7, // Class 3 frame from nonassociated STA
+};
+// IEEE 802.11-2020, Table 9-36 — NOTE: incomplete, only values used in this project
+enum AuthAlg : uint16_t {
+	AUTH_ALG_OPEN = 0, // Open System
+	AUTH_ALG_SAE  = 3, // Simultaneous Authentication of Equals
+};
+// Authentication Transaction Sequence Number — IEEE 802.11-2020, Section 9.3.3.12
+enum AuthSeq : uint16_t {
+	AUTH_SEQ_REQ  = 1, // request  (STA -> AP)
+	AUTH_SEQ_RESP = 2, // response (AP  -> STA)
+};
+
 // Authentication frame fixed fields: algorithm(2)+seq(2)+status(2)
-constexpr size_t   AUTH_FIXED_SIZE = 6;
-constexpr uint16_t STATUS_SUCCESS  = 0; // IEEE 802.11-2020, Table 9-50
+constexpr size_t AUTH_FIXED_SIZE = sizeof(AuthAlg) + sizeof(AuthSeq) + sizeof(Status);
 
 // Management frame subtypes (FC bits 7-4, Type=0b00)
 enum MgmtSubtype : uint8_t {
@@ -161,16 +185,16 @@ inline const std::map<IE, std::string_view> ie_names = {
 	{IE_VENDOR_SPECIFIC,      "VendorSpecific"},
 };
 
-inline std::string_view to_string(uint8_t type, uint8_t subtype) {
+inline std::string_view to_string(const uint8_t type, const uint8_t subtype) {
 	if(subtype >= 16) return "<invalid subtype>";
 	if(type == TYPE_MGMT) return mgmt_subtype_names[subtype];
 	if(type == TYPE_CTRL) return ctrl_subtype_names[subtype];
 	if(type == TYPE_DATA) return data_subtype_names[subtype];
 	return "<invalid type>";
 }
-inline std::string_view to_string(MgmtSubtype s) { return mgmt_subtype_names[s]; }
-inline std::string_view to_string(CtrlSubtype s) { return ctrl_subtype_names[s]; }
-inline std::string_view to_string(DataSubtype s) { return data_subtype_names[s]; }
+inline std::string_view to_string(const MgmtSubtype s) { return mgmt_subtype_names[s]; }
+inline std::string_view to_string(const CtrlSubtype s) { return ctrl_subtype_names[s]; }
+inline std::string_view to_string(const DataSubtype s) { return data_subtype_names[s]; }
 
 inline std::string_view ie_to_string(const IE tag) {
 	const auto it = ie_names.find(tag);

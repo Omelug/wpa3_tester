@@ -5,6 +5,7 @@
 #include "attacks/mc_mitm/wifi_util.h"
 #include "config/Actor_Config/Actor_Config_internal.h"
 #include "mitm_helpers.h"
+#include "net_parser/dot11_defs.h"
 #include "pcap_helper.h"
 
 using namespace std;
@@ -79,8 +80,8 @@ TEST_SUITE("handle_auth_from_client_real") {
 		m->beacon = make_unique<Dot11Beacon>();
 
 		Dot11Authentication auth(HWAddress<6>(AP_MAC), HWAddress<6>("de:ad:be:ef:00:01"));
-		auth.auth_algorithm(0);
-		auth.auth_seq_number(1);
+		auth.auth_algorithm(dot11::AUTH_ALG_OPEN);
+		auth.auth_seq_number(dot11::AUTH_SEQ_REQ);
 
 		CHECK_EQ(m->handle_auth_from_client_real(HWAddress<6>(AP_MAC), auth), CONTINUE);
 		CHECK_EQ(m->real_send_count, 0);
@@ -89,8 +90,8 @@ TEST_SUITE("handle_auth_from_client_real") {
 	TEST_CASE("addr1 != AP_MAC -> CONTINUE, no send") {
 		auto m = make_fixture();
 		auto auth = Dot11Authentication(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC));
-		auth.auth_algorithm(0);
-		auth.auth_seq_number(1);
+		auth.auth_algorithm(dot11::AUTH_ALG_OPEN);
+		auth.auth_seq_number(dot11::AUTH_SEQ_REQ);
 
 		CHECK_EQ(m->handle_auth_from_client_real(HWAddress<6>("00:00:00:00:00:01"), auth), CONTINUE);
 		CHECK_EQ(m->real_send_count, 0);
@@ -104,8 +105,8 @@ TEST_SUITE("handle_auth_from_client_real") {
 
 		// auth->addr2() must equal client_state.get_mac() == CLIENT_MAC
 		auto auth = Dot11Authentication(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC));
-		auth.auth_algorithm(0);
-		auth.auth_seq_number(1);
+		auth.auth_algorithm(dot11::AUTH_ALG_OPEN);
+		auth.auth_seq_number(dot11::AUTH_SEQ_REQ);
 
 		CHECK_EQ(m->handle_auth_from_client_real(HWAddress<6>(AP_MAC), auth), STOP);
 		CHECK_GT(m->real_send_count, 0); // at least one CSA beacon injected
@@ -164,8 +165,8 @@ TEST_SUITE("handle_from_ap_real") {
 		auto m = make_fixture();
 
 		auto auth = Dot11Authentication(HWAddress<6>(CLIENT_MAC), HWAddress<6>(AP_MAC));
-		auth.auth_algorithm(0);
-		auth.auth_seq_number(2);
+		auth.auth_algorithm(dot11::AUTH_ALG_OPEN);
+		auth.auth_seq_number(dot11::AUTH_SEQ_RESP);
 		auth.addr3(HWAddress<6>(AP_MAC));
 
 		unique_ptr<PDU> pdu = make_unique<Dot11Authentication>(auth);

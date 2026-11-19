@@ -150,7 +150,7 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel, c
 	const array<uint8_t, 4> ecsa{
 		1, get_operating_class(new_channel), new_channel.ch_num, static_cast<uint8_t>(switch_count)
 	};
-	b.add_option(Dot11::option(60, ecsa.size(), ecsa.data()));
+	b.add_option(Dot11::option(dot11::IE_ECSA, ecsa.size(), ecsa.data()));
 
 	b = patch_ies(b, ap_channel);
 	b.addr1(Dot11::BROADCAST);

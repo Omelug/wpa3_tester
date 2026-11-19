@@ -16,6 +16,7 @@
 #include <unistd.h>
 
 #include "attacks/components/setup_connections.h"
+#include "net_parser/dot11_defs.h"
 #include "attacks/components/sniffer_helper.h"
 #include "config/RunStatus.h"
 #include "default.h"
@@ -104,6 +105,8 @@ RadioTap get_BA_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 	return rt / ba / RawPDU(padding);
 }
 
+static constexpr uint16_t BAR_SN_ADVANCE = 16;
+
 struct BARSContext {
 	atomic<uint16_t> current_sn{ 0 };
 	atomic<uint8_t> current_fn{ 0 };
@@ -124,7 +127,7 @@ static void bars_sniffer_thread(
 			const auto *qos = dynamic_cast<const Dot11QoSData *>(pdu.inner_pdu());
 			if(!qos) return nullopt;
 
-			const uint16_t sn = (qos->seq_num() + 16) % 4096;
+			const uint16_t sn = (qos->seq_num() + BAR_SN_ADVANCE) % dot11::SEQ_NUM_MOD;
 			const uint8_t fn = qos->frag_num();
 			ctx.current_sn.store(sn);
 			ctx.current_fn.store(fn);

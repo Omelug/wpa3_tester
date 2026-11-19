@@ -33,18 +33,7 @@ json TwoIfaceInject::run(const ActorPtr &t, const ActorPtr &r) {
 			{
 				{ "transceiver", { { "source", "internal" }, { "selection", make_selection(t) }, { "netns", "tx" } } },
 				{ "receiver", { { "source", "internal" }, { "selection", sel_rx } } },
-			} } /*,
-		{ "observers",
-			{
-				{
-					"rx_tshark",{
-					   "actor", "receiver"
-					   "program", "tshark"
-					   "program_config", {"filter",{"special_filter:actors"}}
-					}
-				}
-			}
-		}*/
+			} }
 	};
 
 	const path config_dir = cache_folder() / "config";

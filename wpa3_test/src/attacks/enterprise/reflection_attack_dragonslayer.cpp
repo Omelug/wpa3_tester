@@ -56,11 +56,8 @@ void run_attack(RunStatus &rs) {
 
 	ofstream attack_result(rs.run_folder() / "result.txt");
 	attack_result << to_string(
-		rs.process_manager.wait_for("attacker", "server is vulnerable to reflection", chrono::seconds(40), false));
+		rs.process_manager.wait_for("attacker", "server is vulnerable to reflection", chrono::seconds(40), false)); //FIXME hardcoded timeout
 	attack_result.close();
 	set_public_perms(rs.run_folder() / "result.txt");
 }
-
-/*void stats(const RunStatus& rs){
-}*/
 }

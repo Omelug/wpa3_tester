@@ -118,7 +118,7 @@ MonitorSocket::RecvResult MonitorSocket::parse_frame(const frame_raw_t &frame) {
 		if(rt.present() & RadioTap::FLAGS && (rt.flags() & RadioTap::FCS)) strip = 4;
 		auto pdu = make_unique<RadioTap>(frame.data(), frame.size() - strip);
 		return { std::move(pdu), vector(frame.begin(), frame.end() - strip) };
-	} catch(const std::exception &e) {
+	} catch(const exception &e) {
 		// Data frames: libtins throws when building SNAP/EAPOL inner PDU.
 		// Parse just the 802.11 header (no inner PDU) so addr extraction and relay still work.
 		const uint16_t rt_len = radiotap::get_rt_len(frame);
@@ -231,7 +231,7 @@ void MonitorSocket::set_filter(const string &bpf) const {
 SnifferConfiguration MonitorSocket::make_sniff_cfg() {
 	SnifferConfiguration cfg;
 	cfg.set_immediate_mode(true); // deliver each packet immediately, timeout is irrelevant
-	cfg.set_timeout(10); // immediate_mode don't work on really old kernels (< 3.2), for sure
+	cfg.set_timeout(10); // immediate_mode don't work on really old kernels (< 3.2), for sure //TODO hardocded
 	return cfg;
 }
 

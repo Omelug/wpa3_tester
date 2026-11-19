@@ -23,9 +23,7 @@ using namespace Tins;
 
 RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, const Channel &ap_channel){
 	// 802.11 Data/QoS frame
-	Dot11Data dot11;
-	dot11.addr1(sta_mac);
-	dot11.addr2(ap_mac);
+	Dot11Data dot11(sta_mac, ap_mac);
 	dot11.addr3(ap_mac);
 	dot11.addr4(sta_mac);
 

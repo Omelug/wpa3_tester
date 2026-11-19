@@ -19,7 +19,7 @@ bool radiotap_bad_fcs(const frame_raw_t &p, const uint16_t rt_len) {
 
 std::string eap_description_raw(const frame_raw_t &raw) {
 	using namespace eap;
-	static constexpr uint8_t snap_eapol[] = { eap::ETHERTYPE_EAPOL_HI, eap::ETHERTYPE_EAPOL_LO };
+	static constexpr uint8_t snap_eapol[] = { ETHERTYPE_EAPOL_HI, ETHERTYPE_EAPOL_LO };
 	const auto snap = std::ranges::search(raw, snap_eapol).begin();
 	if(snap == raw.end()) return {};
 	const size_t off = (snap - raw.begin()) + 2; // skip ethertype, EAPOL starts here

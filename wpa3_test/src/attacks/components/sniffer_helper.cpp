@@ -31,16 +31,13 @@ std::string eap_description_raw(const frame_raw_t &raw) {
 	}
 	if(off + 9 > raw.size()) return "EAP";
 	const auto code = static_cast<EapCode>(raw[off + 4]);
-	if(code == CODE_SUCCESS || code == CODE_FAILURE)
-		return "EAP-" + std::string(to_string(code));
 	if(code == CODE_REQUEST || code == CODE_RESPONSE) {
-		const std::string dir = code == CODE_REQUEST ? "Req" : "Resp";
 		const auto type = static_cast<EapType>(raw[off + 8]);
 		const auto name = to_string(type);
 		const std::string type_str = name.empty() ? "type=" + std::to_string(raw[off + 8]) : std::string(name);
-		return "EAP-" + dir + "/" + type_str;
+		return "EAP-" + std::string(to_string(code)) + "/" + type_str;
 	}
-	return "EAP code=" + std::to_string(raw[off + 4]);
+	return "EAP-" + std::string(to_string(code));
 }
 
 }

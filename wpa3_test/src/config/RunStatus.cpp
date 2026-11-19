@@ -54,6 +54,14 @@ void RunStatus::clean() {
 	observers.clear();
 }
 
+bool RunStatus::should_skip_folder(const path &p) const {
+	if(_run_config.get_rewrite() == RewriteMode::none && (exists(p / ERROR_FILE) || exists(p / DONE_FILE)))
+		return true;
+	if(_run_config.get_rewrite() == RewriteMode::errors && !(exists(p / ERROR_FILE) || !exists(p / DONE_FILE)))
+		return true;
+	return false;
+}
+
 bool RunStatus::prepare_run_folder() {
 	if(!exists(_run_folder)) return false;
 	if(access(_run_folder.string().c_str(), W_OK) != 0) {
@@ -65,14 +73,11 @@ bool RunStatus::prepare_run_folder() {
 		if(ec) throw run_err("Run folder not writable and cannot remove: {}:{}", _run_folder, ec.message());
 		return false;
 	}
-	if(_run_config.get_rewrite() == RewriteMode::none &&
-		(exists(_run_folder / ERROR_FILE) || exists(_run_folder / DONE_FILE))) {
-		log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
-		return true;
-	}
-	if(_run_config.get_rewrite() == RewriteMode::errors &&
-		(!(exists(_run_folder / ERROR_FILE) || !exists(_run_folder / DONE_FILE)))) {
-		log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
+	if(should_skip_folder(_run_folder)) {
+		const bool is_errors_mode = _run_config.get_rewrite() == RewriteMode::errors;
+		log(is_errors_mode ? LogLevel::WARNING : LogLevel::DEBUG,
+			is_errors_mode ? "Skipping already successfully run test : {}" : "Skipping: {}",
+			absolute(_run_folder));
 		return true;
 	}
 	if(_run_config.get_delete_old()) {
@@ -82,7 +87,7 @@ bool RunStatus::prepare_run_folder() {
 	return false;
 }
 
-//TODO change to hash type?
+
 vector<string> RunStatus::do_not_rewrite_actor_filler(const path &run_folder) const {
 	vector<string> result;
 	const path parent = run_folder.parent_path();
@@ -94,15 +99,7 @@ vector<string> RunStatus::do_not_rewrite_actor_filler(const path &run_folder) co
 		const path &p = entry.path();
 		if(!exists(p / TEST_CONFIG_NAME)) continue;
 		if(access(p.string().c_str(), W_OK) != 0) continue;
-		bool skip = false;
-		//TODO simplify with  RunStatus::prepare_run_folder()
-		if(_run_config.get_rewrite() == RewriteMode::none && (exists(p / ERROR_FILE) || exists(p / DONE_FILE))) {
-			skip = true;
-		} else if(_run_config.get_rewrite() == RewriteMode::errors &&
-			!(exists(p / ERROR_FILE) || !exists(p / DONE_FILE))) {
-			skip = true;
-		}
-		if(!skip) continue;
+		if(!should_skip_folder(p)) continue;
 		const string name = p.filename().string();
 		const auto sep = name.rfind('_');
 		if(sep != string::npos) result.push_back(name.substr(sep + 1));

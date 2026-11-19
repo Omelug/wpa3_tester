@@ -180,6 +180,7 @@ public:
 		const std::vector<std::string> &disabled_tests_hash_filler = {});
 
 	bool prepare_run_folder();
+	[[nodiscard]] bool should_skip_folder(const std::filesystem::path &p) const;
 	[[nodiscard]] std::vector<std::string> do_not_rewrite_actor_filler(const std::filesystem::path &run_folder) const;
 	void do_run();
 	void write_error_log(const std::exception &e);

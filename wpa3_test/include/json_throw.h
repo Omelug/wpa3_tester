@@ -10,7 +10,7 @@
 #define JSON_THROW_USER(ex)                                                                                            \
 	throw std::runtime_error(std::string((ex).what()) + "\n" + std::to_string(std::stacktrace::current()))
 
-inline std::string tins_error_str(const std::exception &ex, std::stacktrace trace) {
+inline std::string tins_error_str(const std::exception &ex, const std::stacktrace &trace) {
 	auto now = std::chrono::zoned_time{ std::chrono::current_zone(), std::chrono::system_clock::now() };
 	int status{};
 	char *raw = abi::__cxa_demangle(typeid(ex).name(), nullptr, nullptr, &status);

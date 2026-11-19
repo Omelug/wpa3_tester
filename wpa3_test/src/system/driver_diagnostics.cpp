@@ -275,7 +275,7 @@ json collect_regulatory(const string &phy, const optional<string> &netns) {
 
 //  --------- USB device info
 
-static string trim_ws(string s) {
+static string trim_ws(const string &s) {
 	const auto last = s.find_last_not_of(" \t\n\r\f\v");
 	return last == string::npos ? "" : s.substr(0, last + 1);
 }

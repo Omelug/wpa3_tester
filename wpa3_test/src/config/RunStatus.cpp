@@ -74,10 +74,11 @@ bool RunStatus::prepare_run_folder() {
 		return false;
 	}
 	if(should_skip_folder(_run_folder)) {
-		const bool is_errors_mode = _run_config.get_rewrite() == RewriteMode::errors;
-		log(is_errors_mode ? LogLevel::WARNING : LogLevel::DEBUG,
-			is_errors_mode ? "Skipping already successfully run test : {}" : "Skipping: {}",
-			absolute(_run_folder));
+		if(_run_config.get_rewrite() == RewriteMode::errors) {
+			log(LogLevel::WARNING, "Skipping already successfully run test : {}", absolute(_run_folder));
+		}else {
+			log(LogLevel::DEBUG, "Skipping: {}", absolute(_run_folder));
+		}
 		return true;
 	}
 	if(_run_config.get_delete_old()) {
@@ -368,7 +369,8 @@ string RunStatus::findConfigByTestName(const string &name) {
 }
 
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
-	initializer_list<tuple<actor_name_t, pattern_t, label_t, color_t>> event_d, optional<TimeWindow> window) const {
+	initializer_list<tuple<actor_name_t, pattern_t, label_t, color_t>> event_d,
+	const optional<TimeWindow> &window) const {
 	for(auto &[actor, pattern, label, color]: event_d) {
 		elements.push_back(make_unique<EventLines>(get_time_logs(*this, actor, pattern, window), label, color));
 	}

@@ -13,7 +13,7 @@
 #include <vector>
 
 using namespace std;
-//TODOsimple tests for parsing
+//TODO simple tests for parsing
 
 // ---- Tokenizer ----
 
@@ -29,91 +29,43 @@ static vector<Token> tokenize(const string &s) {
 	vector<Token> toks;
 	size_t i = 0;
 	while(i < s.size()) {
-		if(isspace(static_cast<unsigned char>(s[i]))) {
-			++i;
-			continue;
-		}
+		if(isspace(static_cast<unsigned char>(s[i]))) { ++i; continue; }
 		const char c = s[i];
+		auto peek = [&](size_t off, char ch) { return i + off < s.size() && s[i + off] == ch; };
 
-		if(c == '(') {
-			toks.push_back({ TokKind::LParen, "(" });
-			++i;
-			continue;
-		}
-		if(c == ')') {
-			toks.push_back({ TokKind::RParen, ")" });
-			++i;
-			continue;
-		}
-		if(c == '!') {
-			toks.push_back({ TokKind::Not, "!" });
-			++i;
-			continue;
-		}
-		if(c == '&' && i + 1 < s.size() && s[i + 1] == '&') {
-			toks.push_back({ TokKind::And, "&&" });
-			i += 2;
-			continue;
-		}
-		if(c == '|' && i + 1 < s.size() && s[i + 1] == '|') {
-			toks.push_back({ TokKind::Or, "||" });
-			i += 2;
-			continue;
-		}
+		if(c == '(') { toks.push_back({ TokKind::LParen, "(" }); ++i; continue; }
+		if(c == ')') { toks.push_back({ TokKind::RParen, ")" }); ++i; continue; }
+		if(c == '!') { toks.push_back({ TokKind::Not,    "!" }); ++i; continue; }
+		if(c == '&' && peek(1,'&')) { toks.push_back({ TokKind::And, "&&" }); i += 2; continue; }
+		if(c == '|' && peek(1,'|')) { toks.push_back({ TokKind::Or,  "||" }); i += 2; continue; }
 		if(c == '<') {
-			if(i + 2 < s.size() && s[i + 1] == '-' && s[i + 2] == '>') {
-				toks.push_back({ TokKind::Arrow, "<->" });
-				i += 3;
-				continue;
-			}
-			if(i + 1 < s.size() && s[i + 1] == '=') {
-				toks.push_back({ TokKind::Le, "<=" });
-				i += 2;
-				continue;
-			}
-			toks.push_back({ TokKind::Lt, "<" });
-			++i;
-			continue;
+			if(peek(1,'-') && peek(2,'>')) { toks.push_back({ TokKind::Arrow, "<->" }); i += 3; continue; }
+			if(peek(1,'='))                { toks.push_back({ TokKind::Le,    "<=" });  i += 2; continue; }
+			toks.push_back({ TokKind::Lt, "<" }); ++i; continue;
 		}
 		if(c == '>') {
-			if(i + 1 < s.size() && s[i + 1] == '=') {
-				toks.push_back({ TokKind::Ge, ">=" });
-				i += 2;
-				continue;
-			}
-			toks.push_back({ TokKind::Gt, ">" });
-			++i;
-			continue;
+			if(peek(1,'=')) { toks.push_back({ TokKind::Ge, ">=" }); i += 2; continue; }
+			toks.push_back({ TokKind::Gt, ">" }); ++i; continue;
 		}
 
 		if(i + 17 <= s.size()) {
 			bool is_mac = true;
-			for(int k = 0; k < 6 && is_mac; ++k) {
+			for(int k = 0; k < 6 && is_mac; ++k)
 				is_mac = isxdigit(static_cast<unsigned char>(s[i + k * 3])) &&
-					isxdigit(static_cast<unsigned char>(s[i + k * 3 + 1])) && (k == 5 || s[i + k * 3 + 2] == ':');
-			}
-			if(is_mac) {
-				toks.push_back({ TokKind::Mac, s.substr(i, 17) });
-				i += 17;
-				continue;
-			}
+				         isxdigit(static_cast<unsigned char>(s[i + k * 3 + 1])) &&
+				         (k == 5 || s[i+k*3+2] == ':');
+			if(is_mac) { toks.push_back({ TokKind::Mac, s.substr(i, 17) }); i += 17; continue; }
 		}
 
 		if(c == '-' || isdigit(static_cast<unsigned char>(c))) {
 			char *end;
-			const double val = strtod(s.c_str() + i, &end);
+			double val = strtod(s.c_str() + i, &end);
 			if(end != s.c_str() + i) {
-				auto new_i = static_cast<size_t>(end - s.c_str());
-				double final_val = val;
-				bool is_m = false;
-				if(new_i < s.size() && s[new_i] == 'm') {
-					final_val = meters_to_rssi(val);
-					is_m = true;
-					++new_i;
-				}
-				toks.push_back({ TokKind::Number, string(s.c_str() + i, static_cast<const char *>(end)), final_val, is_m });
-				i = new_i;
-				continue;
+				auto ni = static_cast<size_t>(end - s.c_str());
+				bool is_m = ni < s.size() && s[ni] == 'm';
+				if(is_m) { val = meters_to_rssi(val); ++ni; }
+				toks.push_back({ TokKind::Number, string(s.c_str() + i, end), val, is_m });
+				i = ni; continue;
 			}
 		}
 

@@ -40,6 +40,6 @@ std::map<LogTimePoint, AmpduAction> get_bl0ck_logs(const RunStatus &rs, const st
 // check whether a QoS/AMPDU Block-ACK session was established (ADDBA)
 // actor whose trace file exists
 // actors that are WB (remote) or have no trace file are silently skipped
-// mt76x2u probably don't  support control_monitor but dont show error
+// mt76x2u probably don't  support control_monitor but dont show error //TODO try again, was bug in bpf filter filtered out control frames
 described_bool addba_seen(const RunStatus &rs);
 }

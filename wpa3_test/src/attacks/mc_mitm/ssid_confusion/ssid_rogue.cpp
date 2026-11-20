@@ -18,6 +18,7 @@ void SsidConfusion::send_to_real(const frame_raw_t &raw) const {
 	sock_real->send(full_radiotap, netconfig.real_channel);
 }
 
+// response to all clients
 FrameProcess SsidConfusion::handle_probe(const HWAddress<6> addr2, const PDU *pdu, const Dot11 &dot11) {
 	if(dot11.find_pdu<Dot11ProbeRequest>()) {
 		const bool directed = dot11.addr1() == HWAddress<6>(ap.get(SK::mac));
@@ -109,7 +110,7 @@ void SsidConfusion::handle_rx_rogue_chan(const std::unique_ptr<PDU> &pdu, const 
 	if(const auto *rt = pdu->find_pdu<RadioTap>()) {
 		if(rt->present() & RadioTap::CHANNEL &&
 			rt->channel_freq() != hw_capabilities::channel_to_freq(netconfig.rogue_channel)) {
-			return;
+				return;
 			}
 	}
 	const auto [addr1, addr2] = get_addrs(*pdu, raw);

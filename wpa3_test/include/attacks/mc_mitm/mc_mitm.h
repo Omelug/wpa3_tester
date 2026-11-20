@@ -8,13 +8,10 @@
 #include "config/Actor_Config/ActorPtr.h"
 #include "logger/log.h"
 #include "mc_mitm_hooks.h"
-
 namespace wpa3_tester {
-
 // return type for handle_* functions:
 // STOP = frame consumed, CONTINUE = pass to next handler
 enum FrameProcess { CONTINUE = 0, STOP = 1 };
-
 class McMitm {
 	friend class McMitmHooks;
 protected:
@@ -24,62 +21,49 @@ public:
 	bool only_to_mitm = false;
 	bool stop_mitm = false;
 	bool strip_pmkid_in_assoc = false;
-
 	// AP <-> rogue_sta <-> rogue AP <-> client
 	McMitm(ActorPtr rogue_sta, ActorPtr rogue_ap, const ActorPtr &sta, ActorPtr ap,
 		const std::optional<std::filesystem::path> &run_folder = std::nullopt, bool only_to_mitm = false);
 	virtual ~McMitm();
-
 	// hooks for changing behaviour for different attacks
 	std::unique_ptr<McMitmHooks> hooks; // nullptr -> defualt behavior
 	void set_hooks(std::unique_ptr<McMitmHooks> h) { hooks = std::move(h); }
-
 	//void send_csa_beacon(const std::optional<Tins::HWAddress<6>> &target = std::nullopt, int beacon_interval_ms = 100) const;
-
 	virtual void setup_real_AP_RSN_frames(int beacon_timeout_sec);
 	virtual void run(RunStatus &rs, int timeout_sec);
 	void stop();
-
 	// ---- state ----
 	NetworkConfig netconfig;
-
 	std::unique_ptr<Tins::Dot11Beacon> beacon;
 	std::unique_ptr<Tins::Dot11ProbeResponse> probe_resp;
 	using DisasEntry = std::pair<std::chrono::steady_clock::time_point, Tins::HWAddress<6>>;
 	std::vector<DisasEntry> disas_queue;
-
 	// move to private and add exists_client ?
 	ClientState client_state;
-
 	std::unique_ptr<MonitorSocket> sock_real;
 	std::unique_ptr<MonitorSocket> sock_rogue;
-
 	using time_point = std::chrono::steady_clock::time_point;
-
 	virtual void send_to_real(Tins::PDU &pdu) const;
 	virtual void send_to_real(const frame_raw_t &raw) const;
 	virtual void send_to_rogue(Tins::PDU &pdu) const;
 	virtual void send_to_rogue(const frame_raw_t &raw) const;
-
 	//TODO protected + fixture
 	// for handle function: STOP = frame consumed, CONTINUE = pass to next handler
 	// PProcess handle_beacon_rogue(Tins::HWAddress<6> addr2, const Tins::Dot11 & dot11);
 	virtual FrameProcess handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11);
 	virtual FrameProcess handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
-	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11);
-	FrameProcess handle_action_rogue(Tins::HWAddress<6> addr2, Tins::PDU &pdu, const Tins::Dot11 &dot11) const;
+	void send_synth_assoc_resp(const Tins::HWAddress<6> &sta_mac) const;
+	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11, const frame_raw_t &raw);
 	FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu, const frame_raw_t &raw);
-
 	FrameProcess handle_auth_from_client_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11);
 	FrameProcess handle_eapol_real(Tins::HWAddress<6> addr1, Tins::HWAddress<6> addr2, Tins::PDU &pdu, const frame_raw_t &raw) const;
 	void handle_from_ap_real(const Tins::Dot11 &dot11, const Tins::HWAddress<6> &addr1, const frame_raw_t &raw);
 	void handle_disconnect_real(const Tins::Dot11 &dot11);
 	void handle_disconnect_rogue(const Tins::Dot11 &dot11);
 	void power_mgmt_response_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
-	void power_mgmt_response_rogue(Tins::HWAddress<6> addr2, Tins::Dot11 &dot11) const;
+	void power_mgmt_response_rogue(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11) const;
 	virtual void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const frame_raw_t &raw);
 	virtual void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const frame_raw_t &raw);
-
 	// print helpers
 	static std::string frame_to_str(const Tins::Dot11 &frame);
 private:

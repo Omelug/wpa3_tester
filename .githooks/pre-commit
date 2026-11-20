@@ -13,7 +13,7 @@ bad=$(echo "$files" | xargs -d'\n' grep -InP --color=always \
 
 echo "$bad"
 
-if [ "${FIX:-0}" != "1" ]; then
+if [ "${FIX:-1}" != "1" ]; then
   echo ""
   echo "  fix trailing whitespace / blank control-chars: FIX=1 git commit ..."
   echo "  non-ASCII must be fixed manually"

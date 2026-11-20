@@ -26,9 +26,9 @@ public:
 	void run(RunStatus &rs, int timeout_sec) override;
 	void send_to_rogue(Tins::PDU &pdu) const override;
 	void send_to_rogue(const frame_raw_t &raw) const override;
-	FrameProcess handle_eapol_real(Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const frame_raw_t &raw) const;
-	FrameProcess handle_sa_query_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11, const frame_raw_t &raw) const;
-	FrameProcess handle_assoc_real(Tins::HWAddress<6> addr1, const Tins::PDU &pdu, const frame_raw_t &raw) const;
+	[[nodiscard]] FrameProcess handle_eapol_real(Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const frame_raw_t &raw) const;
+	[[nodiscard]] FrameProcess handle_mgmt_action_real(Tins::HWAddress<6> addr1, const Tins::Dot11 &dot11, const frame_raw_t &raw) const;
+	[[nodiscard]] FrameProcess handle_assoc_real(Tins::HWAddress<6> addr1, const Tins::PDU &pdu, const frame_raw_t &raw) const;
 	[[nodiscard]] FrameProcess handle_probe_real(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11);
 	void handle_rx_real_chan(const std::unique_ptr<Tins::PDU> &pdu, const frame_raw_t &raw) override;
 
@@ -36,8 +36,10 @@ public:
 	void send_to_real(const frame_raw_t &raw) const override;
 	FrameProcess handle_probe(Tins::HWAddress<6> addr2, const Tins::PDU *pdu, const Tins::Dot11 &dot11) override;
 	FrameProcess handle_open_auth(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11) override;
-	FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const frame_raw_t &raw) const;
-	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &, Tins::Dot11 &dot11, const frame_raw_t &raw);
+	[[nodiscard]] FrameProcess handle_eapol_rogue(Tins::HWAddress<6> addr2, const Tins::PDU &pdu, const frame_raw_t &raw) const;
+	void send_synth_assoc_resp(const Tins::HWAddress<6> &sta_mac) const;
+	FrameProcess handle_assoc_request(const Tins::HWAddress<6> &addr2, Tins::Dot11 &dot11, const frame_raw_t &raw);
+	[[nodiscard]] FrameProcess handle_mgmt_action_rogue(Tins::HWAddress<6> addr2, const Tins::Dot11 &dot11, const frame_raw_t &raw) const;
 	void handle_rx_rogue_chan(const std::unique_ptr<Tins::PDU> &pdu, const frame_raw_t &raw) override;
 
 };

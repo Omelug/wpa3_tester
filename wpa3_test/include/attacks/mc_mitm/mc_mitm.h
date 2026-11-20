@@ -15,7 +15,7 @@ enum FrameProcess { CONTINUE = 0, STOP = 1 };
 class McMitm {
 	friend class McMitmHooks;
 protected:
-	std::vector<Tins::RadioTap> csa_frames;
+	std::vector<frame_raw_t> csa_frames;
 public:
 	ActorPtr rogue_sta, rogue_ap, sta, ap;
 	bool only_to_mitm = false;

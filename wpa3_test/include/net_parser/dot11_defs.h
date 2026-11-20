@@ -201,6 +201,16 @@ constexpr uint16_t CAP_APSD = uint16_t{1} << 11; // Automatic Power Save Deliver
 // QoS Info field, non-AP STA format - IEEE 802.11-2024, Section 9.4.1.17, Figure 9-156
 // bits 0-3 = per-AC U-APSD flags (AC_VO, AC_VI, AC_BK, AC_BE)
 constexpr uint8_t QOS_INFO_UAPSD_AC_MASK = 0x0F;
+// Vendor Specific IE layout: OUI[3] + type[1] + ...
+constexpr size_t VENDOR_SPECIFIC_OUI_SIZE     = 3; // OUI is 3 bytes
+constexpr size_t VENDOR_SPECIFIC_TYPE_OFF     = 3; // type byte follows the OUI
+constexpr size_t VENDOR_SPECIFIC_OUI_TYPE_MIN = 4; // minimum: OUI(3) + type(1)
+
+// Microsoft OUI (00:50:F2) — hosts WPA IE (type 1) and WMM/WME (type 2)
+constexpr std::array<uint8_t, 3> MS_OUI         = {0x00, 0x50, 0xF2};
+constexpr uint8_t MS_OUI_TYPE_WPA               = 1; // WPA Information Element
+constexpr uint8_t MS_OUI_TYPE_WMM               = 2; // WMM/WME (same OUI, type 2)
+
 // WME/WMM vendor-specific IE constants (Wi-Fi Alliance, OUI 00:50:f2 type 02)
 // layout: OUI[3] + type[1] + subtype[1] + version[1] + QoS Info[1] (+ AC params for PARAM)
 constexpr std::array<uint8_t, 4> WME_OUI_TYPE    = {0x00, 0x50, 0xf2, 0x02};
@@ -208,6 +218,11 @@ constexpr uint8_t WME_SUBTYPE_INFO  = 0x00; // WME Information Element (STA->AP,
 constexpr uint8_t WME_SUBTYPE_PARAM = 0x01; // WME Parameter Element (AP->STA, in Beacon/AssocResp)
 constexpr size_t  WME_QOS_INFO_OFF  = 6;    // QoS Info byte offset within IE data
 constexpr size_t  WME_MIN_LEN       = 7;    // minimum IE data length (must include QoS Info)
+
+// VHT Operation IE - IEEE 802.11-2020, Section 9.4.2.158
+constexpr size_t  VHT_OP_MIN_SIZE       = 3; // Channel Width(1) + Center Seg 0(1) + Center Seg 1(1)
+constexpr uint8_t VHT_OP_WIDTH_80MHZ    = 1; // Channel Width = 1 → 80/160/80+80 MHz
+constexpr size_t  VHT_OP_CENTER_CH0_OFF = 1; // Center Frequency Segment 0 byte within data
 // IE header: tag(1) + length(1)
 constexpr size_t IE_HDR_SIZE  = 2;
 constexpr size_t SSID_MAX_LEN = 32; // IEEE 802.11-2024, Section 9.4.2.2

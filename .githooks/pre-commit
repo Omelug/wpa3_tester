@@ -26,6 +26,7 @@ echo "$files" | xargs -d'\n' perl -i -pe '
   s/^[ \t\r\v\f]+$//; # blank lines with control chars
   s/\x{2014}/-/g;     # em dash -> -
   s/\x{2192}/->/g;    # → ->
+  s/\x{00D7}/x/g;     # × -> x
 '
 echo "$files" | xargs -d'\n' git add
 

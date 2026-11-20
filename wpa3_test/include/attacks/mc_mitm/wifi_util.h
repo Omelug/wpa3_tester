@@ -1,8 +1,11 @@
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <tins/tins.h>
+#include <vector>
 #include "config/RunStatus.h"
+#include "net_parser/dot11_defs.h"
 #include "net_parser/eap_defs.h"
 #include "system/wifi_channel.h"
 
@@ -23,7 +26,7 @@ struct Dot11Addrs {
 
 Dot11Addrs get_addrs(const Tins::PDU &pdu, const frame_raw_t &raw);
 Tins::Dot11ProbeResponse beacon_to_probe_resp(const Tins::Dot11Beacon &beacon, const Channel &rogue_channel);
-Tins::Dot11AssocResponse *assoc_resp_channel_patch(const Tins::Dot11AssocResponse &assoc, const Channel &rogue_channel);
+void patch_ht_operation_in_frame(frame_raw_t &raw, uint8_t channel);
 
 bool is_eapol(const Tins::PDU &pdu);
 EapolMsg get_eapol_msg_num(const frame_raw_t &raw, bool print = false);
@@ -53,9 +56,33 @@ bool setup_ack_iface(RunStatus &rs, const ActorPtr &actor, const Tins::HWAddress
 	const Channel &channel, bool prefer_active,
 	const std::string &ap_iface, const Tins::Dot11Beacon &beacon);
 
+// clears APSD/U-APSD bits for disablng sleep mode
+// (Beacon, ProbeResp)
+template<typename MgmtFrame>
+void patch_apsd(MgmtFrame &frame) {
+	frame.capabilities().apsd(false);
+	for (auto &opt : frame.options()) {
+		const size_t len = opt.data_size();
+		// QoS Capability IE (0x2E): QoS Info byte, bits 0-3 = per-AC U-APSD flags
+		if (opt.option() == Tins::Dot11::QOS_CAPABILITY && len >= 1) {
+			const_cast<uint8_t *>(opt.data_ptr())[0] &= static_cast<uint8_t>(~dot11::QOS_INFO_UAPSD_AC_MASK);
+		}
+		// WME Parameter IE (AP->STA, subtype 0x01): QoS Info at data[6], bit 7 = U-APSD
+		else if (opt.option() == Tins::Dot11::VENDOR_SPECIFIC && len >= dot11::WME_MIN_LEN) {
+			const uint8_t *d = opt.data_ptr();
+			if (std::equal(dot11::WME_OUI_TYPE.begin(), dot11::WME_OUI_TYPE.end(), d) &&
+				d[4] == dot11::WME_SUBTYPE_PARAM) {
+				const_cast<uint8_t *>(d)[dot11::WME_QOS_INFO_OFF] &=
+					static_cast<uint8_t>(~(dot11::QOS_INFO_UAPSD_AC_MASK | 0x80u));
+			}
+		}
+	}
+}
+
 void rewrite_ssid_in_frame(frame_raw_t &raw, const std::string &new_ssid);
 void rewrite_bssid_in_frame(frame_raw_t &raw, const Tins::HWAddress<6> &bssid);
 void strip_pmkid_from_rsn_ie(frame_raw_t &raw);
-Tins::Dot11AssocRequest make_real_ssid_assoc_req(const Tins::Dot11AssocRequest &assoc, const std::string &real_ssid);
+// Strip U-APSD from AssocReq (STA->AP): clears APSD cap bit, QoS Capability IE, WME Info IE.
+void strip_apsd_from_assoc_req(frame_raw_t &raw);
 
 }

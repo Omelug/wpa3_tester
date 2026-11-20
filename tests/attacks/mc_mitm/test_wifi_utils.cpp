@@ -1,8 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <algorithm>
 #include <doctest.h>
 #include <vector>
 #include "attacks/mc_mitm/mc_mitm.h"
 #include "attacks/mc_mitm/wifi_util.h"
+#include "net_parser/dot11_defs.h"
 #include "pcap_helper.h"
 
 using namespace std;
@@ -119,5 +121,89 @@ TEST_SUITE("get_eapol_msg_num") {
 	TEST_CASE("bytes with no EAPOL ethertype returns Unknown") {
 		IP ip("1.2.3.4", "5.6.7.8");
 		CHECK_EQ(get_eapol_msg_num(ip.serialize()), EapolMsg::Unknown);
+	}
+}
+
+// -----------------
+// Helpers for raw 802.11 frame construction (no radiotap)
+
+static constexpr size_t ASSOC_REQ_FIXED  = dot11::ASSOC_REQ_FIXED;
+static constexpr size_t ASSOC_RESP_FIXED = dot11::ASSOC_RESP_FIXED;
+
+static frame_raw_t mgmt_frame_with_ies(uint8_t subtype, size_t fixed_size, const frame_raw_t &ies) {
+	frame_raw_t f(dot11::MGMT_HDR_SIZE + fixed_size + ies.size(), 0);
+	f[0] = static_cast<uint8_t>(subtype << dot11::FC_SUBTYPE_SHIFT);
+	std::copy(ies.begin(), ies.end(), f.begin() + static_cast<ptrdiff_t>(dot11::MGMT_HDR_SIZE + fixed_size));
+	return f;
+}
+
+// Minimal RSN IE: version(2)+group(4)+pw_count=0+akm_count=0+caps(2)+pmkid_count+pmkids filled 0xBB
+static frame_raw_t rsn_ie_with_pmkids(uint16_t pmkid_count) {
+	using namespace dot11;
+	const size_t data_len = RSN_VERSION_SIZE + RSN_GROUP_SIZE
+	    + RSN_COUNT_SIZE + RSN_COUNT_SIZE + RSN_CAPS_SIZE
+	    + RSN_COUNT_SIZE + pmkid_count * RSN_PMKID_SIZE;
+	frame_raw_t ie(IE_HDR_SIZE + data_len, 0);
+	ie[0] = IE_RSN;
+	ie[1] = static_cast<uint8_t>(data_len);
+	ie[2] = 0x01; // RSN version = 1
+	constexpr size_t pmkid_off = IE_HDR_SIZE + RSN_VERSION_SIZE + RSN_GROUP_SIZE
+	    + RSN_COUNT_SIZE + RSN_COUNT_SIZE + RSN_CAPS_SIZE;
+	ie[pmkid_off]     = static_cast<uint8_t>(pmkid_count & 0xFF);
+	ie[pmkid_off + 1] = static_cast<uint8_t>(pmkid_count >> 8);
+	std::fill(ie.begin() + (pmkid_off + RSN_COUNT_SIZE), ie.end(), uint8_t{0xBB});
+	return ie;
+}
+
+// -----------------
+
+TEST_SUITE("strip_pmkid_from_rsn_ie") {
+	TEST_CASE("strips PMKID when present") {
+		const auto ie = rsn_ie_with_pmkids(1);
+		auto frame = mgmt_frame_with_ies(dot11::MGMT_ASSOC_REQ, ASSOC_REQ_FIXED, ie);
+		const size_t original_size = frame.size();
+		strip_pmkid_from_rsn_ie(frame);
+		CHECK_EQ(frame.size(), original_size - dot11::RSN_PMKID_SIZE);
+		// PMKID count field zeroed
+		constexpr size_t pmkid_count_off = dot11::MGMT_HDR_SIZE + ASSOC_REQ_FIXED
+		    + dot11::IE_HDR_SIZE + dot11::RSN_VERSION_SIZE + dot11::RSN_GROUP_SIZE
+		    + dot11::RSN_COUNT_SIZE + dot11::RSN_COUNT_SIZE + dot11::RSN_CAPS_SIZE;
+		CHECK_EQ(frame[pmkid_count_off],     0);
+		CHECK_EQ(frame[pmkid_count_off + 1], 0);
+	}
+
+	TEST_CASE("no-op when PMKID count is zero") {
+		const auto ie = rsn_ie_with_pmkids(0);
+		auto frame = mgmt_frame_with_ies(dot11::MGMT_ASSOC_REQ, ASSOC_REQ_FIXED, ie);
+		const auto original = frame;
+		strip_pmkid_from_rsn_ie(frame);
+		CHECK_EQ(frame, original);
+	}
+
+	TEST_CASE("no-op when RSN IE absent") {
+		auto frame = mgmt_frame_with_ies(dot11::MGMT_ASSOC_REQ, ASSOC_REQ_FIXED, {});
+		const auto original = frame;
+		strip_pmkid_from_rsn_ie(frame);
+		CHECK_EQ(frame, original);
+	}
+}
+
+TEST_SUITE("patch_ht_operation_in_frame") {
+	TEST_CASE("patches primary channel byte") {
+		frame_raw_t ht_ie(dot11::IE_HDR_SIZE + 22, 0); // HT Operation IE is 22 bytes of data
+		ht_ie[0] = dot11::IE_HT_OPERATION;
+		ht_ie[1] = 22;
+		ht_ie[2] = 6; // current primary channel
+		auto frame = mgmt_frame_with_ies(dot11::MGMT_ASSOC_RESP, ASSOC_RESP_FIXED, ht_ie);
+		patch_ht_operation_in_frame(frame, 11);
+		constexpr size_t ch_off = dot11::MGMT_HDR_SIZE + ASSOC_RESP_FIXED + dot11::IE_HDR_SIZE;
+		CHECK_EQ(frame[ch_off], 11);
+	}
+
+	TEST_CASE("no-op when HT Operation IE absent") {
+		auto frame = mgmt_frame_with_ies(dot11::MGMT_ASSOC_RESP, ASSOC_RESP_FIXED, {});
+		const auto original = frame;
+		patch_ht_operation_in_frame(frame, 11);
+		CHECK_EQ(frame, original);
 	}
 }

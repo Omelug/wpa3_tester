@@ -154,7 +154,7 @@ inline constexpr std::array<std::string_view, 16> data_subtype_names = {
 	"QoS-Null",  "Reserved(13)",         "QoS-CF-Poll",          "QoS-CF-Ack+CF-Poll",
 };
 
-// Information Element tag IDs - IEEE 802.11-2020, Section 9.4.2, Table 9-92
+// Information Element tag IDs - IEEE 802.11-2024, Section 9.4.2, Table 9-92
 // NOTE: incomplete, only IEs referenced in this project
 enum IE : uint8_t {
 	IE_SSID                  = 0x00,
@@ -165,6 +165,7 @@ enum IE : uint8_t {
 	IE_CSA                   = 0x25, // Channel Switch Announcement
 	IE_ERP_INFO              = 0x2A,
 	IE_HT_CAPS               = 0x2D,
+	IE_QOS_CAPABILITY        = 0x2E, // QoS Capability element - Section 9.4.2.33
 	IE_RSN                   = 0x30,
 	IE_EXT_RATES             = 0x32,
 	IE_SUPPORTED_OP_CLASSES  = 0x3B,
@@ -185,6 +186,7 @@ inline const std::map<IE, std::string_view> ie_names = {
 	{IE_CSA,                  "CSA"},
 	{IE_ERP_INFO,             "ERPInfo"},
 	{IE_HT_CAPS,              "HT-Caps"},
+	{IE_QOS_CAPABILITY,       "QoSCapability"},
 	{IE_RSN,                  "RSN"},
 	{IE_EXT_RATES,            "ExtRates"},
 	{IE_SUPPORTED_OP_CLASSES, "SupportedOpClasses"},
@@ -195,6 +197,40 @@ inline const std::map<IE, std::string_view> ie_names = {
 	{IE_VHT_OPERATION,        "VHT-Operation"},
 	{IE_VENDOR_SPECIFIC,      "VendorSpecific"},
 };
+
+// Capability Information field bits (non-DMG STA) - IEEE 802.11-2024, Section 9.4.1.4
+// 16-bit little-endian; byte 0 = bits 0-7, byte 1 = bits 8-15
+constexpr uint16_t CAP_APSD = uint16_t{1} << 11; // Automatic Power Save Delivery (B11)
+
+// QoS Info field, non-AP STA format - IEEE 802.11-2024, Section 9.4.1.17, Figure 9-156
+// bits 0-3 = per-AC U-APSD flags (AC_VO, AC_VI, AC_BK, AC_BE)
+constexpr uint8_t QOS_INFO_UAPSD_AC_MASK = 0x0F;
+
+// WME/WMM vendor-specific IE constants (Wi-Fi Alliance, OUI 00:50:f2 type 02)
+// layout: OUI[3] + type[1] + subtype[1] + version[1] + QoS Info[1] (+ AC params for PARAM)
+constexpr std::array<uint8_t, 4> WME_OUI_TYPE    = {0x00, 0x50, 0xf2, 0x02};
+constexpr uint8_t WME_SUBTYPE_INFO  = 0x00; // WME Information Element (STA->AP, in AssocReq)
+constexpr uint8_t WME_SUBTYPE_PARAM = 0x01; // WME Parameter Element (AP->STA, in Beacon/AssocResp)
+constexpr size_t  WME_QOS_INFO_OFF  = 6;    // QoS Info byte offset within IE data
+constexpr size_t  WME_MIN_LEN       = 7;    // minimum IE data length (must include QoS Info)
+
+// IE header: tag(1) + length(1)
+constexpr size_t IE_HDR_SIZE  = 2;
+constexpr size_t SSID_MAX_LEN = 32; // IEEE 802.11-2024, Section 9.4.2.2
+
+// Management frame fixed-field sizes (bytes before first IE) - IEEE 802.11-2024, Section 9.3.3
+constexpr size_t ASSOC_REQ_FIXED   = sizeof(uint16_t) + sizeof(uint16_t);                    // CapInfo + ListenInterval
+constexpr size_t ASSOC_RESP_FIXED  = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint16_t); // CapInfo + Status + AID
+constexpr size_t REASSOC_REQ_FIXED = sizeof(uint16_t) + sizeof(uint16_t) + MAC_ADDRESS_SIZE; // CapInfo + ListenInterval + CurrentAP
+constexpr size_t BEACON_FIXED      = sizeof(uint64_t) + sizeof(uint16_t) + sizeof(uint16_t); // Timestamp + BeaconInterval + CapInfo
+
+// RSN IE fixed-field sizes - IEEE 802.11-2024, Section 9.4.2.24
+constexpr size_t RSN_VERSION_SIZE = 2;
+constexpr size_t RSN_GROUP_SIZE   = 4;  // group cipher suite
+constexpr size_t RSN_SUITE_SIZE   = 4;  // one pairwise or AKM entry
+constexpr size_t RSN_COUNT_SIZE   = 2;  // suite count or PMKID count field
+constexpr size_t RSN_CAPS_SIZE    = 2;  // RSN Capabilities
+constexpr size_t RSN_PMKID_SIZE   = 16; // one PMKID entry
 
 inline std::string_view to_string(const uint8_t type, const uint8_t subtype) {
 	if(subtype >= 16) return "<invalid subtype>";

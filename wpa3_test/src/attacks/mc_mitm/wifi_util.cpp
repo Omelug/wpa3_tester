@@ -86,26 +86,6 @@ Dot11ProbeResponse beacon_to_probe_resp(const Dot11Beacon &beacon, const Channel
 	return resp;
 }
 
-Dot11AssocResponse *assoc_resp_channel_patch(const Dot11AssocResponse &assoc, const Channel &rogue_channel) {
-	auto *resp = new Dot11AssocResponse(assoc.addr1(), assoc.addr2());
-	resp->addr3(assoc.addr3());
-	resp->capabilities() = assoc.capabilities();
-	resp->status_code(assoc.status_code());
-	resp->aid(assoc.aid());
-	resp->seq_num(assoc.seq_num());
-
-	for(const auto &opt: assoc.options()) {
-		if(opt.option() == Dot11::HT_OPERATION && opt.data_size() >= 1) {
-			vector ht_data(opt.data_ptr(), opt.data_ptr() + opt.data_size());
-			ht_data[0] = static_cast<uint8_t>(rogue_channel.ch_num);
-			resp->add_option({ Dot11::HT_OPERATION, ht_data.size(), ht_data.data() });
-			continue;
-		}
-		resp->add_option(opt);
-	}
-
-	return resp;
-}
 
 bool is_eapol(const PDU &pdu) {
 	const auto snap = pdu.find_pdu<SNAP>();
@@ -347,29 +327,45 @@ static size_t mgmt_ie_start(const frame_raw_t &raw) {
 	const uint16_t rt_len = radiotap::get_rt_len(raw);
 	const size_t hdr = (rt_len >= sizeof(ieee80211_radiotap_header) && raw.size() >= rt_len && raw[0] == PKTHDR_RADIOTAP_VERSION) ? rt_len : 0;
 	if(hdr >= raw.size()) return raw.size();
-	// fixed-field sizes before IEs: AssocReq=4, ReassocReq=10, Beacon/ProbeResp=12
 	const uint8_t sub = (raw[hdr] >> dot11::FC_SUBTYPE_SHIFT) & dot11::FC_SUBTYPE_MASK;
-	const size_t fixed = (sub == 2) ? 10 : (sub == 5 || sub == 8) ? 12 : 4;
+	const size_t fixed =
+		(sub == dot11::MGMT_REASSOC_REQ)                                        ? dot11::REASSOC_REQ_FIXED :
+		(sub == dot11::MGMT_PROBE_RESP || sub == dot11::MGMT_BEACON)            ? dot11::BEACON_FIXED      :
+		(sub == dot11::MGMT_ASSOC_RESP || sub == dot11::MGMT_REASSOC_RESP)      ? dot11::ASSOC_RESP_FIXED  :
+			dot11::ASSOC_REQ_FIXED;
 	return hdr + dot11::MGMT_HDR_SIZE + fixed;
+}
+
+void patch_ht_operation_in_frame(frame_raw_t &raw, const uint8_t channel) {
+	const size_t ie_start = mgmt_ie_start(raw);
+	for(size_t i = ie_start; i + 1 < raw.size();) {
+		const uint8_t ie_len = raw[i + 1];
+		if(i + dot11::IE_HDR_SIZE + ie_len > raw.size()) break;
+		if(raw[i] == dot11::IE_HT_OPERATION && ie_len >= 1) {
+			raw[i + dot11::IE_HDR_SIZE] = channel;
+			return;
+		}
+		i += dot11::IE_HDR_SIZE + ie_len;
+	}
 }
 
 void rewrite_ssid_in_frame(frame_raw_t &raw, const string &new_ssid) {
 	const size_t ie_start = mgmt_ie_start(raw);
-	if(raw.size() < ie_start + 2) return;
+	if(raw.size() < ie_start + dot11::IE_HDR_SIZE) return;
 
 	for(size_t i = ie_start; i + 1 < raw.size();) {
 		if(raw[i] == dot11::IE_SSID) {
 			const size_t old_len = raw[i + 1];
-			const size_t new_len = min(new_ssid.size(), static_cast<size_t>(32));
-			const auto it = raw.begin() + static_cast<ptrdiff_t>(i + 2);
+			const size_t new_len = min(new_ssid.size(), static_cast<size_t>(dot11::SSID_MAX_LEN));
+			const auto it = raw.begin() + static_cast<ptrdiff_t>(i + dot11::IE_HDR_SIZE);
 			raw.erase(it, it + static_cast<ptrdiff_t>(old_len));
-			raw.insert(raw.begin() + static_cast<ptrdiff_t>(i + 2),
+			raw.insert(raw.begin() + static_cast<ptrdiff_t>(i + dot11::IE_HDR_SIZE),
 				reinterpret_cast<const uint8_t *>(new_ssid.data()),
 				reinterpret_cast<const uint8_t *>(new_ssid.data()) + new_len);
 			raw[i + 1] = static_cast<uint8_t>(new_len);
 			return;
 		}
-		const size_t step = 2 + raw[i + 1];
+		const size_t step = dot11::IE_HDR_SIZE + raw[i + 1];
 		if(i + step > raw.size()) break; // malformed IE: claimed length exceeds frame
 		i += step;
 	}
@@ -379,30 +375,68 @@ void rewrite_ssid_in_frame(frame_raw_t &raw, const string &new_ssid) {
 // Zeroes PMKID Count and removes the 16-byte entries; fixes IE length field.
 void strip_pmkid_from_rsn_ie(frame_raw_t &raw) {
 	const size_t ie_start = mgmt_ie_start(raw);
-	if(raw.size() < ie_start + 2) return;
+	if(raw.size() < ie_start + dot11::IE_HDR_SIZE) return;
 
 	for(size_t i = ie_start; i + 1 < raw.size();) {
 		const uint8_t ie_len = raw[i + 1];
-		if(i + 2 + ie_len > raw.size()) break;
+		if(i + dot11::IE_HDR_SIZE + ie_len > raw.size()) break;
 		if(raw[i] == dot11::IE_RSN) {
-			// version(2)+group(4)+pw_count(2)+pw(4n)+akm_count(2)+akm(4n)+caps(2)+pmkid_count(2)
-			size_t off = 6; // skip version + group cipher
-			if(off + 2 > ie_len) return;
-			off += 2 + (static_cast<uint16_t>(raw[i+2+off]) | (static_cast<uint16_t>(raw[i+2+off+1]) << 8)) * 4u;
-			if(off + 2 > ie_len) return;
-			off += 2 + (static_cast<uint16_t>(raw[i+2+off]) | (static_cast<uint16_t>(raw[i+2+off+1]) << 8)) * 4u;
-			off += 2; // RSN caps
-			if(off + 2 > ie_len) return; // no PMKID count field
-			const uint16_t pmkid_cnt = static_cast<uint16_t>(raw[i+2+off]) | (static_cast<uint16_t>(raw[i+2+off+1]) << 8);
+			// version+group+pw_count+pw(4n)+akm_count+akm(4n)+caps+pmkid_count
+			size_t off = dot11::RSN_VERSION_SIZE + dot11::RSN_GROUP_SIZE;
+			if(off + dot11::RSN_COUNT_SIZE > ie_len) return;
+			off += dot11::RSN_COUNT_SIZE + (static_cast<uint16_t>(raw[i+dot11::IE_HDR_SIZE+off]) |
+			       (static_cast<uint16_t>(raw[i+dot11::IE_HDR_SIZE+off+1]) << 8)) * dot11::RSN_SUITE_SIZE;
+			if(off + dot11::RSN_COUNT_SIZE > ie_len) return;
+			off += dot11::RSN_COUNT_SIZE + (static_cast<uint16_t>(raw[i+dot11::IE_HDR_SIZE+off]) |
+			       (static_cast<uint16_t>(raw[i+dot11::IE_HDR_SIZE+off+1]) << 8)) * dot11::RSN_SUITE_SIZE;
+			off += dot11::RSN_CAPS_SIZE;
+			if(off + dot11::RSN_COUNT_SIZE > ie_len) return;
+			const uint16_t pmkid_cnt = static_cast<uint16_t>(raw[i+dot11::IE_HDR_SIZE+off]) |
+			                           static_cast<uint16_t>(raw[i + dot11::IE_HDR_SIZE + off + 1]) << 8;
 			if(pmkid_cnt == 0) return;
-			raw[i+2+off] = 0; raw[i+2+off+1] = 0;
-			const size_t pmkid_bytes = pmkid_cnt * 16u;
-			raw.erase(raw.begin() + static_cast<ptrdiff_t>(i+2+off+2),
-			          raw.begin() + static_cast<ptrdiff_t>(i+2+off+2+pmkid_bytes));
+			raw[i+dot11::IE_HDR_SIZE+off] = 0; raw[i+dot11::IE_HDR_SIZE+off+1] = 0;
+			const size_t pmkid_bytes = pmkid_cnt * dot11::RSN_PMKID_SIZE;
+			raw.erase(raw.begin() + static_cast<ptrdiff_t>(i+dot11::IE_HDR_SIZE+off+dot11::RSN_COUNT_SIZE),
+			          raw.begin() + static_cast<ptrdiff_t>(i+dot11::IE_HDR_SIZE+off+dot11::RSN_COUNT_SIZE+pmkid_bytes));
 			raw[i+1] = static_cast<uint8_t>(ie_len - pmkid_bytes);
 			return;
 		}
-		i += 2 + ie_len;
+		i += dot11::IE_HDR_SIZE + ie_len;
+	}
+}
+
+// Clear APSD/U-APSD bits in raw AssocReq before relaying to real AP.
+// Operates on: Capability Info fixed field, QoS Capability IE, WME Information IE.
+void strip_apsd_from_assoc_req(frame_raw_t &raw) {
+	const uint16_t rt_len = radiotap::get_rt_len(raw);
+	const size_t hdr = rt_len >= sizeof(ieee80211_radiotap_header) && raw.size() >= rt_len && raw[0] == PKTHDR_RADIOTAP_VERSION
+		? rt_len : 0;
+
+	// Capability Information is the first field of AssocReq/ReassocReq fixed fields (2 bytes)
+	const size_t cap_off = hdr + dot11::MGMT_HDR_SIZE;
+	if(cap_off + sizeof(uint16_t) <= raw.size())
+		raw[cap_off + 1] &= static_cast<uint8_t>(~static_cast<uint8_t>(dot11::CAP_APSD >> 8)); // clear APSD (B11)
+
+	const size_t ie_start = mgmt_ie_start(raw);
+	for(size_t i = ie_start; i + 1 < raw.size();) {
+		const uint8_t ie_id  = raw[i];
+		const uint8_t ie_len = raw[i + 1];
+		if(i + dot11::IE_HDR_SIZE + ie_len > raw.size()) break;
+
+		// QoS Capability IE: single QoS Info byte, bits 0-3 = per-AC U-APSD flags
+		if(ie_id == dot11::IE_QOS_CAPABILITY && ie_len >= 1) {
+			raw[i + dot11::IE_HDR_SIZE] &= static_cast<uint8_t>(~dot11::QOS_INFO_UAPSD_AC_MASK);
+		}
+		// WME Information IE (STA->AP, subtype 0x00): QoS Info at data[6]
+		else if(ie_id == dot11::IE_VENDOR_SPECIFIC && ie_len >= dot11::WME_MIN_LEN) {
+			const uint8_t *d = &raw[i + dot11::IE_HDR_SIZE];
+			if(std::equal(dot11::WME_OUI_TYPE.begin(), dot11::WME_OUI_TYPE.end(), d) &&
+			   d[4] == dot11::WME_SUBTYPE_INFO) {
+				raw[i + dot11::IE_HDR_SIZE + dot11::WME_QOS_INFO_OFF] &=
+					static_cast<uint8_t>(~(dot11::QOS_INFO_UAPSD_AC_MASK | 0x80u));
+			}
+		}
+		i += dot11::IE_HDR_SIZE + ie_len;
 	}
 }
 
@@ -412,25 +446,6 @@ void rewrite_bssid_in_frame(frame_raw_t &raw, const HWAddress<6> &bssid) {
 	if(hdr + dot11::ADDR3_END > raw.size()) return;
 	ranges::copy(bssid, raw.begin() + static_cast<ptrdiff_t>(hdr + dot11::ADDR2_OFFSET));
 	ranges::copy(bssid, raw.begin() + static_cast<ptrdiff_t>(hdr + dot11::ADDR3_OFFSET));
-}
-
-Dot11AssocRequest make_real_ssid_assoc_req(const Dot11AssocRequest &assoc, const string &real_ssid) {
-	auto req = Dot11AssocRequest(assoc.addr1(), assoc.addr2());
-	req.addr3(assoc.addr3());
-	req.capabilities() = assoc.capabilities();
-	req.listen_interval(assoc.listen_interval());
-	req.seq_num(assoc.seq_num());
-
-	for(const auto &opt: assoc.options()) {
-		if(opt.option() == Dot11::SSID) {
-			req.add_option({ Dot11::SSID,
-				static_cast<uint8_t>(real_ssid.size()),
-				reinterpret_cast<const uint8_t *>(real_ssid.data()) });
-		} else {
-			req.add_option(opt);
-		}
-	}
-	return req;
 }
 
 }

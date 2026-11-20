@@ -101,6 +101,7 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 	auto full_radiotap = ensure_radiotap(raw);
 	rewrite_ssid_in_frame(full_radiotap, "WrongNet"); //TODO hardcoded
 	if(strip_pmkid_in_assoc) strip_pmkid_from_rsn_ie(full_radiotap);
+	strip_apsd_from_assoc_req(full_radiotap);
 
 	send_synth_assoc_resp(addr2);
 
@@ -116,7 +117,8 @@ FrameProcess SsidConfusion::handle_assoc_request(const HWAddress<6> &addr2, Dot1
 	return STOP;
 }
 
-FrameProcess SsidConfusion::handle_mgmt_action_rogue(HWAddress<6> addr2, const Dot11 &dot11, const frame_raw_t &raw) const {
+FrameProcess SsidConfusion::handle_mgmt_action_rogue(
+	const HWAddress<6> addr2, const Dot11 &dot11, const frame_raw_t &raw) const {
 	if(dot11.type() != dot11::TYPE_MGMT || dot11.subtype() != dot11::MGMT_ACTION) return CONTINUE;
 	if(addr2 != HWAddress<6>(sta.get(SK::mac))) return CONTINUE;
 	display_traffic(dot11, "Rogue channel", " MGMT_ACTION -- relay to real");

@@ -275,6 +275,7 @@
       <w>pktlen</w>
       <w>plotcmd</w>
       <w>pmkid</w>
+      <w>pmkids</w>
       <w>pmksa</w>
       <w>pngcairo</w>
       <w>postrouting</w>

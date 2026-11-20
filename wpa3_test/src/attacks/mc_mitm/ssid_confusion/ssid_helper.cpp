@@ -62,7 +62,7 @@ unique_ptr<Dot11Beacon> SsidConfusion::make_confused_beacon(const Dot11Beacon &r
 			b.add_option({ Dot11::SSID,
 				static_cast<uint8_t>(confused_ssid->size()),
 				reinterpret_cast<const uint8_t *>(confused_ssid->data()) });
-		// VHT IEs are invalid on 2.4 GHz — drop them
+		// VHT IEs are invalid on 2.4 GHz - drop them
 		} else if(is_24ghz && (opt.option() == Dot11ManagementFrame::VHT_OP ||
 		                       opt.option() == Dot11ManagementFrame::VHT_CAP)) {
 		} else {
@@ -78,7 +78,7 @@ unique_ptr<Dot11Beacon> SsidConfusion::make_confused_beacon(const Dot11Beacon &r
 		if(ht_ie->data_size() >= 1)
 			const_cast<uint8_t *>(ht_ie->data_ptr())[0] = rogue_ch.ch_num;
 	}
-	//FIXME VHT_OPERATION on 5 GHz: center freq segments depend on channel width — needs lookup table
+	//FIXME VHT_OPERATION on 5 GHz: center freq segments depend on channel width - needs lookup table
 
 	// TIM bitmap 0xFF: signals pending traffic for all STAs -> keeping clients awake (on PS-Poll)
 	//FIXME its only fallback? - not correct solution, but client will be awake for longer time

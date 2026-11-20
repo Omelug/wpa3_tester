@@ -28,7 +28,7 @@ enum EapCode : uint8_t {
 	CODE_FAILURE  = 4,
 };
 
-// EAP type numbers (IANA) — NOTE: incomplete, only types used in this project
+// EAP type numbers (IANA) - NOTE: incomplete, only types used in this project
 enum EapType : uint8_t {
 	TYPE_IDENTITY  = 1,
 	TYPE_MD5       = 4,

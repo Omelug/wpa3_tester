@@ -89,7 +89,7 @@ void kill_process_in_ns_name(const string &ns_name) {
 	}
 
 	// waitpid() returns ECHILD immediately for non-child processes (orphans)
-	// Call it inside the loop so zombie children get reaped each iteration —
+	// Call it inside the loop so zombie children get reaped each iteration -
 	// /proc/{pid} only disappears after waitpid clears the zombie table entry.
 	const auto kill_deadline = chrono::steady_clock::now() + chrono::milliseconds(2000); //FIXME HARDCODED
 	for(const pid_t p: pids) {

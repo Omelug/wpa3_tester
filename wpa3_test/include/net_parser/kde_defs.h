@@ -4,7 +4,7 @@
 #include <map>
 #include <string_view>
 
-// Key Data Encapsulation (KDE) — IEEE 802.11-2024, Section 12.7.2
+// Key Data Encapsulation (KDE) - IEEE 802.11-2024, Section 12.7.2
 // Wire format (Figure 12-37):  Type(1) | Length(1) | OUI(3) | DataType(1) | Data(Length-4)
 
 namespace wpa3_tester::kde {
@@ -13,10 +13,10 @@ constexpr uint8_t  KDE_TYPE     = 0xDD; // same as IE_VENDOR_SPECIFIC; see NOTE 
 constexpr uint8_t  IEEE_OUI[3]  = {0x00, 0x0F, 0xAC};
 // KDE header = Type(1) + Length(1) + OUI(3) + DataType(1)
 constexpr size_t   KDE_HDR_SIZE = 6;
-// Length field value = OUI(3) + DataType(1) + Data — i.e. total_kde_size - 2
+// Length field value = OUI(3) + DataType(1) + Data - i.e. total_kde_size - 2
 constexpr size_t   KDE_LEN_OVERHEAD = 4; // bytes accounted for by Length field: OUI+DataType+Data
 
-// KDE Data Type selectors — IEEE 802.11-2024, Table 12-10
+// KDE Data Type selectors - IEEE 802.11-2024, Table 12-10
 // OUI = 00-0F-AC for all entries below; "Other OUI or CID / Any" = vendor specific
 enum KdeSel : uint8_t {
     KDE_GTK             =  1,
@@ -34,7 +34,7 @@ enum KdeSel : uint8_t {
     KDE_WIGTK           = 15,
 };
 
-// PMKID KDE data size — Figure 12-40: single 16-octet PMKID field
+// PMKID KDE data size - Figure 12-40: single 16-octet PMKID field
 constexpr size_t PMKID_SIZE     = 16;
 // Full PMKID KDE wire size: KDE_HDR_SIZE + PMKID_SIZE
 constexpr size_t PMKID_KDE_SIZE = KDE_HDR_SIZE + PMKID_SIZE; // = 22

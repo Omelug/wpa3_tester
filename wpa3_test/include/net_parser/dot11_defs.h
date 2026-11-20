@@ -37,35 +37,35 @@ constexpr uint8_t FC_SUBTYPE_SHIFT = 4;
 constexpr uint8_t FC_SUBTYPE_MASK  = 0x0F;
 // 802.11 management frame header: FC(2)+Dur(2)+Addr1(6)+Addr2(6)+Addr3(6)+SeqCtrl(2)
 constexpr size_t  MGMT_HDR_SIZE    = 24;
-constexpr uint8_t FC_QOS_BIT       = 0x80; // subtype bit 3 in FC byte 0 — set for QoS subtypes (8-15)
+constexpr uint8_t FC_QOS_BIT       = 0x80; // subtype bit 3 in FC byte 0 - set for QoS subtypes (8-15)
 constexpr size_t  QOS_DATA_HDR_SIZE = MGMT_HDR_SIZE + 2; // adds 2-byte QoS-Control field
 
-constexpr uint16_t SEQ_NUM_MOD     = 4096; // 12-bit sequence number field — IEEE 802.11-2020, Section 9.3.2.3
-// IEEE 802.11-2020, Table 9-50 — NOTE: incomplete, only values used in this project
+constexpr uint16_t SEQ_NUM_MOD     = 4096; // 12-bit sequence number field - IEEE 802.11-2020, Section 9.3.2.3
+// IEEE 802.11-2020, Table 9-50 - NOTE: incomplete, only values used in this project
 enum Status : uint16_t {
 	STATUS_SUCCESS = 0,
 };
-// IEEE 802.11-2020, Table 9-49 — NOTE: incomplete, only values used in this project
+// IEEE 802.11-2020, Table 9-49 - NOTE: incomplete, only values used in this project
 enum ReasonCode : uint16_t {
 	REASON_CLASS3_FRAME_NONASSOC = 7, // Class 3 frame from nonassociated STA
 };
-// IEEE 802.11-2020, Table 9-36 — NOTE: incomplete, only values used in this project
+// IEEE 802.11-2020, Table 9-36 - NOTE: incomplete, only values used in this project
 enum AuthAlg : uint16_t {
 	AUTH_ALG_OPEN = 0, // Open System
 	AUTH_ALG_SAE  = 3, // Simultaneous Authentication of Equals
 };
-// Authentication Transaction Sequence Number — IEEE 802.11-2020, Section 9.3.3.12
+// Authentication Transaction Sequence Number - IEEE 802.11-2020, Section 9.3.3.12
 enum AuthSeq : uint16_t {
 	AUTH_SEQ_REQ  = 1, // request  (STA -> AP)
 	AUTH_SEQ_RESP = 2, // response (AP  -> STA)
 };
 
-// IEEE 802.11-2020, Table 9-55 — Action frame categories (incomplete)
+// IEEE 802.11-2020, Table 9-55 - Action frame categories (incomplete)
 enum ActionCategory : uint8_t {
 	ACTION_CAT_SA_QUERY = 8,
 };
 
-// IEEE 802.11-2020, Section 9.6.8 — SA Query Action codes
+// IEEE 802.11-2020, Section 9.6.8 - SA Query Action codes
 enum SAQueryAction : uint8_t {
 	SA_QUERY_REQUEST  = 0,
 	SA_QUERY_RESPONSE = 1,
@@ -154,7 +154,7 @@ inline constexpr std::array<std::string_view, 16> data_subtype_names = {
 	"QoS-Null",  "Reserved(13)",         "QoS-CF-Poll",          "QoS-CF-Ack+CF-Poll",
 };
 
-// Information Element tag IDs — IEEE 802.11-2020, Section 9.4.2, Table 9-92
+// Information Element tag IDs - IEEE 802.11-2020, Section 9.4.2, Table 9-92
 // NOTE: incomplete, only IEs referenced in this project
 enum IE : uint8_t {
 	IE_SSID                  = 0x00,

@@ -7,14 +7,14 @@
 
 namespace wpa3_tester::sae_defs {
 
-// Sequence numbers — IEEE 802.11-2020, Section 12.4.4
+// Sequence numbers -— IEEE 802.11-2020, Section 12.4.4
 enum SaeSeq : uint16_t {
 	SAE_COMMIT_SEQ  = 1,
 	SAE_CONFIRM_SEQ = 2,
 };
 
-// SAE-related status codes — IEEE 802.11-2020, Table 9-50
-// SAE-specific status codes — IEEE 802.11-2020, Table 9-50
+// SAE-related status codes - IEEE 802.11-2020, Table 9-50
+// SAE-specific status codes - IEEE 802.11-2020, Table 9-50
 // (STATUS_SUCCESS = 0 is in dot11_defs.h)
 enum SaeStatus : uint16_t {
 	STATUS_ANTI_CLOGGING            = 76,  // ANTI_CLOGGING_TOKEN_REQUIRED
@@ -22,7 +22,7 @@ enum SaeStatus : uint16_t {
 	STATUS_REJECTED_WITH_SUGGESTION = 126, // rejected, peer still sends scalar+element
 };
 
-// Finite cyclic group parameters — IEEE 802.11-2020, Section 12.4.4.2
+// Finite cyclic group parameters - IEEE 802.11-2020, Section 12.4.4.2
 struct GroupParams {
 	size_t scalar_len;
 	size_t element_len; // uncompressed point = 2 * prime length

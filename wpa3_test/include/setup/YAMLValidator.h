@@ -3,15 +3,16 @@
 #include <nlohmann/json-schema.hpp>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
 class DetailedSchemaErrorHandler: public nlohmann::json_schema::basic_error_handler {
 public:
-	DetailedSchemaErrorHandler(const nlohmann::json &root_schema, const std::string &filename,
+	DetailedSchemaErrorHandler(const nlohmann::json &root_schema, std::string filename,
 		const std::unordered_map<std::string, YAML::Mark> &line_map, std::filesystem::path schema_dir = {}):
 		root_schema_(root_schema),
-		filename_(filename),
+		filename_(std::move(filename)),
 		line_map_(line_map),
 		schema_dir_(std::move(schema_dir)) {}
 

@@ -60,6 +60,17 @@ enum AuthSeq : uint16_t {
 	AUTH_SEQ_RESP = 2, // response (AP  -> STA)
 };
 
+// IEEE 802.11-2020, Table 9-55 — Action frame categories (incomplete)
+enum ActionCategory : uint8_t {
+	ACTION_CAT_SA_QUERY = 8,
+};
+
+// IEEE 802.11-2020, Section 9.6.8 — SA Query Action codes
+enum SAQueryAction : uint8_t {
+	SA_QUERY_REQUEST  = 0,
+	SA_QUERY_RESPONSE = 1,
+};
+
 // Authentication frame fixed fields: algorithm(2)+seq(2)+status(2)
 constexpr size_t AUTH_FIXED_SIZE = sizeof(AuthAlg) + sizeof(AuthSeq) + sizeof(Status);
 

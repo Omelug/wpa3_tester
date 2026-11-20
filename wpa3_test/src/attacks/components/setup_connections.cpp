@@ -58,8 +58,7 @@ void client_ap_setup(RunStatus &rs, const bool check_way_eapol) {
 
 			hw_capabilities::run_cmd({ "ip", "addr", "replace", ip + "/24", "dev", iface }, std::nullopt, false);
 			ap->set_iface_up();
-			interruptible_sleep(milliseconds(1500));
-			//TODO  add dnsmasq to nix/ requirements
+			interruptible_sleep(milliseconds(1500)); //FIXme hardcoded
 			hw_capabilities::run_cmd({ "pkill", "dnsmasq" }, std::nullopt, false);
 
 			vector<string> dmesg_cmd = { "dnsmasq",

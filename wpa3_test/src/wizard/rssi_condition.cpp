@@ -31,7 +31,7 @@ static vector<Token> tokenize(const string &s) {
 	while(i < s.size()) {
 		if(isspace(static_cast<unsigned char>(s[i]))) { ++i; continue; }
 		const char c = s[i];
-		auto peek = [&](size_t off, char ch) { return i + off < s.size() && s[i + off] == ch; };
+		auto peek = [&](const size_t off, const char ch) { return i + off < s.size() && s[i + off] == ch; };
 
 		if(c == '(') { toks.push_back({ TokKind::LParen, "(" }); ++i; continue; }
 		if(c == ')') { toks.push_back({ TokKind::RParen, ")" }); ++i; continue; }
@@ -62,9 +62,9 @@ static vector<Token> tokenize(const string &s) {
 			double val = strtod(s.c_str() + i, &end);
 			if(end != s.c_str() + i) {
 				auto ni = static_cast<size_t>(end - s.c_str());
-				bool is_m = ni < s.size() && s[ni] == 'm';
+				const bool is_m = ni < s.size() && s[ni] == 'm';
 				if(is_m) { val = meters_to_rssi(val); ++ni; }
-				toks.push_back({ TokKind::Number, string(s.c_str() + i, end), val, is_m });
+				toks.push_back({ TokKind::Number, string(s.c_str() + i, static_cast<const char*>(end)), val, is_m });
 				i = ni; continue;
 			}
 		}

@@ -42,9 +42,9 @@ void setup_attack(RunStatus &rs) {
 
 // Topology: WrongNet AP (ch 11) <-> rogue_client (ch 11) <-> rogue_ap (ch 1, fake SafeNet) <-> client
 void run_attack(RunStatus &rs) {
-    const auto rogue_ap     = rs.get_actor("rogue_ap");     // injects confused beacons, relays client
+    const auto rogue_ap     = rs.get_actor("rogue_ap"); // injects confused beacons, relays client
     const auto rogue_client = rs.get_actor("rogue_client"); // CSA injection, relays to wrong AP
-    const auto ap           = rs.get_actor("ap");           // WrongNet AP
+    const auto ap           = rs.get_actor("ap");
     const auto client       = rs.get_actor("client");
 
     const auto &att_cfg        = rs.config().at("attack_config");

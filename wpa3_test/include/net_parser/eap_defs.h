@@ -124,11 +124,16 @@ constexpr size_t  LLC_SNAP_SIZE  = 8;    // LLC(3) + OUI(3) + EtherType(2)
 constexpr size_t  SNAP_ETYPE_OFF = 6;    // EtherType offset within LLC+SNAP block
 
 // EAPOL-Key frame: field offsets from start of EAPOL body (byte after 0x888E ethertype)
-// IEEE 802.1X-2020, Section 11.9; IEEE 802.11-2020, Section 12.7.2
+// IEEE 802.1X-2020, Section 11.9; IEEE 802.11-2024, Section 12.7.2, Figure 12-35
 constexpr uint8_t EAPOL_KEY_OFF_TYPE  = 1; // EAPOL packet type (must equal EAPOL_KEY=3)
 constexpr uint8_t EAPOL_KEY_OFF_KI_HI = 5; // Key Information high byte (bits 15-8)
 constexpr uint8_t EAPOL_KEY_OFF_KI_LO = 6; // Key Information low byte  (bits  7-0)
 constexpr uint8_t EAPOL_KEY_MIN_SIZE  = 7; // bytes needed to read key info
+// offsets below assume standard 16-byte MIC (non-AEAD AKMs; IEEE 802.11-2024, Table 12-11)
+// layout: HDR(4)+DescType(1)+KI(2)+KeyLen(2)+ReplayCounter(8)+Nonce(32)+IV(16)+RSC(8)+Rsvd(8)+MIC(16)
+constexpr size_t EAPOL_KEY_MIC_SIZE   = 16;
+constexpr size_t EAPOL_KEY_OFF_KD_LEN = 97; // Key Data Length field (2 bytes, big-endian)
+constexpr size_t EAPOL_KEY_OFF_KD     = 99; // Key Data field start
 
 // Key Information field bit masks - IEEE 802.11-2020, Section 12.7.2, Table 12-7
 // Stored big-endian; KI_HI = byte[5], KI_LO = byte[6] relative to EAPOL body

@@ -141,7 +141,7 @@ RadioTap make_sae_confirm(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_ma
 	auth.auth_seq_number(sae_defs::SAE_CONFIRM_SEQ);
 	auth.status_code(dot11::STATUS_SUCCESS);
 	// SC (2 bytes) + verifier (32 bytes zeros - garbage, AP will reject but still process)
-	const size_t conf_size = sizeof(SaeSeq) + sae_defs::group_params.at(19).scalar_len; // P-256
+	const size_t conf_size = sizeof(sae_defs::SaeSeq) + sae_defs::group_params.at(19).scalar_len; // P-256
 	auth.inner_pdu(RawPDU(vector<uint8_t>(conf_size, 0)));
 	RadioTap rt{};
 	rt.tx_flags(radiotap::TX_NOACK | radiotap::TX_ORDER);

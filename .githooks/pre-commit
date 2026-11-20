@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-files=$(git diff --cached --name-only --diff-filter=ACM -- \
+staged=$(git diff --cached --name-only --diff-filter=ACM -- \
   '*.c' '*.h' '*.cc' '*.cpp' '*.cxx' '*.hpp' '*.hxx' '*.hh' '*.inl' '*.cmake')
+unstaged=$(git diff --name-only --diff-filter=M -- \
+  '*.c' '*.h' '*.cc' '*.cpp' '*.cxx' '*.hpp' '*.hxx' '*.hh' '*.inl' '*.cmake')
+files=$(printf '%s\n%s' "$staged" "$unstaged" | sort -u | grep -v '^$' || true)
 
 [ -z "$files" ] && exit 0
 
@@ -22,13 +25,14 @@ fi
 
 # ponytail: re-stages whole file; unstaged hunks in same file get included
 echo "$files" | xargs -d'\n' perl -i -pe '
-  s/[ \t]+$//;        # trailing whitespace
-  s/^[ \t\r\v\f]+$//; # blank lines with control chars
-  s/\x{2014}/-/g;     # em dash -> -
-  s/\x{2192}/->/g;    # → ->
-  s/\x{00D7}/x/g;     # × -> x
+  s/[ \t]+$//;          # trailing whitespace
+  s/^[ \t\r\v\f]+$//;   # blank lines with control chars
+  s/\xe2\x80\x94/-/g;   # em dash -> -
+  s/\xe2\x86\x92/->/g;  # → ->
+  s/\xc3\x97/x/g;       # × -> x
 '
-echo "$files" | xargs -d'\n' git add
+# only restage what was already staged
+[ -n "$staged" ] && echo "$staged" | xargs -d'\n' git add
 
 remaining=$(echo "$files" | xargs -d'\n' grep -InP \
   '[^\x00-\x7F]|^[ \t]*[\r\v\f][ \t\r\v\f]*$|[ \t]+$' 2>/dev/null || true)

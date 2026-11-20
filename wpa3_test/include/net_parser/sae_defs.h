@@ -7,7 +7,7 @@
 
 namespace wpa3_tester::sae_defs {
 
-// Sequence numbers -— IEEE 802.11-2020, Section 12.4.4
+// Sequence numbers -- IEEE 802.11-2020, Section 12.4.4
 enum SaeSeq : uint16_t {
 	SAE_COMMIT_SEQ  = 1,
 	SAE_CONFIRM_SEQ = 2,

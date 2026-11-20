@@ -130,7 +130,6 @@ ProcessManager::~ProcessManager(){
 }
 
 void ProcessManager::handle_chunk(
-	//const shared_ptr<ManagedProcess>& mp,
 	const string &process_name, const string &label, const string &data
 ){
 	bool should_notify = false;
@@ -341,7 +340,6 @@ void ProcessManager::stop(const string &process_name) noexcept{
 			interruptible_sleep(milliseconds(500));
 			(void)killpg(mp->pgid, SIGKILL);
 		}
-		// mp->proc path: reproc::stop(operations) below handles SIGTERM->wait->SIGKILL
 	}
 
 	// close pipe read-ends so a drain thread blocked in read()

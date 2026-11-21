@@ -8,7 +8,7 @@
 
 namespace wpa3_tester::observer::tshark {
 
-// RSN Capabilities field bitmasks (802.11-2020 Table 9-258)
+// RSN Capabilities field bitmasks (802.11-2024 Table 9-258)
 constexpr uint16_t RSN_CAP_MFPR = 0x0040; // bit 6  - Management Frame Protection Required
 constexpr uint16_t RSN_CAP_MFPC = 0x0080; // bit 7  - Management Frame Protection Capable
 constexpr uint16_t RSN_CAP_PBAC = 0x1000; // bit 12 - Protected Block Ack Agreement Capable
@@ -64,7 +64,7 @@ std::string client_scanning_from_pcap(
 std::optional<bool> addba_seen_from_pcap(const std::filesystem::path &pcap_path);
 
 // Transition Disable element (IE 255, ext tag 35) in Beacon/Probe Response
-// bit0=WPA3-Personal, bit1=SAE-PK, bit2=WPA3-Enterprise, bit3=Enhanced Open (802.11-2020 / WPA3 spec)
+// bit0=WPA3-Personal, bit1=SAE-PK, bit2=WPA3-Enterprise, bit3=Enhanced Open (802.11-2024 / WPA3 spec)
 // return decimal bitmap string (e.g. "1")
 // return empty if element absent or pcap missing
 std::string ap_trans_disable_from_beacon_pcap(const std::filesystem::path &pcap_path,

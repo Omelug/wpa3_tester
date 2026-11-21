@@ -404,7 +404,7 @@ void pcap_events(const RunStatus &rs, vector<unique_ptr<GraphElements>> &element
 	}
 }
 
-// RSN Capabilities bit 14 = OCVC (Operating Channel Validation Capable), 802.11-2020 Table 9-258
+// RSN Capabilities bit 14 = OCVC (Operating Channel Validation Capable), 802.11-2024 Table 9-258
 static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_filter) {
 	if(!exists(pcap_path)) return nullopt;
 
@@ -495,7 +495,7 @@ optional<bool> addba_seen_from_pcap(const path &pcap_path) {
 }
 //TODO tests for parsing with al packets
 
-// RSN Capabilities bit 12 = PBAC (Protected Block Ack Agreement Capable), 802.11-2020 Table 9-264
+// RSN Capabilities bit 12 = PBAC (Protected Block Ack Agreement Capable), 802.11-2024 Table 9-264
 static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_filter) {
 	if(!exists(pcap_path)) return nullopt;
 
@@ -542,7 +542,7 @@ described_bool pbac_from_pcap_client(const path &pcap_path, const string &client
 	return result;
 }
 
-// RSN Capabilities: RSN_CAP_MFPR (bit 6), RSN_CAP_MFPC (bit 7), 802.11-2020 Table 9-264
+// RSN Capabilities: RSN_CAP_MFPR (bit 6), RSN_CAP_MFPC (bit 7), 802.11-2024 Table 9-264
 string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 	if(!exists(pcap_path)) return {};
 	string filter = "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0000";

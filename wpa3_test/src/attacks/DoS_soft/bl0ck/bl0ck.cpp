@@ -51,6 +51,7 @@ RadioTap get_BAR_frame(const HWAddress<6> &ap_mac, const HWAddress<6> &sta_mac, 
 	bar.fragment_number(fn);
 	bar.start_sequence(sn);
 
+	//TODo change these to somthing more readable ( isnt same in BA?)
 	const vector<uint8_t> payload_data = { 0xff,
 		0xff,
 		0xff,

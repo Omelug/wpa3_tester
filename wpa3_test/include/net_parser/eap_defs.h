@@ -135,7 +135,7 @@ constexpr size_t EAPOL_KEY_MIC_SIZE   = 16;
 constexpr size_t EAPOL_KEY_OFF_KD_LEN = 97; // Key Data Length field (2 bytes, big-endian)
 constexpr size_t EAPOL_KEY_OFF_KD     = 99; // Key Data field start
 
-// Key Information field bit masks - IEEE 802.11-2020, Section 12.7.2, Table 12-7
+// Key Information field bit masks - IEEE 802.11-2024, Section 12.7.2, Table 12-7
 // Stored big-endian; KI_HI = byte[5], KI_LO = byte[6] relative to EAPOL body
 constexpr uint8_t KI_HI_MIC    = 0x01; // bit  8: Key MIC
 constexpr uint8_t KI_HI_SECURE = 0x02; // bit  9: Secure

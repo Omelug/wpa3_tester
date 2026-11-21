@@ -232,7 +232,7 @@ described_bool get_ap_disconnected(const RunStatus &rs, const string &client_mac
 	return ap_disconnected;
 }
 
-// transition_disable=0xNN bitmask (802.11-2020 / WPA3 spec)
+// transition_disable=0xNN bitmask (802.11-2024 / WPA3 spec)
 //  Bit 0: WPA3-Personal - client must not fall back to PSK after seeing this
 //  Bit 1: SAE-PK
 //  Bit 2: WPA3-Enterprise

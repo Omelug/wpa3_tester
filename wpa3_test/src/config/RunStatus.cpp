@@ -5,7 +5,6 @@
 #include <optional>
 #include <string>
 #include <yaml-cpp/yaml.h>
-
 #include "attacks/attacks.h"
 #include "config/Observer_config.h"
 #include "config/global_config.h"
@@ -19,15 +18,12 @@
 #include "setup/config_parser.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
-
 namespace wpa3_tester {
 using namespace std;
 using namespace filesystem;
-
 RunStatus::RunStatus(const path &config_path, string testName, const string &sub_folder) {
 	_config_path = config_path;
 	if(!exists(config_path)) { throw config_err("Config not found: {}", config_path); }
-
 	if(testName.empty()) {
 		// load name from YAML if not name set
 		const YAML::Node node = YAML::LoadFile(config_path);
@@ -43,17 +39,14 @@ RunStatus::RunStatus(const path &config_path, string testName, const string &sub
 	set_public_perms(_run_folder);
 	log(LogLevel::INFO, "Used config {}", config_path);
 	_config = config_validation(_config_path, _run_folder);
-
 	parse_run_config(_config, _run_config);
 	_run_config.merge_from(get_global_run_config());
 }
-
 void RunStatus::clean() {
 	process_manager.stop_all();
 	actors.clear();
 	observers.clear();
 }
-
 bool RunStatus::should_skip_folder(const path &p) const {
 	if(_run_config.get_rewrite() == RewriteMode::none && (exists(p / ERROR_FILE) || exists(p / DONE_FILE)))
 		return true;
@@ -61,7 +54,6 @@ bool RunStatus::should_skip_folder(const path &p) const {
 		return true;
 	return false;
 }
-
 bool RunStatus::prepare_run_folder() {
 	if(!exists(_run_folder)) return false;
 	if(access(_run_folder.string().c_str(), W_OK) != 0) {
@@ -87,13 +79,10 @@ bool RunStatus::prepare_run_folder() {
 	}
 	return false;
 }
-
-
 vector<string> RunStatus::do_not_rewrite_actor_filler(const path &run_folder) const {
 	vector<string> result;
 	const path parent = run_folder.parent_path();
 	if(!is_directory(parent)) return result;
-
 	error_code ec;
 	for(const auto &entry: directory_iterator(parent, ec)) {
 		if(!entry.is_directory() || entry.path() == run_folder) continue;
@@ -107,10 +96,8 @@ vector<string> RunStatus::do_not_rewrite_actor_filler(const path &run_folder) co
 	}
 	return result;
 }
-
 void RunStatus::do_run() {
 	disable_ifaces_NetworkManager(actors);
-
 	if(run_config().get_only_stats()) {
 		config_path(absolute(run_folder() / TEST_CONFIG_NAME));
 		config(config_validation(config_path(), _run_folder));
@@ -118,19 +105,14 @@ void RunStatus::do_run() {
 		stats_test();
 		return;
 	}
-
 	_rssi_checked = false;
-
 	vector<string> disabled_tests_hash_filler = {};
 	if(_config_path.string().ends_with(ACTOR_FILLER_SUFFIX)) // actor_filler
 		disabled_tests_hash_filler = do_not_rewrite_actor_filler(_run_folder);
-
 	while(config_requirement(disabled_tests_hash_filler)) {
 		log(LogLevel::WARNING, "Config needs to be reloaded for new actors software info");
 	} //include req validation
-
 	requirement_prebuild(_config);
-
 	auto interrupted = [&] {
 		if(!g_interrupted) return false;
 		log(LogLevel::WARNING, "Test stopped by Ctrl+C");
@@ -139,7 +121,6 @@ void RunStatus::do_run() {
 	};
 	// if failed, at least this will be available for debug
 	save_yaml(_config, _run_folder / TEST_CONFIG_NAME);
-
 	setup_test();
 	if(interrupted()) return;
 	if(_config_path.string().ends_with(ACTOR_FILLER_SUFFIX)) {
@@ -152,10 +133,8 @@ void RunStatus::do_run() {
 	if(interrupted()) return;
 	write_done();
 }
-
 void RunStatus::write_error_log(const exception &e) {
 	if(g_interrupted) log(LogLevel::WARNING, "{}:{}: Test stopped by Ctrl+C", __FILE__, __LINE__);
-
 	const path error_file = run_folder() / ERROR_FILE;
 	ofstream err_log(error_file, ios::out | ios::app);
 	if(!err_log.is_open()) {
@@ -164,14 +143,12 @@ void RunStatus::write_error_log(const exception &e) {
 		clean();
 		return;
 	}
-
 	int status = 0;
 	const unique_ptr<char, void (*)(void *)> demangled(
 		abi::__cxa_demangle(typeid(e).name(), nullptr, nullptr, &status), free);
 	err_log << "=== Error occurred at " << current_timestamp() << " ===" << "\n"
 			<< "Exception type: " << ((status == 0 && demangled) ? demangled.get() : typeid(e).name()) << "\n"
 			<< "Message: " << e.what() << "\n";
-
 	if(const auto *te = dynamic_cast<const tester_error *>(&e)) {
 		const auto &loc = te->where();
 		err_log << "Location: " << loc.file_name() << ":" << loc.line() << " in " << loc.function_name() << "\n"
@@ -185,7 +162,6 @@ void RunStatus::write_error_log(const exception &e) {
 		log(LogLevel::ERROR, "{}", e.what());
 		log(LogLevel::DEBUG, "Stacktrace:\n{}", std::to_string(trace));
 	}
-
 	err_log << "\n";
 	err_log.close();
 	set_public_perms(error_file);
@@ -193,17 +169,14 @@ void RunStatus::write_error_log(const exception &e) {
 	log(LogLevel::INFO, "Cleaning up resources before exit...");
 	clean();
 }
-
 void RunStatus::execute() {
 	globalRunStatus = this;
 	if(prepare_run_folder()) return;
-
 	create_public_dirs(_run_folder);
 	set_log_file(tester_log());
 	struct LogGuard {
 		~LogGuard() { close_log_file(); }
 	} log_guard;
-
 	if(getenv("WPA3_DEBUG_THROW")) {
 		do_run();
 	} else {
@@ -212,7 +185,6 @@ void RunStatus::execute() {
 		} catch(const exception &e) { write_error_log(e); }
 	}
 }
-
 void RunStatus::get_or_create_connection(const ActorPtr &actor) {
 	if(actor->conn && actor->conn->is_connected()) { return; }
 	shared_ptr<ExternalConn> conn;
@@ -221,15 +193,12 @@ void RunStatus::get_or_create_connection(const ActorPtr &actor) {
 	} else {
 		throw not_implemented_err("Not known external_OS: " + actor.get(SK::external_OS));
 	}
-
 	if(!conn->connect(actor)) { throw config_err("Failed to connect to external actor"); }
 	actor->conn = conn;
 }
-
 void RunStatus::run_test() {
 	process_manager.write_log_all(START_tag);
 	const auto module_name = config().at("attacker_module");
-
 	if(const auto run_it = attack_module_maps::run_map.find(module_name); run_it != attack_module_maps::run_map.end()) {
 		run_it->second(*this);
 	} else {
@@ -239,7 +208,6 @@ void RunStatus::run_test() {
 	process_manager.write_log_all(END_tag);
 	process_manager.stop_all();
 }
-
 void RunStatus::stats_test() const {
 	const auto module_name = config().at("attacker_module");
 	if(const auto run_it = attack_module_maps::stats_map.find(module_name);
@@ -249,7 +217,6 @@ void RunStatus::stats_test() const {
 		log(LogLevel::DEBUG, "stats function not set for {}", module_name.get<string>());
 	}
 }
-
 void write_actors_csv(const ActorMap &actors, ofstream &ofs) {
 	ofs << "Type,ActorName,Interface,MAC,Driver,channel,json_obj" << endl;
 	const string none = "<none>";
@@ -257,7 +224,6 @@ void write_actors_csv(const ActorMap &actors, ofstream &ofs) {
 		ofs << actor->get_or(SK::source, none) << MAP_CSV_SEP << name << MAP_CSV_SEP << actor->get_or(SK::iface, none)
 			<< MAP_CSV_SEP << actor->get_or(SK::mac, none) << MAP_CSV_SEP << actor->get_or(SK::driver_name, none)
 			<< MAP_CSV_SEP << actor->get_or(SK::channel, none) << MAP_CSV_SEP;
-
 		// CSV-quote the JSON field
 		const string raw_json = actor->to_json().dump();
 		ofs << '"';
@@ -268,7 +234,6 @@ void write_actors_csv(const ActorMap &actors, ofstream &ofs) {
 		ofs << '"' << endl;
 	}
 }
-
 bool RunStatus::should_skip(const path &p) {
 	if(p.string().ends_with(".schema.yaml")) return true;
 	// components
@@ -282,13 +247,10 @@ bool RunStatus::should_skip(const path &p) {
 	if(rel.string().contains("/target/")) return true;
 	return false;
 }
-
 unordered_map<string, string> RunStatus::scan_attack_configs(const CONFIG_TYPE ct) {
 	unordered_map<string, string> t_map;
 	const path attack_config_dir = root_dir() / "attack_config";
-
 	if(!exists(attack_config_dir) || !is_directory(attack_config_dir)) { return t_map; }
-
 	for(const auto &entry: recursive_directory_iterator(attack_config_dir)) {
 		const auto &path = entry.path();
 		string filename = path.filename().string();
@@ -313,37 +275,30 @@ unordered_map<string, string> RunStatus::scan_attack_configs(const CONFIG_TYPE c
 	}
 	return t_map;
 }
-
 optional<ActorPtr> RunStatus::actor(const string &actor_name) const {
 	if(const auto it = actors.find(actor_name); it != actors.end()) { return it->second; }
 	return nullopt;
 }
-
 ActorPtr &RunStatus::get_actor(const string &actor_name) {
 	if(const auto it = actors.find(actor_name); it != actors.end()) { return it->second; }
 	throw config_err("Actor {} not found in actors map", actor_name);
 }
-
 const ActorPtr &RunStatus::get_actor(const string &actor_name) const {
 	if(const auto it = actors.find(actor_name); it != actors.end()) { return it->second; }
 	throw config_err("Actor {} not found in actors map", actor_name);
 }
-
 optional<observer::ObserverPtr> RunStatus::observer(const string &observer_name) const {
 	if(const auto it = observers.find(observer_name); it != observers.end()) { return it->second; }
 	return nullopt;
 }
-
 observer::ObserverPtr &RunStatus::get_observer(const string &observer_name) {
 	if(const auto it = observers.find(observer_name); it != observers.end()) { return it->second; }
 	throw config_err("Observer {} not found in observers map", observer_name);
 }
-
 const observer::ObserverPtr &RunStatus::get_observer(const string &observer_name) const {
 	if(const auto it = observers.find(observer_name); it != observers.end()) { return it->second; }
 	throw config_err("Observer {} not found in observers map", observer_name);
 }
-
 void RunStatus::print_test_list() {
 	auto tests = scan_attack_configs(TEST);
 	if(tests.empty()) {
@@ -352,7 +307,6 @@ void RunStatus::print_test_list() {
 	}
 	for(const auto &[name, path]: tests) { cout << "Test: " << name << " -> " << path << endl; }
 }
-
 void RunStatus::start_observers(const ObserverRunPolicy policy) {
 	for(const auto &observer: observers | views::values) {
 		try {
@@ -362,12 +316,10 @@ void RunStatus::start_observers(const ObserverRunPolicy policy) {
 		}
 	}
 }
-
 string RunStatus::findConfigByTestName(const string &name) {
 	if(auto tests = scan_attack_configs(); tests.contains(name)) { return tests[name]; }
 	throw config_err("Unknown test name: " + name + ", Isn't it test suite?");
 }
-
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
 	initializer_list<tuple<actor_name_t, pattern_t, label_t, color_t>> event_d,
 	const optional<TimeWindow> &window) const {
@@ -375,7 +327,6 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements,
 		elements.push_back(make_unique<EventLines>(get_time_logs(*this, actor, pattern, window), label, color));
 	}
 }
-
 //FIXME strictly connected to actors names from config -> move actor names to some constants?
 void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const set<EVENT_SET> &event_sets) const {
 	const TimeWindow window{ get_tag_time(combined_log(), START_tag), get_tag_time(combined_log(), END_tag) };
@@ -403,7 +354,6 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const se
 			window);
 	}
 	if(event_sets.contains(TESTER_TAGS)) {
-
 		log_events(elements,
 			{
 				{ COMBINED, START_tag, "START", "black" },
@@ -413,27 +363,22 @@ void RunStatus::log_events(vector<unique_ptr<GraphElements>> &elements, const se
 			});
 	}
 }
-
 void RunStatus::save_actor_interface_mapping() const {
 	if(_run_folder.empty()) {
 		log(LogLevel::WARNING, "save_actor_interface_mapping: run_folder not set");
 		return;
 	}
-
 	const string path = _run_folder / MAPPING_CSV;
 	ofstream ofs(path, ios::out | ios::trunc);
 	if(!ofs) {
 		log(LogLevel::ERROR, "Failed to open {} for writing CSV mapping", path);
 		return;
 	}
-
 	write_actors_csv(actors, ofs);
-
 	ofs.close();
 	set_public_perms(path);
 	log(LogLevel::INFO, "Actor/interface mapping written to CSV: {}", path);
 }
-
 void RunStatus::load_actor_interface_mapping() {
 	const string csv_path = _run_folder / MAPPING_CSV;
 	ifstream ifs(csv_path);
@@ -441,13 +386,10 @@ void RunStatus::load_actor_interface_mapping() {
 		log(LogLevel::WARNING, "load_actor_interface_mapping: mapping.csv not found: {}", csv_path);
 		return;
 	}
-
 	string line;
 	getline(ifs, line); // skip header: source,actor_name,iface,mac,driver,channel,json_obj
-
 	while(getline(ifs, line)) {
 		if(line.empty()) continue;
-
 		// json_obj (field 7) may contain commas - locate only the first 6
 		auto npos = string::npos;
 		auto next = [&](const size_t from) { return line.find(',', from); };
@@ -455,22 +397,18 @@ void RunStatus::load_actor_interface_mapping() {
 		size_t c2 = c1 != npos ? next(c1 + 1) : npos;
 		size_t c6 = c2;
 		for(int i = 0; i < 4 && c6 != npos; ++i) c6 = next(c6 + 1);
-
 		if(c2 == npos || c6 == npos) {
 			log(LogLevel::WARNING, "load_actor_interface_mapping: malformed row, skipping");
 			continue;
 		}
-
 		const string actor_name = line.substr(c1 + 1, c2 - c1 - 1);
 		string json_str = line.substr(c6 + 1);
-
 		// Strip CSV quoting and unescape "" -> " //TODO separate function, used in saving function ?
 		if(json_str.size() >= 2 && json_str.front() == '"' && json_str.back() == '"') {
 			json_str = json_str.substr(1, json_str.size() - 2);
 			for(size_t i = 0; i + 1 < json_str.size(); ++i)
 				if(json_str[i] == '"' && json_str[i + 1] == '"') json_str.erase(i + 1, 1);
 		}
-
 		const auto j = nlohmann::json::parse(json_str, nullptr, false);
 		if(j.is_discarded()) {
 			log(LogLevel::WARNING, "load_actor_interface_mapping: invalid JSON for actor '{}'", actor_name);
@@ -482,7 +420,6 @@ void RunStatus::load_actor_interface_mapping() {
 	}
 	log(LogLevel::INFO, "Loaded {} actors from {}", actors.size(), csv_path);
 }
-
 void RunStatus::write_done() const {
 	const path done_file = run_folder() / DONE_FILE;
 	ofstream done_log(done_file, ios::out | ios::trunc);
@@ -494,7 +431,6 @@ void RunStatus::write_done() const {
 	if(!done_log.good()) throw run_err("Failed to write {}: {}", DONE_FILE, strerror(errno));
 	set_public_perms(done_file);
 }
-
 void RunStatus::save_result(const nlohmann::json &j) const {
 	const path p = run_folder() / RESULT_NAME;
 	ofstream f(p);
@@ -504,7 +440,6 @@ void RunStatus::save_result(const nlohmann::json &j) const {
 	if(!f.good()) throw stats_err("Failed to write {}: {}", RESULT_NAME, strerror(errno));
 	set_public_perms(p);
 }
-
 nlohmann::json RunStatus::load_result() const {
 	const path p = run_folder() / RESULT_NAME;
 	ifstream f(p);

@@ -3,11 +3,11 @@
 #include <cstdint>
 #include <map>
 #include <string_view>
-// IEEE Std 802.11-2020, Section 9.3.3.2, Table 9-1
+// IEEE Std 802.11-2024, Section 9.3.3.2, Table 9-1
 // "Valid type and subtype combinations"
 namespace wpa3_tester::dot11 {
 // MAC frame header field offsets from the start of the 802.11 frame
-// IEEE 802.11-2020, Section 9.3.3.2, Figure 9-1
+// IEEE 802.11-2024, Section 9.3.3.2, Figure 9-1
 constexpr size_t MAC_ADDRESS_SIZE = 6;
 constexpr size_t FC_OFFSET        = 0;  // Frame Control (2 bytes)
 constexpr size_t DUR_OFFSET       = 2;  // Duration/ID (2 bytes)
@@ -19,7 +19,7 @@ constexpr size_t SEQCTL_OFFSET    = 22; // Sequence Control (2 bytes)
 constexpr size_t ADDR1_END = ADDR1_OFFSET + MAC_ADDRESS_SIZE;
 constexpr size_t ADDR2_END = ADDR2_OFFSET + MAC_ADDRESS_SIZE;
 constexpr size_t ADDR3_END = ADDR3_OFFSET + MAC_ADDRESS_SIZE;
-// Frame Type field (FC bits 3-2) - IEEE 802.11-2020, Section 9.2.4.1.3
+// Frame Type field (FC bits 3-2) - IEEE 802.11-2024, Section 9.2.4.1.3
 enum FrameType : uint8_t {
 	TYPE_MGMT = 0,
 	TYPE_CTRL = 1,
@@ -34,31 +34,31 @@ constexpr uint8_t FC_SUBTYPE_MASK  = 0x0F;
 constexpr size_t  MGMT_HDR_SIZE    = 24;
 constexpr uint8_t FC_QOS_BIT       = 0x80; // subtype bit 3 in FC byte 0 - set for QoS subtypes (8-15)
 constexpr size_t  QOS_DATA_HDR_SIZE = MGMT_HDR_SIZE + 2; // adds 2-byte QoS-Control field
-constexpr uint16_t SEQ_NUM_MOD      = 4096; // 12-bit sequence number field - IEEE 802.11-2020, Section 9.3.2.3
+constexpr uint16_t SEQ_NUM_MOD      = 4096; // 12-bit sequence number field - IEEE 802.11-2024, Section 9.2.4.4
 constexpr uint8_t  SEQCTL_SEQ_SHIFT = 4;    // bits 15:4 of SeqCtl = sequence number
-// IEEE 802.11-2020, Table 9-50 - NOTE: incomplete, only values used in this project
+// IEEE 802.11-2024, Table 9-50 - NOTE: incomplete, only values used in this project
 enum Status : uint16_t {
 	STATUS_SUCCESS = 0,
 };
-// IEEE 802.11-2020, Table 9-49 - NOTE: incomplete, only values used in this project
+// IEEE 802.11-2024, Table 9-49 - NOTE: incomplete, only values used in this project
 enum ReasonCode : uint16_t {
 	REASON_CLASS3_FRAME_NONASSOC = 7, // Class 3 frame from nonassociated STA
 };
-// IEEE 802.11-2020, Table 9-36 - NOTE: incomplete, only values used in this project
+// IEEE 802.11-2024, Table 9-36 - NOTE: incomplete, only values used in this project
 enum AuthAlg : uint16_t {
 	AUTH_ALG_OPEN = 0, // Open System
 	AUTH_ALG_SAE  = 3, // Simultaneous Authentication of Equals
 };
-// Authentication Transaction Sequence Number - IEEE 802.11-2020, Section 9.3.3.12
+// Authentication Transaction Sequence Number - IEEE 802.11-2024, Section 9.3.3.12
 enum AuthSeq : uint16_t {
 	AUTH_SEQ_REQ  = 1, // request  (STA -> AP)
 	AUTH_SEQ_RESP = 2, // response (AP  -> STA)
 };
-// IEEE 802.11-2020, Table 9-55 - Action frame categories (incomplete)
+// IEEE 802.11-2024, Table 9-55 - Action frame categories (incomplete)
 enum ActionCategory : uint8_t {
 	ACTION_CAT_SA_QUERY = 8,
 };
-// IEEE 802.11-2020, Section 9.6.8 - SA Query Action codes
+// IEEE 802.11-2024, Section 9.6.8 - SA Query Action codes
 enum SAQueryAction : uint8_t {
 	SA_QUERY_REQUEST  = 0,
 	SA_QUERY_RESPONSE = 1,
@@ -161,13 +161,13 @@ enum IE : uint8_t {
 	IE_VHT_CAPS              = 0xBF,
 	IE_VHT_OPERATION         = 0xC0,
 	IE_VENDOR_SPECIFIC       = 0xDD,
-	IE_EXT_TAG               = 0xFF, // Element ID Extension (extended IEs, IEEE 802.11-2020 9.4.2.1)
+	IE_EXT_TAG               = 0xFF, // Element ID Extension (extended IEs, IEEE 802.11-2024 9.4.2.1)
 };
-// Extended IE Extension IDs - IEEE 802.11-2020, Table 9-93 (incomplete)
+// Extended IE Extension IDs - IEEE 802.11-2024, Table 9-93 (incomplete)
 enum ExtIE : uint8_t {
 	IE_EXT_HE_CAPS = 35, // HE Capabilities
 };
-// Extended Capabilities IE - IEEE 802.11-2020, Section 9.4.2.27
+// Extended Capabilities IE - IEEE 802.11-2024, Section 9.4.2.27
 // bit 17 = WNM Sleep Mode: byte[2] bit 1
 constexpr size_t  EXTENDED_CAPS_WNM_SLEEP_BYTE = 2;
 constexpr uint8_t EXTENDED_CAPS_WNM_SLEEP_MASK = 1u << 1;
@@ -219,7 +219,7 @@ constexpr uint8_t WME_SUBTYPE_PARAM = 0x01; // WME Parameter Element (AP->STA, i
 constexpr size_t  WME_QOS_INFO_OFF  = 6;    // QoS Info byte offset within IE data
 constexpr size_t  WME_MIN_LEN       = 7;    // minimum IE data length (must include QoS Info)
 
-// VHT Operation IE - IEEE 802.11-2020, Section 9.4.2.158
+// VHT Operation IE - IEEE 802.11-2024, Section 9.4.2.158
 constexpr size_t  VHT_OP_MIN_SIZE       = 3; // Channel Width(1) + Center Seg 0(1) + Center Seg 1(1)
 constexpr uint8_t VHT_OP_WIDTH_80MHZ    = 1; // Channel Width = 1 → 80/160/80+80 MHz
 constexpr size_t  VHT_OP_CENTER_CH0_OFF = 1; // Center Frequency Segment 0 byte within data

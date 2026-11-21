@@ -38,5 +38,5 @@ struct RawSocket {
 	int fd;
 	sockaddr_ll addr;
 };
-RawSocket get_unblocking_socket(const std::string &iface);
+[[nodiscard]] RawSocket get_unblocking_socket(const std::string &iface);
 }

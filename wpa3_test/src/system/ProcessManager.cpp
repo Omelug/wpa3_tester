@@ -52,9 +52,9 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 				// flush remaining buffered data from pipes before exiting
 				for(const auto &s: streams){
 					while(true){
+						auto [ev, poll_ec] = mp->proc->poll(s.event, reproc::milliseconds(0));
+						if(poll_ec || !(ev & s.event)) break;
 						auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
-						if(read_ec == errc::resource_unavailable_try_again || read_ec ==
-							errc::operation_would_block) break;
 						if(read_ec || n == 0) break;
 						handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
 					}
@@ -65,18 +65,10 @@ void ProcessManager::start_drain_for(const string &process_name, const shared_pt
 			for(const auto &s: streams){
 				if(!(events & s.event)) continue;
 
-				while(true){
-					auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
-
-					if(read_ec){
-						if(read_ec == errc::resource_unavailable_try_again || read_ec == errc::operation_would_block){
-							break;
-						}
-						break;
-					}
-					if(n == 0) break;
+				// one read per poll event (reproc_read calls reproc_poll(INFINITE) internally)
+				auto [n, read_ec] = mp->proc->read(s.stream, buffer, sizeof(buffer));
+				if(!read_ec && n > 0)
 					handle_chunk(process_name, s.label, string(reinterpret_cast<char *>(buffer), n));
-				}
 			}
 		}
 
@@ -342,7 +334,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 		}
 	}
 
-	// close pipe read-ends so a drain thread blocked in read()
+	// close pipe read-ends to unblock a drain thread waiting in reproc_poll(INFINITE, exit-only)
 	if(mp->proc){
 		if(const auto ec = mp->proc->close(reproc::stream::out); ec)
 			log(LogLevel::DEBUG, "close out for {}: {}", process_name, ec.message());
@@ -363,7 +355,7 @@ void ProcessManager::stop(const string &process_name) noexcept{
 		try{
 			mp->before_stop_callback();
 		} catch(const exception &e){
-			log(LogLevel::WARNING, "Error in on_stop callback for  {}:{}", process_name, e.what());
+			log(LogLevel::WARNING, "Error in on_stop callback for {}:{}", process_name, e.what());
 		}
 	}
 

@@ -17,7 +17,6 @@ nl80211_iftype query_wifi_iftype(std::string_view iface_name, const std::optiona
 
 [[nodiscard]] Result wait_for_link_flags(
 	std::string_view iface_name, const std::optional<std::string> &netns, bool want_up, int timeout_ms = 5000);
-[[nodiscard]] Result wait_for_iface_disappear(std::string_view iface_name, const std::optional<std::string> &netns);
 [[nodiscard]] Result wait_for_iface_appear(
 	std::string_view iface_name, const std::optional<std::string> &netns, int timeout_ms = 5000);
 [[nodiscard]] Result wait_for_wifi_iftype(std::string_view iface_name, const std::optional<std::string> &netns,

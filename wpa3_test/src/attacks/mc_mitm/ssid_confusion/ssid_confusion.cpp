@@ -54,7 +54,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     auto next_beacon      = steady_clock::now();
     const uint64_t confused_beacon_ts0 = confused_beacon->timestamp();
 
-    while(true) {
+    while(!g_interrupted) {
         if(steady_clock::now() > start + seconds(timeout_sec)) {
             log(LogLevel::INFO, "Attack timeout");
             break;

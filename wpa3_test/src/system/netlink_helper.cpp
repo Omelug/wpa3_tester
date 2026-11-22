@@ -110,6 +110,7 @@ Result wait_for_link_flags(const string_view iface_name, const optional<string> 
 	while(true){
 		ssize_t n = recv(NetlinkRegistry::get_fd(netns), buf, sizeof(buf), 0);
 		if(n < 0){
+			if(errno == EINTR) return make_error_code(errc::interrupted);
 			if(errno == EAGAIN || errno == EWOULDBLOCK) return make_error_code(errc::timed_out);
 			return make_error_code(errc::io_error);
 		}
@@ -133,34 +134,6 @@ Result wait_for_link_flags(const string_view iface_name, const optional<string> 
 	}
 }
 
-// netlink_helper.cpp
-Result wait_for_iface_disappear(const string_view iface_name, const optional<string> &netns){
-	NetNSContext ns_guard(netns);
-	// Fast path: interface already gone
-	char name[IF_NAMESIZE]{};
-	iface_name.copy(name, IF_NAMESIZE - 1);
-	if(if_nametoindex(name) == 0) return {};
-
-	char buf[8192];
-	while(true){
-		ssize_t n = recv(NetlinkRegistry::get_fd(netns), buf, sizeof(buf), 0);
-		if(n < 0) return make_error_code(errc::io_error);
-
-		for(auto *nh = reinterpret_cast<nlmsghdr *>(buf); NLMSG_OK(nh, static_cast<size_t>(n)); nh = NLMSG_NEXT(nh, n)){
-			if(nh->nlmsg_type != RTM_DELLINK) continue;
-
-			const auto *ifi = static_cast<ifinfomsg *>(NLMSG_DATA(nh));
-			auto *rta = IFLA_RTA(ifi);
-			int rlen = static_cast<int>(IFLA_PAYLOAD(nh));
-
-			for(; RTA_OK(rta, rlen); rta = RTA_NEXT(rta, rlen)){
-				if(rta->rta_type != IFLA_IFNAME) continue;
-				if(string_view{static_cast<const char *>(RTA_DATA(rta))} == iface_name) return {};
-			}
-		}
-	}
-}
-
 Result wait_for_iface_appear(const string_view iface_name, const optional<string> &netns, const int timeout_ms){
 	NetNSContext ns_guard(netns);
 	// Fast path: interface already exists
@@ -175,6 +148,7 @@ Result wait_for_iface_appear(const string_view iface_name, const optional<string
 	while(true){
 		ssize_t n = recv(NetlinkRegistry::get_fd(netns), buf, sizeof(buf), 0);
 		if(n < 0){
+			if(errno == EINTR) return make_error_code(errc::interrupted);
 			if(errno == EAGAIN || errno == EWOULDBLOCK) return make_error_code(errc::timed_out);
 			return make_error_code(errc::io_error);
 		}
@@ -193,6 +167,7 @@ Result wait_for_iface_appear(const string_view iface_name, const optional<string
 		}
 	}
 }
+
 
 Result wait_for_wifi_iftype(const string_view iface_name, const optional<string> &netns,
 							const nl80211_iftype expected_type, const int max_retries, const int retry_ms

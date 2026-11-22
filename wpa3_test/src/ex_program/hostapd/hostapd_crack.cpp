@@ -41,13 +41,12 @@ struct WpaHashEntry {
 // WPA*02*MIC*AP_MAC*STA_MAC*SSID_hex*ANonce*EAPOL_hex*msgpair
 optional<WpaHashEntry> parse_wpa_hash(const string &line) {
 	vector<string> f;
-	size_t pos = 0;
-	while(true) {
-		const size_t sep = line.find('*', pos);
+	size_t pos = 0, sep;
+	do {
+		sep = line.find('*', pos);
 		f.push_back(line.substr(pos, sep == string::npos ? sep : sep - pos));
-		if(sep == string::npos) break;
 		pos = sep + 1;
-	}
+	} while(sep != string::npos);
 	if(f.size() < 9 || f[0] != "WPA" || f[1] != "02") return nullopt;
 
 	WpaHashEntry h;

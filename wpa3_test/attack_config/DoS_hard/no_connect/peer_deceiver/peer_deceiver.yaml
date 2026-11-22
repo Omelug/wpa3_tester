@@ -1,7 +1,7 @@
 name: peer_deceiver
-# WPA3 connection deprivation — Lounis & Zulkernine [19] (cited in Chatzoglou 2022, Section 7)
+# WPA3 connection deprivation - Lounis & Zulkernine [19] (cited in Chatzoglou 2022, Section 7)
 # Attacker sniffs STA SAE Commit frames and injects spoofed AP rejection (STATUS_UNSUPPORTED_GROUP)
-# before the real AP responds — STA drops the handshake. No passphrase needed.
+# before the real AP responds - STA drops the handshake. No passphrase needed.
 attacker_module: peer_deceiver
 actors:
   ap:
@@ -26,6 +26,9 @@ observers:
       interval: 1
 attack_config:
   attack_time_sec: 60
+  burst_size: 3
+  flood_interval_ms: 20
   sleep_before_sec: 2
   sleep_after_sec: 2
 rewrite: errors
+delete_old: true

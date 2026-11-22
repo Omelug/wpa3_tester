@@ -299,12 +299,12 @@ void stats_bl0ck_attack(const RunStatus &rs) {
 		elements,
 		{
 			// ----- protected with MFP (action frames)
-			{ ba_src, "wlan.fixed.action_code == 0x00", "ADDBA req", "blue" },
-			{ ba_src, "wlan.fixed.action_code == 0x01", "ADDBA res", "blue" },
-			{ ba_src, "wlan.fixed.action_code == 0x02", "DELBA", "blue" },
+			{ "attacker", "wlan.fixed.action_code == 0x00", "ADDBA req", "blue" },
+			{ "attacker", "wlan.fixed.action_code == 0x01", "ADDBA res", "blue" },
+			{ "attacker", "wlan.fixed.action_code == 0x02", "DELBA", "blue" },
 
-			{ ba_src, "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)", "BAR_fn4", "cyan" },
-			{ ba_src, "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)", "BA_fn4", "purple" },
+			{ "attacker", "(wlan.fc.type_subtype == 0x0018) && (wlan.fixed.ssc.fragment == 4)", "BAR_fn4", "cyan" },
+			{ "attacker", "(wlan.fc.type_subtype == 0x0019) && (wlan.fixed.ssc.fragment == 4)", "BA_fn4", "purple" },
 		});
 
 	if(auto ampdu = observer::trace_cmd::get_bl0ck_logs(rs, "ap"); !ampdu.empty())

@@ -1,7 +1,7 @@
 name: ghost_attack
-# Ghost Attack — Lounis & Zulkernine 2019 (Bad-Token paper, Section 5.2)
-# Inject fake AP AssocResp (STATUS_INVALID_AKMP = 43) before real AP responds.
-# Race condition in association phase — STA sees rejection and aborts. No passphrase needed.
+# Ghost Attack - Bad-Token paper, Section 5.2)
+# Inject fake AP AssocResp (STATUS_INVALID_AKMP = 43) before real AP responds
+# STA sees rejection and aborts
 attacker_module: ghost_attack
 actors:
   ap:
@@ -27,6 +27,8 @@ observers:
 attack_config:
   attack_time_sec: 60
   burst_size: 3
+  flood_interval_ms: 5
   sleep_before_sec: 2
   sleep_after_sec: 2
 rewrite: errors
+delete_old: true

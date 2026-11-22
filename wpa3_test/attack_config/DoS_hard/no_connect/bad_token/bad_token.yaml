@@ -1,7 +1,7 @@
 name: bad_token
-# Bad-Token — Lounis & Zulkernine 2019 (SIN'19)
-# Sniff AP SAE Commit reply → inject fake STA Confirm with wrong token before legitimate STA can.
-# AP verifies the bad token, rejects the STA ("Unspecified Failure") → STA aborts. No passphrase needed.
+# Bad-Token
+# Sniff AP SAE Commit reply -> inject fake STA Confirm with wrong token before legitimate STA can.
+# AP verifies the bad token, rejects the STA ("Unspecified Failure") -> STA aborts. No passphrase needed.
 attacker_module: bad_token
 actors:
   ap:
@@ -35,3 +35,4 @@ attack_config:
   sleep_before_sec: 2
   sleep_after_sec: 2
 rewrite: errors
+delete_old: true

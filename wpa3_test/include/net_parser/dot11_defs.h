@@ -38,7 +38,8 @@ constexpr uint16_t SEQ_NUM_MOD      = 4096; // 12-bit sequence number field - IE
 constexpr uint8_t  SEQCTL_SEQ_SHIFT = 4;    // bits 15:4 of SeqCtl = sequence number
 // IEEE 802.11-2024, Table 9-50 - NOTE: incomplete, only values used in this project
 enum Status : uint16_t {
-	STATUS_SUCCESS = 0,
+	STATUS_SUCCESS      = 0,
+	STATUS_INVALID_AKMP = 43, // Invalid AKM suite — IEEE 802.11-2024, Table 9-50
 };
 // IEEE 802.11-2024, Table 9-49 - NOTE: incomplete, only values used in this project
 enum ReasonCode : uint16_t {

@@ -12,7 +12,8 @@ using namespace std;
 using namespace filesystem;
 
 static const set<string> k_sae_dos_modules = {
-	"sae_dos_wrapper", "cookie_guzzler", "memory_omnivore", "pmk_gobbler", "bad_status_code", "double_decker", "bad_seq"
+	"sae_dos_wrapper", "cookie_guzzler", "memory_omnivore", "pmk_gobbler", "bad_status_code", "double_decker", "bad_seq",
+	"peer_deceiver", "bad_token", "ghost_attack"
 };
 
 SaeDosFolderEntry SaeDosFolderEntry::parse(const path &test_folder) {

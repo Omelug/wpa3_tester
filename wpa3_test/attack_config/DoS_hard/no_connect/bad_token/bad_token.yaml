@@ -1,0 +1,37 @@
+name: bad_token
+# Bad-Token — Lounis & Zulkernine 2019 (SIN'19)
+# Sniff AP SAE Commit reply → inject fake STA Confirm with wrong token before legitimate STA can.
+# AP verifies the bad token, rejects the STA ("Unspecified Failure") → STA aborts. No passphrase needed.
+attacker_module: bad_token
+actors:
+  ap:
+    $extends: ../../../comp/Dlink/Dlink_wb.comp.yaml
+  client:
+    $extends: ../../../comp/Dlink/mixed_client_2_4.comp.yaml
+    setup:
+      program_config:
+        ssid: test_wpa3_tester_Dlink
+  attacker:
+    source: internal
+    selection:
+      driver: ath9k_htc
+      condition: [ monitor, 2_4GHz ]
+      channel: 6
+    sniff_iface: true
+observers:
+  ap_resources:
+    actor: ap
+    program: resource_checker
+    program_config:
+      interval: 1
+  tester_dmesg:
+    program: dmesg
+    program_config:
+      level: "emerg,alert,crit,err,warn,notice,info,debug"
+
+attack_config:
+  attack_time_sec: 60
+  burst_size: 3
+  sleep_before_sec: 2
+  sleep_after_sec: 2
+rewrite: errors

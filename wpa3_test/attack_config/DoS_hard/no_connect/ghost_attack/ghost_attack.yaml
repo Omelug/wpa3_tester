@@ -1,0 +1,32 @@
+name: ghost_attack
+# Ghost Attack — Lounis & Zulkernine 2019 (Bad-Token paper, Section 5.2)
+# Inject fake AP AssocResp (STATUS_INVALID_AKMP = 43) before real AP responds.
+# Race condition in association phase — STA sees rejection and aborts. No passphrase needed.
+attacker_module: ghost_attack
+actors:
+  ap:
+    $extends: ../../../comp/Dlink/Dlink_wb.comp.yaml
+  client:
+    $extends: ../../../comp/Dlink/mixed_client_2_4.comp.yaml
+    setup:
+      program_config:
+        ssid: test_wpa3_tester_Dlink
+  attacker:
+    source: internal
+    selection:
+      driver: ath9k_htc
+      condition: [ monitor, 2_4GHz ]
+      channel: 6
+    sniff_iface: true
+observers:
+  ap_resources:
+    actor: ap
+    program: resource_checker
+    program_config:
+      interval: 1
+attack_config:
+  attack_time_sec: 60
+  burst_size: 3
+  sleep_before_sec: 2
+  sleep_after_sec: 2
+rewrite: errors

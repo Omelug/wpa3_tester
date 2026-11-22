@@ -57,7 +57,7 @@ TEST_CASE("throw_trace_for - same-thread throw yields non-empty trace") {
 	}
 }
 
-// Verifies the thread_local → global-mutex fix in throw_trace.cpp.
+// Verifies the thread_local  global-mutex fix in throw_trace.cpp.
 // Before the fix, an exception thrown in a worker thread stored its trace in that
 // thread's thread_local map; the main thread's throw_trace_for() saw an empty map
 // and returned an empty stacktrace, so errors.txt showed "Stacktrace:" with nothing.

@@ -72,7 +72,7 @@ void McMitm::setup_real_AP_RSN_frames(int beacon_timeout_sec) {
 	patch_apsd(*beacon);
 	log(LogLevel::INFO, "Target network {} detected on channel {}", ap.get(SK::mac), netconfig.real_channel.ch_num);
 }
-//FIXME zkontrolovat, že nepřeposílám ACK
+
 const string nic_client_ap = AP_IFACE_PREFIX + "client_ack";
 void McMitm::run(RunStatus &rs, const int timeout_sec) {
 
@@ -92,7 +92,7 @@ void McMitm::run(RunStatus &rs, const int timeout_sec) {
 		netconfig.real_channel, prefer_active, nic_client_ap, *beacon);
 
 
-	const string bpf = "(type data or type mgt) and"
+	const string bpf = "not (type ctl subtype ack) and"
 	" (ether host " + ap.get(SK::permanent_mac) + " or ether host " + sta.get(SK::permanent_mac) + " or"
 	" ether host " + rogue_sta.get(SK::permanent_mac) + " or ether host " + rogue_ap.get(SK::permanent_mac) + ")";
 

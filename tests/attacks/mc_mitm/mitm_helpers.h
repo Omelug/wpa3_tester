@@ -103,12 +103,14 @@ inline std::unique_ptr<McMitmTestable> make_fixture() {
 	r_ap_actor->set(SK::iface, "wlan2");
 	r_ap_actor->set(SK::channel, std::to_string(random_channel_2_4()));
 	r_ap_actor->set(BK::GHz2_4, true);
+	r_ap_actor->set(SK::mac, std::string(AP_MAC));
 	sta_actor->set(SK::mac, std::string(CLIENT_MAC));
 	ap_actor->set(SK::mac, std::string(AP_MAC));
 	ap_actor->set(SK::ssid, std::string("test_mc_mitm"));
 
 	auto m = std::make_unique<McMitmTestable>(r_sta_actor, r_ap_actor, sta_actor, ap_actor);
 	m->client_state.update_state(ClientState::GotMitm);
+	m->beacon = std::make_unique<Tins::Dot11Beacon>();
 	return m;
 }
 }

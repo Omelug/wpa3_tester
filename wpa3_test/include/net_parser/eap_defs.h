@@ -90,8 +90,8 @@ inline const std::map<EapType, std::string_view> eap_type_names = {
 	{TYPE_EXPANDED,  "Expanded"},
 };
 
-// to_string - returns "<invalid …>" for unknown values; callers format fallback if needed
-inline std::string_view to_string(EapolType v) {
+// to_string - returns "<invalid ...>" for unknown values; callers format fallback if needed
+inline std::string_view to_string(const EapolType v) {
 	const auto it = eapol_type_names.find(v);
 	return it != eapol_type_names.end() ? it->second : "<invalid EapolType>";
 }
@@ -154,7 +154,7 @@ inline const std::map<EapolMsg, std::string_view> eapol_msg_labels = {
 	{EapolMsg::Msg4,  "EAPOL 4/4"},
 };
 
-inline std::string_view to_string(EapolMsg v) {
+inline std::string_view to_string(const EapolMsg v) {
 	const auto it = eapol_msg_labels.find(v);
 	return it != eapol_msg_labels.end() ? it->second : "<unknown EapolMsg>";
 }

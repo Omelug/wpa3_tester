@@ -122,30 +122,31 @@ TEST_SUITE("handle_open_auth") {
 	}
 }
 TEST_SUITE("handle_assoc_request") {
-	TEST_CASE("AssocRequest -> CONTINUE (by design), 1 rogue send, state=Associated") {
+	TEST_CASE("AssocRequest -> STOP, 1 rogue send, state=Associated") {
 		auto m = make_fixture();
 		m->client_state.update_state(ClientState::Authenticated);
 		auto req = Dot11AssocRequest(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC));
 		req.ssid("test_mc_mitm");
-		// returns CONTINUE intentionally (see FIXME in source)
-		CHECK_EQ(m->handle_assoc_request(HWAddress<6>(CLIENT_MAC), req), CONTINUE);
+		const auto raw = req.serialize();
+		CHECK_EQ(m->handle_assoc_request(HWAddress<6>(CLIENT_MAC), req, raw), STOP);
 		CHECK_EQ(m->rogue_send_count, 1);
 		CHECK(m->client_state.is_state(ClientState::Associated));
 	}
-	TEST_CASE("ReAssocRequest -> CONTINUE (by design), 1 rogue send, state=Associated") {
+	TEST_CASE("ReAssocRequest -> STOP, 1 rogue send, state=Associated") {
 		auto m = make_fixture();
 		m->client_state.update_state(ClientState::Authenticated);
 		auto req = Dot11ReAssocRequest(HWAddress<6>(AP_MAC), HWAddress<6>(CLIENT_MAC));
 		req.addr3(HWAddress<6>(AP_MAC));
 		req.current_ap(HWAddress<6>(AP_MAC));
-		CHECK_EQ(m->handle_assoc_request(HWAddress<6>(CLIENT_MAC), req), CONTINUE);
+		const auto raw = req.serialize();
+		CHECK_EQ(m->handle_assoc_request(HWAddress<6>(CLIENT_MAC), req, raw), STOP);
 		CHECK_EQ(m->rogue_send_count, 1);
 		CHECK(m->client_state.is_state(ClientState::Associated));
 	}
 	TEST_CASE("Beacon -> CONTINUE, no send") {
 		auto m = make_fixture();
 		Dot11Beacon beacon;
-		CHECK_EQ(m->handle_assoc_request(HWAddress<6>(CLIENT_MAC), beacon), CONTINUE);
+		CHECK_EQ(m->handle_assoc_request(HWAddress<6>(CLIENT_MAC), beacon, {}), CONTINUE);
 		CHECK_EQ(m->rogue_send_count, 0);
 	}
 }

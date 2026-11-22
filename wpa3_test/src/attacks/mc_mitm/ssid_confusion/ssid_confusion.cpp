@@ -28,7 +28,7 @@ void SsidConfusion::run(RunStatus &rs, int timeout_sec) {
     Dot11Beacon legacy_beacon = expected_vht_beacon_attack::build_legacy_beacon(*beacon);
 
     // BPF: AP + client traffic only
-	const string bpf = //"(type data or type mgt) and "
+	const string bpf = "not (type ctl subtype ack) and"
 					"(ether host " + ap.get(SK::permanent_mac) + " or ether host " +
 	sta.get(SK::permanent_mac) + " or ether host " + rogue_sta.get(SK::permanent_mac) + " or ether host " +
 	rogue_ap.get(SK::permanent_mac) + ")";

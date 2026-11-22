@@ -9,7 +9,7 @@
 
 namespace wpa3_tester::kde {
 
-constexpr uint8_t  KDE_TYPE     = 0xDD; // same as IE_VENDOR_SPECIFIC; see NOTE 10 in §12.7.2
+constexpr uint8_t  KDE_TYPE     = 0xDD; // same as IE_VENDOR_SPECIFIC; see NOTE 10 in Sec. 12.7.2
 constexpr uint8_t  IEEE_OUI[3]  = {0x00, 0x0F, 0xAC};
 // KDE header = Type(1) + Length(1) + OUI(3) + DataType(1)
 constexpr size_t   KDE_HDR_SIZE = 6;

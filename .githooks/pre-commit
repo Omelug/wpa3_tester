@@ -27,6 +27,7 @@ fi
 echo "$files" | xargs -d'\n' perl -i -pe '
   s/[ \t]+$//;          # trailing whitespace
   s/^[ \t\r\v\f]+$//;   # blank lines with control chars
+  s/\xc2\xa7/Sec./g;    # § -> Sec.
   s/\xe2\x80\x94/-/g;   # em dash -> -
   s/\xe2\x86\x92/->/g;  # → ->
   s/\xc3\x97/x/g;       # × -> x

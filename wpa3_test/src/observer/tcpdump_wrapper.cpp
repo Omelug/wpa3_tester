@@ -1,28 +1,21 @@
 #include "observer/tcpdump_wrapper.h"
-
 #include <filesystem>
 #include <fstream>
-
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
-
 namespace wpa3_tester::observer {
 using namespace std;
 using namespace filesystem;
-
 constexpr string program_name = "tcpdump";
-
 void start_tcpdump_remote(RunStatus &rs, const string &actor_name, const string &filter) {
 	const auto &actor = rs.get_actor(actor_name);
 	const string remote_pcap = "/overlay/" + actor_name + "_capture.pcap";
 	const string iface_str = actor.get(SK::iface);
-
 	string tcpdump_cmd = "tcpdump -i " + iface_str + " -p -w " + remote_pcap;
 	if(!filter.empty()) tcpdump_cmd += " " + filter;
-
 	const vector<string> command = { "sshpass",
 		"-p",
 		actor.get(SK::ssh_password),
@@ -44,29 +37,27 @@ void start_tcpdump_remote(RunStatus &rs, const string &actor_name, const string 
 		hw_capabilities::run_cmd(scp_cmd);
 		if(exists(local_pcap)) set_public_perms(local_pcap);
 	});
-
-	actor->conn->on_disconnect([remote_pcap, actor]() { actor->conn->exec("rm " + remote_pcap); });
+	actor->conn->on_disconnect([remote_pcap, actor]() {
+		try { actor->conn->exec("rm " + remote_pcap); } catch(const exception &e) {
+			log(LogLevel::WARNING, "tcpdump_wrapper: failed to remove remote pcap {}: {}", remote_pcap, e.what());
+		}
+	});
 }
-
 void start_tcpdump(RunStatus &rs, const string &actor_name, const string &filter) {
 	const auto actor = rs.get_actor(actor_name);
 	if(actor->conn != nullptr) {
 		start_tcpdump_remote(rs, actor_name, filter);
 		return;
 	}
-
 	const auto obs_folder = get_observer_folder(rs, program_name);
 	const string iface = actor[BK::sniff_iface] ? actor->get_mon_iface() : actor.get(SK::iface);
-
 	vector<string> command;
 	add_nets_header(rs, command, actor_name);
 	path pcap_path = obs_folder / (actor_name + "_capture.pcap");
 	command.insert(command.end(), { "tcpdump", "-i", iface, "-w", pcap_path });
 	if(!filter.empty()) command.push_back(filter);
-
 	std::ofstream(pcap_path).close(); // pre-create so tcpdump preserves perms on O_TRUNC
 	set_public_perms(pcap_path);
-
 	rs.process_manager.run(actor_name + "_cap", command, obs_folder);
 	rs.process_manager.after_stop(actor_name + "_cap", [pcap_path]() {
 		if(exists(pcap_path)) set_public_perms(pcap_path);

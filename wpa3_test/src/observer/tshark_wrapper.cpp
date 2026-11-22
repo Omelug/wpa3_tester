@@ -1,12 +1,10 @@
 #include "observer/tshark_wrapper.h"
-
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <set>
 #include <sstream>
-
 #include "config/RunStatus.h"
 #include "ex_program/external_actors/openwrt/OpenWrtConn.h"
 #include "logger/error_log.h"
@@ -14,27 +12,21 @@
 #include "observer/observers.h"
 #include "system/hw_capabilities.h"
 #include "system/utils.h"
-
 namespace wpa3_tester::observer::tshark {
 using namespace std;
 using namespace filesystem;
-
 constexpr string program_name = "tshark";
-
 string or_filter(const vector<string> &mac_filters) {
 	if(mac_filters.empty()) return "";
 	return "(" + join(mac_filters, " or ") + ")";
 }
-
 string masked_mac_filter_5(const RunStatus &rs) {
 	vector<string> mac_filters;
-
 	for(const auto &actor: rs.actors | views::values) {
 		string clean_mac = actor.get(SK::mac);
 		if(clean_mac.length() < 10) continue;
 		erase(clean_mac, ':');
 		string pre = clean_mac.substr(0, 10);
-
 		string filter = "("; //addr1 (receiver)
 		filter += "(link[4:4] == 0x" + pre.substr(0, 8) + " and link[8:1] == 0x" + pre.substr(8, 2) + ")";
 		filter += " or "; //addr2 (transceiver)
@@ -44,23 +36,29 @@ string masked_mac_filter_5(const RunStatus &rs) {
 	}
 	return or_filter(mac_filters);
 }
-
 string all_actors_mac_filter(const RunStatus &rs, const bool broadcast) {
 	vector<string> mac_filters;
-	//FIXME this is useless?? - same as bpf filter?
 	for(const auto &actor: rs.actors | views::values) { mac_filters.push_back("wlan host " + actor.get(SK::mac)); }
 	if(broadcast) mac_filters.emplace_back("wlan host ff:ff:ff:ff:ff:ff");
 	return or_filter(mac_filters);
 }
-
+static string resolve_filter(const RunStatus &rs, string f) {
+	auto replace_all = [&](const string &token, const string &value) {
+		for(size_t pos = 0; (pos = f.find(token, pos)) != string::npos; pos += value.size())
+			f.replace(pos, token.size(), value);
+	};
+	// longest tokens first so "actors" doesn't swallow "actors_with_broadcast"
+	replace_all("special_filter:actors_with_broadcast", all_actors_mac_filter(rs, true));
+	replace_all("special_filter:actors_5_bytes", masked_mac_filter_5(rs));
+	replace_all("special_filter:actors", all_actors_mac_filter(rs, false));
+	return f;
+}
 void start_tshark_remote(RunStatus &rs, const string &actor_name, const string &filter) {
 	auto &actor = rs.get_actor(actor_name);
 	const string remote_pcap = "/tmp/" + actor_name + "_capture.pcap";
 	const string iface_str = actor.get(SK::iface);
-
 	string tshark_cmd = "tshark -i " + iface_str + " -w " + remote_pcap;
-	if(!filter.empty()) tshark_cmd += " -f " + filter;
-
+	if(!filter.empty()) tshark_cmd += " -f " + resolve_filter(rs, filter);
 	const vector<string> command = { "sshpass",
 		"-p",
 		actor.get(SK::ssh_password),
@@ -82,41 +80,26 @@ void start_tshark_remote(RunStatus &rs, const string &actor_name, const string &
 		hw_capabilities::run_cmd(scp_cmd);
 		if(exists(local_pcap)) set_public_perms(local_pcap);
 	});
-
 	actor->conn->on_disconnect([remote_pcap, actor] { actor->conn->exec("rm " + remote_pcap); });
 }
-
 void start_tshark(RunStatus &rs, const string &node_name, const string &filter) {
 	const auto actor = rs.get_actor(node_name);
 	if(actor->conn != nullptr) {
 		start_tshark_remote(rs, node_name, filter);
 		return;
 	}
-
 	static const bool available = hw_capabilities::run_cmd({ "tshark", "--version" }, nullopt, false) == 0;
 	if(!available) { throw setup_err("tshark not found, skipping pcap capture for '{}'", node_name); }
-
 	vector<string> command = {};
 	add_nets_header(rs, command, node_name);
-
 	string pcap_path = get_observer_folder(rs, program_name) / (node_name + "_capture.pcap");
 	const string iface_str = actor[BK::sniff_iface] ? actor->get_mon_iface() : actor.get(SK::iface);
-
 	string temp_pcap_path = "/tmp/" + node_name + "_capture.pcap";
 	command.insert(command.end(), { program_name, "-i", iface_str, "-w", temp_pcap_path });
 	if(!filter.empty()) {
 		command.emplace_back("-f");
-		if(filter == "special_filter:actors") {
-			command.push_back(all_actors_mac_filter(rs, false));
-		} else if(filter == "special_filter:actors_with_broadcast") {
-			command.push_back(all_actors_mac_filter(rs, true));
-		} else if(filter == "special_filter:actors_5_bytes") {
-			command.push_back(masked_mac_filter_5(rs));
-		} else {
-			command.push_back(filter);
-		}
+		command.push_back(resolve_filter(rs, filter));
 	}
-
 	const auto tshark_dir = get_observer_folder(rs, program_name);
 	rs.process_manager.run(node_name + "_cap", command, tshark_dir, tshark_dir);
 	rs.process_manager.after_stop(node_name + "_cap", [temp_pcap_path, pcap_path] {
@@ -129,7 +112,6 @@ void start_tshark(RunStatus &rs, const string &node_name, const string &filter) 
 		if(exists(pcap_path)) set_public_perms(pcap_path);
 	});
 }
-
 static LogTimePoint epoch_str_to_tp(const string &s) {
 	if(s.empty()) return LogTimePoint{};
 	try {
@@ -147,14 +129,11 @@ static LogTimePoint epoch_str_to_tp(const string &s) {
 		return LogTimePoint{};
 	}
 }
-
 pair<vector<LogTimePoint>, vector<double>> times_pdu_sizes_from_csv(const path &csv_path) {
 	vector<LogTimePoint> times;
 	vector<double> sizes;
-
 	ifstream file(csv_path.string());
 	string line;
-
 	while(getline(file, line)) {
 		stringstream ss(line);
 		string frame_num_str, t_str, s_str;
@@ -172,17 +151,14 @@ pair<vector<LogTimePoint>, vector<double>> times_pdu_sizes_from_csv(const path &
 	}
 	return { times, sizes };
 }
-
 LogTimePoint get_pcap_start_time(const string &pcap_path) {
 	const string s = trim(hw_capabilities::run_cmd_output(
 		{ "tshark", "-r", pcap_path, "-T", "fields", "-e", "frame.time_epoch", "-c", "1" }));
 	return epoch_str_to_tp(s);
 }
-
 path extract_pcap_to_csv(const string &actor_name, const path &real_folder, const string &tshark_filter) {
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
 	const path csv_path = real_folder / (actor_name + ".csv");
-
 	vector<string> gen_cmd = { "tshark",
 		"-r",
 		pcap_path.string(),
@@ -196,24 +172,19 @@ path extract_pcap_to_csv(const string &actor_name, const path &real_folder, cons
 		"frame.len",
 		"-E",
 		"separator=|" };
-
 	if(!tshark_filter.empty()) {
 		gen_cmd.emplace_back("-Y");
 		gen_cmd.push_back(tshark_filter);
 	}
-
 	const string csv_output = hw_capabilities::run_cmd_output(gen_cmd);
-
 	ofstream csv_file(csv_path);
 	if(!csv_file.is_open()) { throw run_err("Failed to write CSV: {}", csv_path.string()); }
 	csv_file << csv_output;
 	csv_file.close();
 	if(!csv_file.good()) throw run_err("Failed to write CSV {}: {}", csv_path.string(), strerror(errno));
 	set_public_perms(csv_path);
-
 	return csv_path;
 }
-
 vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &process_name, const string &tshark_filter,
 	const string &event_name, optional<TimeWindow> window) {
 	vector<LogTimePoint> timestamps;
@@ -222,7 +193,6 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 		log(LogLevel::ERROR, "Could not find file '{}'", pcap_path.string());
 		return {};
 	}
-
 	const vector<string> gen_cmd = { "tshark",
 		"-r",
 		pcap_path.string(),
@@ -234,9 +204,7 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 		"frame.number",
 		"-e",
 		"frame.time_epoch" };
-
 	const string csv_output = hw_capabilities::run_cmd_output(gen_cmd);
-
 	const path csv_path = get_observer_folder(rs, program_name) / (process_name + "_" + event_name + ".csv");
 	ofstream csv_file(csv_path);
 	if(csv_file.is_open()) {
@@ -245,13 +213,11 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 		if(!csv_file.good()) log(LogLevel::ERROR, "Failed to write {}: {}", csv_path.string(), strerror(errno));
 		else set_public_perms(csv_path);
 	}
-
 	istringstream stream(csv_output);
 	string line;
 	while(getline(stream, line)) {
 		line = trim(line);
 		if(line.empty()) continue;
-
 		stringstream ss(line);
 		string frame_num_str, time_str;
 		if(getline(ss, frame_num_str, '\t') && getline(ss, time_str)) {
@@ -261,36 +227,28 @@ vector<LogTimePoint> get_tshark_events(const RunStatus &rs, const string &proces
 				timestamps.push_back(tp);
 		}
 	}
-
 	log(LogLevel::INFO, "Extracted {} timestamps matching filter '{}'", timestamps.size(), tshark_filter);
 	return timestamps;
 }
-
 path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<unique_ptr<GraphElements>> &elements,
 	const path &folder, const string &tshark_filter) {
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
 	create_public_dirs(real_folder);
-
 	path output_path = real_folder / (actor_name + "_graph.png");
 	const path csv_path = extract_pcap_to_csv(actor_name, real_folder, tshark_filter);
-
 	auto [times, sizes] = times_pdu_sizes_from_csv(csv_path);
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
 	const auto start_time = get_pcap_start_time(pcap_path);
 	transform_to_relative(times, start_time);
-
 	if(times.empty() || sizes.empty() || times.size() != sizes.size()) {
 		log(LogLevel::ERROR, "Invalid traffic data {}", csv_path);
 		return "";
 	}
-
 	auto g = Graph();
 	g.axis = TimeAxis::RELATIVE;
 	g.start_time = start_time;
-
 	g.file = popen("gnuplot", "w");
 	if(!g.file) throw run_err("Failed to start gnuplot");
-
 	g.gpcmd("set terminal pngcairo size 1600,900 enhanced font 'Arial,10'");
 	string out_cmd = "set output '";
 	out_cmd.append(output_path.string());
@@ -299,7 +257,6 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 	g.gpcmd("set grid");
 	g.gpcmd("set xlabel 'Time (s)'");
 	g.gpcmd("set ylabel 'Packet Size'");
-
 	if(sizes.empty()) {
 		g.ymin = DEFAULT_YMIN;
 		g.ymax = DEFAULT_YMAX;
@@ -308,65 +265,52 @@ path tshark_graph(const RunStatus &rs, const string &actor_name, const vector<un
 		g.ymin = *min_it;
 		g.ymax = *max_it;
 	}
-
 	double pad = (g.ymax - g.ymin) * 0.5;
 	if(pad == 0) pad = 1.0; //TODO hardcoded
 	g.ymin = max(0.0, g.ymin - pad); // packet sizes can't be negative
 	g.ymax += pad;
-
 	g.gpcmd("set tmargin 5");
 	g.gpcmd("set bmargin 5");
-
 	auto all_elements = clone_elements(elements);
 	all_elements.push_back(make_unique<GraphXYPoints>(times, sizes, "traffic"));
 	g.gpcmd(escape_tex("set title 'Network Traffic - " + actor_name + "'"));
-
 	g.add_graph_elements(all_elements);
-
 	g.render();
 	set_public_perms(output_path);
 	return output_path;
 }
-
 // ------------ retransmission graph ---------------
 void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_name, const path &folder) {
 	const path real_folder = folder.empty() ? get_observer_folder(rs, program_name) : folder;
 	create_public_dirs(real_folder);
 	const path output_path = real_folder / (actor_name + "_g.png");
 	const path pcap_path = real_folder / (actor_name + "_capture.pcap");
-
 	// [relative time] [ retry? (True/False)]
 	string cmd = "tshark -r ";
 	cmd.append(pcap_path.string());
 	cmd.append(" -T fields -e frame.time_relative -e wlan.fc.retry");
-
 	// parse tshark
 	FILE *pipe = popen(cmd.c_str(), "r");
 	if(!pipe) return;
-
 	// second -> {all_frames, retries}
 	// rounded for  0.1s
 	map<double, pair<int, int>> stats_map;
-
 	char buffer[256];
 	char ts_buf[64], retry_buf[64];
 	while(fgets(buffer, sizeof(buffer), pipe)) {
 		if(sscanf(buffer, "%63s %63s", ts_buf, retry_buf) == 2) {
 			const double timestamp = strtod(ts_buf, nullptr);
 			const int is_retry = (strcmp(retry_buf, "True") == 0) ? 1 : 0;
-
 			double bin = floor(timestamp * 10.0) / 10.0;
 			stats_map[bin].first++;
 			if(is_retry) stats_map[bin].second++;
 		}
 	}
 	pclose(pipe);
-
 	if(stats_map.empty()) {
 		log(LogLevel::WARNING, "No retransmit data for '{}', skipping graph", actor_name);
 		return;
 	}
-
 	//create graph
 	auto g = Graph();
 	g.file = popen("gnuplot", "w");
@@ -381,21 +325,17 @@ void generate_time_series_retry_graph(const RunStatus &rs, const string &actor_n
 	g.gpcmd("set ylabel 'Retry Percentage (%%)'");
 	g.gpcmd("set grid");
 	g.gpcmd("set style fill transparent solid 0.5 noborder");
-
 	g.gpcmd("$MyData << EOD");
 	for(auto const &[time, counts]: stats_map) {
 		const double percent = (counts.first > 0) ? (static_cast<double>(counts.second) / counts.first) * 100.0 : 0.0;
 		fprintf(g.file, "%f %f\n", time, percent);
 	}
 	g.gpcmd("EOD");
-
 	g.plot_parts.emplace_back("$MyData using 1:2 with impulses title 'Retransmit Rate' lc rgb 'red', "
 							  "$MyData using 1:2 with points pt 7 ps 0.5 lc rgb '#8B0000' notitle");
-
 	g.render();
 	set_public_perms(output_path);
 }
-
 void pcap_events(const RunStatus &rs, vector<unique_ptr<GraphElements>> &elements,
 	// { actor, filter, label, color }
 	initializer_list<tuple<string, string, string, string>> event_def) {
@@ -403,16 +343,13 @@ void pcap_events(const RunStatus &rs, vector<unique_ptr<GraphElements>> &element
 		elements.push_back(make_unique<EventLines>(get_tshark_events(rs, actor, filter, label), label, color));
 	}
 }
-
 // RSN Capabilities bit 14 = OCVC (Operating Channel Validation Capable), 802.11-2024 Table 9-258
 static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_filter) {
 	if(!exists(pcap_path)) return nullopt;
-
 	const string full_filter = "(" + frame_filter + ") && wlan.rsn.capabilities && !_ws.malformed";
 	const string caps_raw = hw_capabilities::run_cmd_output(
 		{ "tshark", "-r", pcap_path.string(), "-Y", full_filter, "-T", "fields", "-e", "wlan.rsn.capabilities" },
 		nullopt);
-
 	bool found = false;
 	stringstream ss(caps_raw);
 	string line;
@@ -433,11 +370,9 @@ static optional<bool> ocv_from_pcap(const path &pcap_path, const string &frame_f
 	}
 	return found ? optional(false) : nullopt;
 }
-
 //TODO tests for these functions  with real pcap/logs
 string akm_from_pcap(const path &pcap_path) {
 	if(!exists(pcap_path)) return {};
-
 	// Association Request (wlan.fc.type_subtype == 0x0000)
 	// tshark need to filtered for actors mac only
 	const string output = hw_capabilities::run_cmd_output({ "tshark",
@@ -452,29 +387,23 @@ string akm_from_pcap(const path &pcap_path) {
 															  "-c",
 															  "1" },
 		nullopt);
-
 	const string type = trim(output);
-
 	if(type == "8") return "00-0F-AC:8(WPA3)";
 	if(type == "2") return "00-0F-AC:2(WPA2)";
 	if(type == "6") return "00-0F-AC:6(WPA2-SHA256)";
 	if(!type.empty()) return "00-0F-AC:" + type;
 	return {};
 }
-
 optional<bool> client_ocv_from_pcap(const path &pcap_path) {
 	// Probe Request (0x0004), Reassociation (0x0002) or Association Request (0x0000) carry client's RSN Capabilities
 	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0002 || wlan.fc.type_subtype == 0x0000");
 }
-
 optional<bool> ap_ocv_from_pcap(const path &pcap_path, const string &ap_mac) {
 	// Beacon (0x0008) or Probe Response (0x0005) carry AP's RSN Capabilities
 	const string mac_filter = ap_mac.empty() ? "" : " && wlan.bssid == " + ap_mac;
 	return ocv_from_pcap(pcap_path, "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005" + mac_filter);
 }
-
 // ----- ADDBA / PBAC -----
-
 //TODO tests
 optional<bool> addba_seen_from_pcap(const path &pcap_path) {
 	if(!exists(pcap_path)) return nullopt;
@@ -494,17 +423,13 @@ optional<bool> addba_seen_from_pcap(const path &pcap_path) {
 	return !out.empty();
 }
 //TODO tests for parsing with al packets
-
 // RSN Capabilities bit 12 = PBAC (Protected Block Ack Agreement Capable), 802.11-2024 Table 9-264
 static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_filter) {
 	if(!exists(pcap_path)) return nullopt;
-
 	const string full_filter = "(" + frame_filter + ") && wlan.rsn.capabilities";
-
 	const string caps_raw = hw_capabilities::run_cmd_output(
 		{ "tshark", "-r", pcap_path.string(), "-Y", full_filter, "-T", "fields", "-e", "wlan.rsn.capabilities" },
 		nullopt);
-
 	bool found = false;
 	stringstream ss(caps_raw);
 	string line;
@@ -525,7 +450,6 @@ static optional<bool> pbac_from_pcap(const path &pcap_path, const string &frame_
 	}
 	return found ? optional(false) : nullopt;
 }
-
 described_bool pbac_from_pcap_ap(const path &pcap_path, const string &ap_mac) {
 	string filter = "wlan.fc.type_subtype == 0x0008 || wlan.fc.type_subtype == 0x0005";
 	if(!ap_mac.empty()) filter = "(" + filter + ") && wlan.sa == " + ap_mac;
@@ -533,7 +457,6 @@ described_bool pbac_from_pcap_ap(const path &pcap_path, const string &ap_mac) {
 	result += { pbac_from_pcap(pcap_path, filter), "client_pcap" };
 	return result;
 }
-
 described_bool pbac_from_pcap_client(const path &pcap_path, const string &client_mac) {
 	string filter = "wlan.fc.type_subtype == 0x0000 || wlan.fc.type_subtype == 0x0004";
 	if(!client_mac.empty()) filter = "(" + filter + ") && wlan.sa == " + client_mac;
@@ -541,13 +464,11 @@ described_bool pbac_from_pcap_client(const path &pcap_path, const string &client
 	result += { pbac_from_pcap(pcap_path, filter), "client_pcap" };
 	return result;
 }
-
 // RSN Capabilities: RSN_CAP_MFPR (bit 6), RSN_CAP_MFPC (bit 7), 802.11-2024 Table 9-264
 string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 	if(!exists(pcap_path)) return {};
 	string filter = "wlan.fc.type_subtype == 0x0004 || wlan.fc.type_subtype == 0x0000";
 	if(!client_mac.empty()) filter = "(" + filter + ") && wlan.sa == " + client_mac;
-
 	const string caps_raw = hw_capabilities::run_cmd_output({ "tshark",
 																"-r",
 																pcap_path.string(),
@@ -558,7 +479,6 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 																"-e",
 																"wlan.rsn.capabilities" },
 		nullopt);
-
 	string result;
 	stringstream ss(caps_raw);
 	string line;
@@ -580,9 +500,7 @@ string client_mfp_from_pcap(const path &pcap_path, const string &client_mac) {
 	}
 	return result;
 }
-
 // ----- Transition Disable -----
-
 string ap_trans_disable_from_beacon_pcap(const path &pcap_path, const string &ap_mac, const TimeWindow window) {
 	if(!exists(pcap_path)) return {};
 	// Beacon (0x0008) or Probe Response (0x0005): Transition Disable is extended element (IE 255), extension tag 35
@@ -607,7 +525,6 @@ string ap_trans_disable_from_beacon_pcap(const path &pcap_path, const string &ap
 													"1" },
 		nullopt));
 }
-
 string ap_trans_disable_from_eapol_pcap(
 	const path &pcap_path, const string &ssid, const string &password, const string &ap_mac, const TimeWindow window) {
 	if(!exists(pcap_path) || ssid.empty() || password.empty()) return {};
@@ -639,7 +556,6 @@ string ap_trans_disable_from_eapol_pcap(
 																"1" },
 		nullopt));
 	if(raw.empty()) return {};
-
 	// Transition Disable KDE wire format (Wi-Fi Alliance, Wi-Fi Specification 3.5, chapter 8):
 	//   dd       = Vendor Specific KDE type
 	//   05       = length (5 bytes follow)
@@ -653,23 +569,18 @@ string ap_trans_disable_from_eapol_pcap(
 	if(bitmap.size() < 2) return {};
 	return "0x" + bitmap;
 }
-
 // ----- scanning -----
-
 string client_scanning_from_pcap(const path &pcap_path, const string &client_mac, TimeWindow window) {
 	if(!exists(pcap_path)) return {};
-
 	auto epoch_str = [](const LogTimePoint tp) -> string {
 		const auto ns = chrono::duration_cast<chrono::nanoseconds>(tp.time_since_epoch()).count();
 		return format("{:.6f}", static_cast<double>(ns) / 1e9);
 	};
-
 	string filter = "wlan.fc.type_subtype == 0x0004"; //probe request
 	if(!client_mac.empty()) filter += " && wlan.sa == " + client_mac;
 	if(window.start_tp.time_since_epoch().count() != 0)
 		filter += " && frame.time_epoch >= " + epoch_str(window.start_tp);
 	if(window.end_tp.time_since_epoch().count() != 0) filter += " && frame.time_epoch <= " + epoch_str(window.end_tp);
-
 	const string output = hw_capabilities::run_cmd_output({ "tshark",
 															  "-r",
 															  pcap_path.string(),
@@ -682,9 +593,7 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 															  "-e",
 															  "wlan.ds.current_channel" },
 		nullopt);
-
 	if(trim(output).empty()) return {};
-
 	set<int> channels;
 	istringstream stream(output);
 	string line;
@@ -707,9 +616,7 @@ string client_scanning_from_pcap(const path &pcap_path, const string &client_mac
 			log(LogLevel::WARNING, "Invalid channel string '{}': {}", rt_ch, e.what());
 		}
 	}
-
 	if(channels.empty()) return "yes";
 	return "ch: " + join(channels, " ", [](const int ch) { return to_string(ch); });
 }
-
 }

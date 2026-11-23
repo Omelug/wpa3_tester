@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version  v 0.0.0.0:
++: for better CPU issues  checgo to hashing-and-pesking (fixes add more CPU usage on AP side)
 TODO - pcap soubory jsou strašně velké (hlavně bl0ck)
 #TODO  Kde se nastavuje hash-to-element bit? (na jedom AKM je nastaveno jako poviné, myslím 24)
 # nejde pomocí mc_mitm odstranit a províést timming atack

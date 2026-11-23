@@ -119,11 +119,14 @@ static void build_hostapd_like(const string &version, const path &build_folder, 
 	string env_prefix;
 	if(openssl){
 		extra += " -I" + openssl->include_dir.string();
+		// evp.h 1.1.1w uses ASN1_TYPE without including asn1.h; force-include it so modern GCC doesn't reject the prototype
+		extra += " -include " + openssl->include_dir.string() + "/openssl/asn1.h";
 		//<todo descripbe better
 		// Set LDFLAGS env var so our -L precedes the system path injected by
 		// `pkg-config --libs openssl` inside the hostapd Makefile. EXTRA_LDFLAGS
 		// is appended too late and loses the search-order race against the system lib.
-		env_prefix = "LDFLAGS=\"-L" + openssl->lib_dir.string() + "\" ";
+		env_prefix = "PKG_CONFIG_PATH=\"" + (openssl->lib_dir / "pkgconfig").string() + "\" "
+				   + "LDFLAGS=\"-L" + openssl->lib_dir.string() + "\" ";
 	}
 	hw_capabilities::run_in(env_prefix + "make EXTRA_CFLAGS=\"" + extra + "\" -j$(nproc)", source_dir);
 
@@ -229,11 +232,21 @@ OpenSSLPaths get_openssl_paths(const string &tag){
 	const path build_folder = get_openssl_build_folder();
 	const path install_dir = build_folder / tag;
 	const path lib_dir = install_dir / "lib";
-	const path libcrypto = lib_dir / "libcrypto.so";
+	const path libcrypto = lib_dir / "libcrypto.a";
 	const path include_dir = install_dir / "include";
-
+	const string prefix = install_dir.string();
+	auto ensure_pc = [&](){
+		hw_capabilities::run_in("mkdir -p " + prefix + "/lib/pkgconfig", install_dir);
+		hw_capabilities::run_in(
+			"printf 'prefix=" + prefix + "\\nexec_prefix=${prefix}\\nlibdir=${exec_prefix}/lib\\n"
+			"includedir=${prefix}/include\\n\\nName: OpenSSL\\nVersion: 1.1.1w\\n"
+			"Libs: -L${libdir} -lssl -lcrypto\\nCflags: -I${includedir}\\n' "
+			"> " + prefix + "/lib/pkgconfig/openssl.pc",
+			install_dir);
+	};
 	if(exists(libcrypto)){
-		log(LogLevel::INFO, "Using existing OpenSSL {}: {}", tag, lib_dir);
+		log(LogLevel::INFO, "Using existing OpenSSL {} (static): {}", tag, lib_dir);
+		ensure_pc();
 		return {lib_dir, libcrypto, include_dir};
 	}
 
@@ -258,13 +271,17 @@ OpenSSLPaths get_openssl_paths(const string &tag){
 	hw_capabilities::run_in("git checkout " + tag, repo_path);
 
 	log(LogLevel::INFO, "Compiling OpenSSL {} ...", tag);
-	const string prefix = install_dir.string();
-	hw_capabilities::run_in("./config --prefix=" + prefix + " --openssldir=" + prefix + " shared no-asm", repo_path);
-	hw_capabilities::run_in("make -j$(nproc)", repo_path);
-	hw_capabilities::run_in("make install_sw", repo_path);
-
+	// no-shared: skip mkdef.pl / libcrypto.map generation (des_old.h removed in 1.1.x causes linker errors with shared build)
+	hw_capabilities::run_in("./config --prefix=" + prefix + " --openssldir=" + prefix + " no-shared no-asm", repo_path);
+	hw_capabilities::run_in("make -j$(nproc) build_libs", repo_path);
+	// install_sw / install_dev copies a hardcoded header list that includes files removed in 1.1.x;
+	// manually install only what hostapd needs: static libs + headers
+	hw_capabilities::run_in("mkdir -p " + prefix + "/lib " + prefix + "/include", repo_path);
+	hw_capabilities::run_in("cp libcrypto.a libssl.a " + prefix + "/lib/", repo_path);
+	hw_capabilities::run_in("cp -r include/openssl " + prefix + "/include/", repo_path);
+	ensure_pc();
 	if(!exists(libcrypto)){
-		throw run_err("OpenSSL build succeeded but libcrypto.so not found at: {}", libcrypto);
+		throw run_err("OpenSSL build succeeded but libcrypto.a not found at: {}", libcrypto);
 	}
 	log(LogLevel::INFO, "OpenSSL {} built and installed to {}", tag, install_dir);
 	return {lib_dir, libcrypto, include_dir};

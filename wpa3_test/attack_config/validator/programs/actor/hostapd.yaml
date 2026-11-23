@@ -11,6 +11,6 @@ properties:
     description: arguments for program
   openssl:
     type: string
-    pattern: "^OpenSSL_[a-zA-Z0-9_]+$"
-    description: OpenSSL version tag (e.g. OpenSSL_1_0_2f)
+    pattern: "^(OpenSSL_[a-zA-Z0-9_]+|openssl-[a-zA-Z0-9._-]+)$"
+    description: OpenSSL version tag (e.g. OpenSSL_1_0_2f or openssl-3.0.0)
 additionalProperties: true

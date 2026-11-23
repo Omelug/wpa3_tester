@@ -32,6 +32,8 @@ constexpr uint8_t FC_SUBTYPE_SHIFT = 4;
 constexpr uint8_t FC_SUBTYPE_MASK  = 0x0F;
 // 802.11 management frame header: FC(2)+Dur(2)+Addr1(6)+Addr2(6)+Addr3(6)+SeqCtrl(2)
 constexpr size_t  MGMT_HDR_SIZE    = 24;
+// FC byte 1 (at offset FC_OFFSET+1) flags - IEEE 802.11-2024, Section 9.2.4.1.2
+constexpr uint8_t FC1_RETRY        = 0x08;
 constexpr uint8_t FC_QOS_BIT       = 0x80; // subtype bit 3 in FC byte 0 - set for QoS subtypes (8-15)
 constexpr size_t  QOS_DATA_HDR_SIZE = MGMT_HDR_SIZE + 2; // adds 2-byte QoS-Control field
 constexpr uint16_t SEQ_NUM_MOD      = 4096; // 12-bit sequence number field - IEEE 802.11-2024, Section 9.2.4.4

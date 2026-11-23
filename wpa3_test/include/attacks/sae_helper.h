@@ -13,7 +13,7 @@ std::string bytes_to_hex_plain(const frame_raw_t &bytes);
 
 struct SAEPair {
 	uint16_t status = 0;
-	mutable uint16_t group_id = 19;
+	mutable sae_defs::SaeGroup group_id = sae_defs::SaeGroup::P256;
 	std::vector<uint8_t> token;
 	std::vector<uint8_t> scalar;
 	std::vector<uint8_t> element;
@@ -59,4 +59,9 @@ Tins::RadioTap make_sae_commit(
 	const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac, const SAEPair &sae_params);
 // Garbage SAE Confirm (seqnum=2) - verifier will fail AP's check, but AP still processes it
 Tins::RadioTap make_sae_confirm(const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac);
+// SAE Commit using hardcoded MODP scalar+element
+// groups 22/23/24, from RFC 5114
+// ECC brainpool groups (27-30) would need OpenSSL to generate valid EC points
+Tins::RadioTap make_modp_commit(
+	const Tins::HWAddress<6> &ap_mac, const Tins::HWAddress<6> &sta_mac, sae_defs::SaeGroup group_id);
 }

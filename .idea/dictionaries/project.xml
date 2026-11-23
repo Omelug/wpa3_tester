@@ -100,6 +100,7 @@
       <w>dmesg</w>
       <w>dontwait</w>
       <w>dragondrain</w>
+      <w>dragontime</w>
       <w>dstport</w>
       <w>dtoverlay</w>
       <w>dumpcap</w>

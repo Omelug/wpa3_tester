@@ -127,7 +127,7 @@ sae_helper::SAEPair make_probe_pair(const uint16_t gid) {
 	EC_POINT_get_affine_coordinates(grp, EC_GROUP_get0_generator(grp), x, y, nullptr);
 
 	sae_helper::SAEPair p;
-	p.group_id = gid;
+	p.group_id = static_cast<sae_defs::SaeGroup>(gid);
 	p.scalar.assign(len, 0); p.scalar.back() = 2;
 	p.element.resize(len * 2);
 	BN_bn2binpad(x, p.element.data(), len);

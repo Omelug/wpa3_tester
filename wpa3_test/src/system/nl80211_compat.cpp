@@ -89,11 +89,26 @@ void check_WPA2_PSK(nlattr **attrs, NlCaps *caps){
 }
 
 void check_OWE(nlattr **attrs, NlCaps *caps){
-	if(!attrs[NL80211_ATTR_AKM_SUITES]) return;
-	const auto *akms = static_cast<const uint32_t *>(nla_data(attrs[NL80211_ATTR_AKM_SUITES]));
-	const ulong num = nla_len(attrs[NL80211_ATTR_AKM_SUITES]) / sizeof(uint32_t);
-	for(ulong i = 0; i < num; i++){
-		if(akms[i] == AKM_OWE) caps->owe = true;
+	// AKM suites advertised by driver (some drivers omit this even when OWE works in SW)
+	if(attrs[NL80211_ATTR_AKM_SUITES]){
+		const auto *akms = static_cast<const uint32_t *>(nla_data(attrs[NL80211_ATTR_AKM_SUITES]));
+		const ulong num = nla_len(attrs[NL80211_ATTR_AKM_SUITES]) / sizeof(uint32_t);
+		for(ulong i = 0; i < num; i++){
+			if(akms[i] == AKM_OWE){ caps->owe = true; return; }
+		}
+	}
+	// OWE offload ext_features (STA: OWE_OFFLOAD_PEER, AP: OWE_OFFLOAD_AP)
+	if(attrs[NL80211_ATTR_EXT_FEATURES]){
+		const auto *ext = static_cast<const uint8_t *>(nla_data(attrs[NL80211_ATTR_EXT_FEATURES]));
+		const size_t ext_len = nla_len(attrs[NL80211_ATTR_EXT_FEATURES]);
+		for(const uint32_t feat : {
+			static_cast<uint32_t>(NL80211_EXT_FEATURE_OWE_OFFLOAD),
+			static_cast<uint32_t>(NL80211_EXT_FEATURE_OWE_OFFLOAD_AP)
+		}){
+			const uint32_t byte_idx = feat / 8;
+			const uint8_t  bit_mask = 1u << (feat % 8);
+			if(ext_len > byte_idx && (ext[byte_idx] & bit_mask)){ caps->owe = true; return; }
+		}
 	}
 }
 

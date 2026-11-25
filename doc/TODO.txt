@@ -4,6 +4,7 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version  v 0.0.0.0:
++: add DNS on channel switch attack for external attacks
 +: add mixed mode to deauth_filler (client - WPA2 only, AP - SAE WPA)
 +: Vendor-specific attack from Dos today
 +: 2024 – A Security Analysis of WPA3-PK -

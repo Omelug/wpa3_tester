@@ -36,9 +36,6 @@ void run_attack(RunStatus &rs){
 	const auto netns1 = actor_tx[SK::netns];
 
 	if(use_spoofed) {
-		// Override Actor_setup's default (SK::mac = SK::permanent_mac) with LAA/unicast MACs.
-		// This is what mc_mitm needs: drivers like mt76x2u ACK only the chip's EEPROM MAC
-		// regardless of active_monitor, and must be distinguished from the permanent-MAC case.
 		const HWAddress<6> spoof_tx("02:aa:aa:aa:aa:01");
 		const HWAddress<6> spoof_rx("02:aa:aa:aa:aa:02");
 		const auto ch_num = get_global_config().at("global_variables").at("default_channel_2_4").get<uint8_t>();

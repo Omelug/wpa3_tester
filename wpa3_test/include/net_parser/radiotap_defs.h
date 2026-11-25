@@ -1,5 +1,7 @@
 #pragma once
 #include <array>
+#include <cstddef>
+#include <cstring>
 #include <endian.h>
 #include <map>
 #include <radiotap.h>
@@ -56,6 +58,24 @@ inline constexpr std::array<uint8_t, 9> MINIMAL_INJECT_HDR = {
 	static_cast<uint8_t>(1u << IEEE80211_RADIOTAP_FLAGS), 0x00, 0x00, 0x00,          // it_present: FLAGS bit
 	static_cast<uint8_t>(IEEE80211_RADIOTAP_F_FRAG | IEEE80211_RADIOTAP_F_DATAPAD),  // Flags field value
 };
+
+// Offset of the first present-flags word inside ieee80211_radiotap_header.
+constexpr size_t RT_HDR_SIZE  = offsetof(ieee80211_radiotap_header, it_present);
+// TSFT field (bit 0 of first present word): uint64_t, 8-byte aligned.
+constexpr size_t RT_TSFT_SIZE = sizeof(uint64_t);
+
+// NOTE: incomplete, only bits referenced in this project
+enum PresentFlags : uint32_t {
+	RT_TSFT  = 1u << IEEE80211_RADIOTAP_TSFT,
+	RT_FLAGS = 1u << IEEE80211_RADIOTAP_FLAGS,
+	RT_EXT   = 1u << IEEE80211_RADIOTAP_EXT,
+};
+
+inline uint32_t read_le32(const uint8_t *p) {
+	uint32_t w;
+	std::memcpy(&w, p, 4);
+	return le32toh(w);
+}
 
 // Returns the radiotap header length from raw frame bytes (little-endian it_len at offset 2).
 // Returns 0 if raw is too short to hold a radiotap header.

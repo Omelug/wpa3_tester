@@ -4,6 +4,10 @@ t: test, d: documentation,  l: logging, ch: change, ?: what?
 v: visualization
 
 Version  v 0.0.0.0:
++: add mixed mode to deauth_filler (client - WPA2 only, AP - SAE WPA)
++: Vendor-specific attack from Dos today
++: 2024 – A Security Analysis of WPA3-PK -
++: iface_ scane - skusit jaký radiotap pou6ívá ifcace - může být neúplný jako u 00:c0:ca:b5:e1:58
 +: for better CPU issues  checgo to hashing-and-pesking (fixes add more CPU usage on AP side)
 TODO - pcap soubory jsou strašně velké (hlavně bl0ck)
 #TODO  Kde se nastavuje hash-to-element bit? (na jedom AKM je nastaveno jako poviné, myslím 24)

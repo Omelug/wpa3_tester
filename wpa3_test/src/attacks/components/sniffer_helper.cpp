@@ -5,16 +5,36 @@
 
 namespace wpa3_tester::components {
 
+//TODO test
 bool radiotap_bad_fcs(const frame_raw_t &p, const uint16_t rt_len) {
-	if(p.size() < sizeof(ieee80211_radiotap_header)) return false;
-	auto *hdr = const_cast<ieee80211_radiotap_header *>(reinterpret_cast<const ieee80211_radiotap_header *>(p.data()));
-	ieee80211_radiotap_iterator iter{};
-	if(ieee80211_radiotap_iterator_init(&iter, hdr, rt_len, nullptr) != 0) return false;
-	while(ieee80211_radiotap_iterator_next(&iter) == 0) {
-		if(iter.is_radiotap_ns && iter.this_arg_index == IEEE80211_RADIOTAP_FLAGS)
-			return *iter.this_arg & IEEE80211_RADIOTAP_F_BADFCS;
+	// ieee80211_radiotap_iterator mishandles the 3-word NS_NEXT+Ext present-flags
+	// format produced by FullMAC drivers (e.g. rtw88_8821au), causing bad-FCS frames
+	// to slip through. Parse the Flags field directly instead.
+	if(rt_len < radiotap::RT_HDR_SIZE + sizeof(radiotap::PresentFlags) || p.size() < rt_len) return false;
+
+	// Count present-flags words: follow Ext bit until clear
+	size_t n_words = 0, off = radiotap::RT_HDR_SIZE;
+	while(off + sizeof(radiotap::PresentFlags) <= rt_len) {
+		const uint32_t w = radiotap::read_le32(p.data() + off);
+		++n_words;
+		off += sizeof(radiotap::PresentFlags);
+		if(!(w & radiotap::RT_EXT)) break; // last word
 	}
-	return false;
+
+	// Flags field must be present in the first word
+	const uint32_t first = radiotap::read_le32(p.data() + radiotap::RT_HDR_SIZE);
+	if(!(first & radiotap::RT_FLAGS)) return false;
+
+	// Fields start right after all present-flags words
+	size_t field_off = radiotap::RT_HDR_SIZE + n_words * sizeof(radiotap::PresentFlags);
+
+	// TSFT comes before Flags if present
+	if(first & radiotap::RT_TSFT) {
+		field_off = (field_off + radiotap::RT_TSFT_SIZE - 1) & ~(radiotap::RT_TSFT_SIZE - 1);
+		field_off += radiotap::RT_TSFT_SIZE;
+	}
+
+	return field_off < rt_len && p[field_off] & IEEE80211_RADIOTAP_F_BADFCS;
 }
 
 std::string eap_description_raw(const frame_raw_t &raw) {
@@ -22,7 +42,7 @@ std::string eap_description_raw(const frame_raw_t &raw) {
 	static constexpr uint8_t snap_eapol[] = { ETHERTYPE_EAPOL_HI, ETHERTYPE_EAPOL_LO };
 	const auto snap = std::ranges::search(raw, snap_eapol).begin();
 	if(snap == raw.end()) return {};
-	const size_t off = (snap - raw.begin()) + 2; // skip ethertype, EAPOL starts here
+	const size_t off = snap - raw.begin() + 2; // skip ethertype, EAPOL starts here
 	if(off + 4 > raw.size()) return {};
 	const auto eapol_type = static_cast<EapolType>(raw[off + 1]);
 	if(eapol_type != EAPOL_EAP) {

@@ -62,7 +62,7 @@ void generate_active_monitor_overview(const path &output_dir, const path &data_d
 		vector<ActiveTestEntry> base_entries, spoofed_entries;
 		for(const auto &e: entries)
 			(e.test_name.contains("spoof") ? spoofed_entries : base_entries).push_back(e);
-		render_table(base_entries,    "Standard");
+		render_table(base_entries,    "Real MAC");
 		render_table(spoofed_entries, "Spoofed MAC");
 	}
 

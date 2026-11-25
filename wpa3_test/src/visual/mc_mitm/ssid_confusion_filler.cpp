@@ -73,7 +73,7 @@ void SsidConfusionEntry::render_table(
 			t.build([&](auto col) {
 				 COL("AP (driver)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_driver << ")");
 				 COL("Client (mac)", overview::device(e.sta_mac, page_dir) << " (" << e.sta_driver << ")");
-				 COL("rogue_ap (driver)", overview::device(e.rogue_client_mac, page_dir) << " (" << e.rogue_client_driver << ")");
+				 COL("rogue_client (driver)", overview::device(e.rogue_client_mac, page_dir) << " (" << e.rogue_client_driver << ")");
 				 COL("rogue_ap (driver)", overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")");
 				 col("Real SSID", &SsidConfusionEntry::real_ssid);
 				 col("Confused SSID", &SsidConfusionEntry::confused_ssid);

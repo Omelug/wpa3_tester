@@ -70,4 +70,12 @@ tests:
   generic_dos_attacks_suite:
     test_suite_name: generic_dos_attacks_suite
 
+  # -------- no_connect ----------------------
+  bad_token:
+    test_name: bad_token
+  ghost_attack:
+    test_name: ghost_attack
+  peer_deceiver:
+    test_name: peer_deceiver
+
 rewrite: errors

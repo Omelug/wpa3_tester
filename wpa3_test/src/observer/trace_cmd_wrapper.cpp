@@ -57,6 +57,10 @@ void start_trace_cmd(RunStatus &rs, const string &actor_name, const vector<strin
 
 	rs.process_manager.run(actor_name + "_trace", command, obs_folder);
 	rs.process_manager.after_stop(actor_name + "_trace", [dat_path, txt_path, ref_path, &rs](){
+		if(!exists(dat_path)){
+			log(LogLevel::WARNING, "trace_cmd: dat not found, skipping report: {}", dat_path);
+			return;
+		}
 		// convert binary trace to human-readable; shell needed for stdout redirect
 		hw_capabilities::run_cmd(
 			{"sh", "-c", "trace-cmd report -i " + dat_path.string() + " > " + txt_path.string()}

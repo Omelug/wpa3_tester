@@ -9,6 +9,7 @@
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
 #include <filesystem>
+#include <yaml-cpp/yaml.h>
 
 namespace wpa3_tester::visual::channel_switch_rogueAP{
 using namespace std;
@@ -52,6 +53,11 @@ CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 	e.conn_WPA_version = helper::get_conn_WPA_version(*rs, window_START);
 	e.client_scanning = helper::get_client_scanning(*rs, window);
 
+	if(const auto cfg_path = test_folder / TEST_CONFIG_NAME; exists(cfg_path)) {
+		const auto cfg = YAML::LoadFile(cfg_path.string());
+		e.new_channel = to_string(cfg["attack_config"]["new_channel"].as<int>());
+	}
+
 	return e;
 }
 
@@ -91,6 +97,7 @@ void CsaTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 				overview::device(e.attacker_mac, page_dir) << " (" << e.attacker_driver << ")<br>"
 				<< overview::device(e.rogue_ap_mac, page_dir) << " (" << e.rogue_ap_driver << ")";
 				);
+			COL("New channel",                     e.new_channel);
 			COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
 			COL("Rogue WPA2 AP?\n(cracked)",				e.rogue_ap_connected << " (" << e.cracked << ")");
 			COL("AP OCV / Client OCV support",	e.ap_ocv << "<br>" << e.client_ocv );
@@ -124,9 +131,9 @@ void CsaTestEntry::generate_report(RunSuiteStatus &rss){
 
 	report << "## Test Results\n\n";
 	report <<
-			"| Test | AP MAC (source) | Client MAC (source) | Attacker MAC (driver) | Disconnected? (from_AP_view) ? | Rogue AP? | AP OCV / Client OCV | Client MFP | Result |\n";
+			"| Test | AP MAC (source) | Client MAC (source) | Attacker MAC (driver) | New ch | Disconnected? (from_AP_view) ? | Rogue AP? | AP OCV / Client OCV | Client MFP | Result |\n";
 	report <<
-			"|------|-----------------|---------------------|-----------------------|--------------------------------|-----------|---------------------|------------|--------|\n";
+			"|------|-----------------|---------------------|-----------------------|--------|--------------------------------|-----------|---------------------|------------|--------|\n";
 
 	for(const auto &e: entries){
 		string attacker_cell = e.attacker_mac + " (" + e.attacker_driver + ")";
@@ -139,6 +146,7 @@ void CsaTestEntry::generate_report(RunSuiteStatus &rss){
 				<< e.ap_mac << " (" << e.ap_source << ") | "
 				<< e.client_mac << " (" << e.client_source << ") | "
 				<< attacker_cell << " | "
+				<< e.new_channel << " | "
 				<< e.client_disconnected << " (" << e.ap_disconnected << ") | "
 				<< e.rogue_ap_connected << " | "
 				<< e.ap_ocv << " / " << e.client_ocv << " | "

@@ -38,6 +38,7 @@ struct CsaTestEntry {
 	described_str client_scanning;
 	std::optional<bool> rogue_ap_connected;
 	std::optional<bool> cracked;
+	std::string new_channel;
 	std::filesystem::path rel_path;
 
 	static CsaTestEntry parse(const std::filesystem::path &test_folder);

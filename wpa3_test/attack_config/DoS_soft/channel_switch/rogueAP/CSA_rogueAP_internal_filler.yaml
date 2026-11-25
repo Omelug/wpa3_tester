@@ -14,5 +14,8 @@ tests:
   all_actors_MFP_req_5GHz:
     type: actor_filler
     config: ./CSA_rogueAP_internal_MFP_req_5GHz.yaml
+  #all_actors_same_channel: #TODO try with condition thath rogue_AP have to be near client
+  #  type: actor_filler
+  #  config: ./CSA_rogueAP_internal_same_channel.yaml
 delete_old: true
 rewrite: "errors"

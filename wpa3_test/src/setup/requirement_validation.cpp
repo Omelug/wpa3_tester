@@ -329,6 +329,7 @@ void RunStatus::change_filler_hash(const ActorMap &result) {
 	if(exists(new_folder)) remove_all(new_folder);
 	filesystem::rename(_run_folder, new_folder);
 	_run_folder = new_folder;
+	process_manager.log_base_dir = _run_folder / "logger";
 
 	const path new_config_path = _config_path.parent_path() / (new_hash + ACTOR_FILLER_SUFFIX);
 	_config["name"] = new_name;

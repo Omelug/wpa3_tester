@@ -1,7 +1,6 @@
 #include <filesystem>
 #include <iomanip>
 #include <yaml-cpp/yaml.h>
-
 #include "config/RunStatus.h"
 #include "config/RunSuiteStatus.h"
 #include "default.h"
@@ -17,57 +16,45 @@
 #include "visual/DoS_soft/bl0ck/bl0ck_test_suites.h"
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
-
 namespace wpa3_tester::visual::bl0ck_test_suites {
 using namespace std;
 using namespace filesystem;
 using namespace nlohmann;
-
 Bl0ckTestEntry Bl0ckTestEntry::parse(const path &test_folder) {
 	auto e = helper::load_result_default<Bl0ckTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
 	if(const auto result = helper::load_result_json(test_folder))
 		if(result->contains("reconnect_times_ms"))
 			e.reconnection = result->at("reconnect_times_ms").get<std::vector<double>>();
-
 	const auto cfg_path = test_folder / TEST_CONFIG_NAME;
 	RunStatus rs{};
 	rs.config_path(cfg_path);
 	rs.run_folder(test_folder);
 	rs.load_actor_interface_mapping();
-
 	const auto ap = rs.get_actor("ap");
-	e.ap_mac = ap->get(SK::permanent_mac);
+	e.ap_mac = ap[SK::permanent_mac];
 	e.ap_source = ap->get(SK::source);
-
 	const auto client = rs.get_actor("client");
-	e.client_mac = client->get(SK::permanent_mac);
+	e.client_mac = client[SK::permanent_mac];
 	e.client_source = client->get(SK::source);
-
 	const auto att = rs.get_actor("attacker");
-	e.attacker_mac = att->get(SK::permanent_mac);
-	e.attacker_driver = att->get(SK::driver_name);
-
+	e.attacker_mac = att[SK::permanent_mac];
+	e.attacker_driver = att[SK::driver_name];
 	if(const auto cfg = YAML::LoadFile(cfg_path); cfg["attack_config"]) {
 		const auto &ac = cfg["attack_config"];
 		if(ac["attack_variant"]) e.attack_variant = ac["attack_variant"].as<string>();
 		if(ac["random_MAC"]) e.random_MAC = ac["random_MAC"].as<bool>();
 	}
-
 	e.bl0ck_iperf = observer::iperf_was_down(rs, test_folder);
-
 	// attacker pcap not good decode, bl0ck consume all sources of adapter (at least on mt76x2u)
 	const path client_pcap = observer::get_observer_folder(rs, "tshark") / "client_capture.pcap";
 	e.ADDBA_seen += { observer::tshark::addba_seen_from_pcap(client_pcap), "client pcap" };
 	e.ADDBA_seen += observer::trace_cmd::addba_seen(rs);
-
 	// PBAC is  active if PMF is (not in config, defined by )
 	e.ap_PBAC += observer::tshark::pbac_from_pcap_ap(client_pcap, ap->get(SK::mac));
 	e.client_PBAC += observer::tshark::pbac_from_pcap_client(client_pcap, client->get(SK::mac));
-
 	return e;
 }
-
 vector<Bl0ckTestEntry> Bl0ckTestEntry::collect_results(const path &run_dir) {
 	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);
 	ranges::sort(entries, [](const Bl0ckTestEntry &a, const Bl0ckTestEntry &b) {
@@ -75,16 +62,12 @@ vector<Bl0ckTestEntry> Bl0ckTestEntry::collect_results(const path &run_dir) {
 	});
 	return entries;
 }
-
 void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title, const path &suite_data_dir,
 	const path &page_dir, const string &t_name) {
-
 	helper::div_card<Bl0ckTestEntry>(
 		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const std::vector<Bl0ckTestEntry> &entries) {
 			HtmlPathTable t(hg, entries, t_name);
-
 #define COL(name, body) col(name, [&]([[maybe_unused]] const auto &e) { hg << body; })
-
 			t.build([&](auto col) {
 				 COL("Test", e.name);
 				 COL("AP MAC (source)", overview::device(e.ap_mac, page_dir) << " (" << e.ap_source << ")");
@@ -103,26 +86,21 @@ void Bl0ckTestEntry::render_table(overview::HtmlGuard &f, const string &title, c
 #undef COL
 		});
 }
-
 void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss) {
 	log(LogLevel::INFO, "Generating bl0ck mac_gen test suite report");
 	auto run_dir = rss.run_folder();
 	auto entries = helper::get_results_default<Bl0ckTestEntry>(run_dir);
 	report::ReportGuard report(run_dir);
 	if(!report) return;
-
 	report << "# Bl0ck MAC Generator Test Suite Report\n\n";
 	report << "Summary of Bl0ck attack tests across different driver combinations.\n\n";
-
 	if(entries.empty()) {
 		report << "No test results found.\n";
 		return;
 	}
-
 	report << "## Test Results\n\n";
 	report << "| Test | AP MAC | Client MAC | Attacker (driver) | Variant | Result |\n";
 	report << "|------|--------|------------|-------------------|---------|--------|\n";
-
 	ulong passed_count = 0;
 	for(const auto &e: entries) {
 		const bool passed = !e.bl0ck_iperf.empty() && e.bl0ck_iperf.value() == "down";
@@ -133,7 +111,6 @@ void Bl0ckTestEntry::generate_report(RunSuiteStatus &rss) {
 			   << " | " << e.attacker_mac << " (" << e.attacker_driver << ") | " << e.attack_variant << " | "
 			   << result_link << " |\n";
 	}
-
 	report << "\n## Summary\n\n";
 	report << "- Total Tests: " << entries.size() << "\n";
 	report << "- Passed: " << passed_count << "\n";

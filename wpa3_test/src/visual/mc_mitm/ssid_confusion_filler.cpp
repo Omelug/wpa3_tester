@@ -1,60 +1,50 @@
 #include "visual/mc_mitm/ssid_confusion_filler.h"
 #include "visual/mc_mitm/mc_mitm_filler.h"
-
 #include <filesystem>
 #include <string>
-
 #include "config/RunSuiteStatus.h"
 #include "default.h"
+#include "logger/log_util.h"
 #include "logger/report.h"
 #include "overview/html_guard.h"
 #include "overview/html_utils.h"
 #include "visual/result_helper.h"
 #include "visual/suite_helper.h"
-
 namespace wpa3_tester::visual::ssid_confusion_filler {
 using namespace std;
 using namespace filesystem;
-
 void setup_suite(const RunSuiteStatus &rss) {
 	const auto config_dir = rss.run_folder() / TEST_SUITE_CONFIG_DIR / "all_actors" / "config";
 	create_public_dirs(config_dir);
 	copy_f(rss.config_path().parent_path() / "config" / "SafeNet_WrongNet.conf", config_dir / "SafeNet_WrongNet.conf");
 	copy_f(rss.config_path().parent_path() / "config" / "hostapd.eap_user", config_dir / "hostapd.eap_user");
 }
-
 SsidConfusionEntry SsidConfusionEntry::parse(const path &test_folder) {
 	auto e = helper::load_result_default<SsidConfusionEntry>(test_folder);
 	e.test_name = test_folder.filename().string();
-
 	const auto rs = helper::load_test_rs(test_folder);
-
 	const auto ap = rs->get_actor("ap");
 	e.ap_mac = ap->get(SK::mac);
-	e.ap_driver = ap->get(SK::driver_name);
+	e.ap_driver = ap[SK::driver_name];
 	e.real_ssid = ap["ssid"];
-
 	const auto client = rs->get_actor("client");
 	e.sta_mac = client->get(SK::mac);
-	e.sta_driver = client->get(SK::driver_name);
-
+	e.sta_driver = client[SK::driver_name];
 	const auto rogue_client = rs->get_actor("rogue_client");
-	e.rogue_client_mac = rogue_client->get(SK::permanent_mac);
-	e.rogue_client_driver = rogue_client->get(SK::driver_name);
-
+	e.rogue_client_mac = rogue_client[SK::permanent_mac];
+	e.rogue_client_driver = rogue_client[SK::driver_name];
 	const auto rogue_ap = rs->get_actor("rogue_ap");
-	e.rogue_ap_mac = rogue_ap->get(SK::permanent_mac);
-	e.rogue_ap_driver = rogue_ap->get(SK::driver_name);
-
+	e.rogue_ap_mac = rogue_ap[SK::permanent_mac];
+	e.rogue_ap_driver = rogue_ap[SK::driver_name];
 	const auto &att_cfg = rs->config().at("attack_config");
 	e.confused_ssid = att_cfg.value("confused_ssid", e.real_ssid);
 	e.strip_rsn = att_cfg.value("strip_rsn", false);
-
 	e.mitm_achieved = mc_mitm_filler::read_mitm_achieved(test_folder, e.sta_mac);
-
+	const auto window = helper::get_run_window(*rs);
+	e.client_disconnected = helper::get_client_disconnected(*rs, window);
+	e.ap_disconnected = !get_time_logs(*rs, "ap", "AP-STA-DISCONNECTED", window).empty();
 	return e;
 }
-
 vector<SsidConfusionEntry> SsidConfusionEntry::collect_results(const path &suite_data_dir) {
 	return helper::collect_entries_nested(suite_data_dir, [&suite_data_dir](const path &p) {
 		auto e = parse(p);
@@ -62,10 +52,8 @@ vector<SsidConfusionEntry> SsidConfusionEntry::collect_results(const path &suite
 		return e;
 	});
 }
-
 void SsidConfusionEntry::render_table(
 	overview::HtmlGuard &f, const string &title, const path &suite_data_dir, const path &page_dir, const string &t_name) {
-
 	helper::div_card<SsidConfusionEntry>(
 		f, title, suite_data_dir, [&](overview::HtmlGuard &hg, const vector<SsidConfusionEntry> &entries) {
 			HtmlPathTable t(hg, entries, t_name);
@@ -78,37 +66,31 @@ void SsidConfusionEntry::render_table(
 				 col("Real SSID", &SsidConfusionEntry::real_ssid);
 				 col("Confused SSID", &SsidConfusionEntry::confused_ssid);
 				 COL("Strip RSN", e.strip_rsn);
+				 COL("Disconnected? <br> (from AP view)", e.client_disconnected << " (" << e.ap_disconnected << ")");
 				 COL("Client connected", e.client_connected);
 				 COL("Got MitM", e.got_mitm);
 			 })->render();
 #undef COL
 		});
 }
-
 void SsidConfusionEntry::generate_report(RunSuiteStatus &rss) {
 	const auto run_dir = rss.run_folder();
 	const auto entries = collect_results(run_dir);
-
 	report::ReportGuard report(run_dir);
 	if(!report) return;
-
 	report << "# SSID Confusion Attack Test Suite Report\n\n";
 	report << "Summary of SSID confusion (CVE-2023-52424) attack tests.\n\n";
-
 	if(entries.empty()) {
 		report << "No test results found.\n";
 		return;
 	}
-
 	report << "## Test Results\n\n";
 	report << "| Test | AP MAC | Client MAC | Real SSID | Confused SSID | Strip RSN | MitM achieved |\n";
 	report << "|------|--------|------------|-----------|---------------|-----------|:--------------|\n";
-
 	for(const auto &e: entries) {
 		report << "| " << report::link(e.test_name, e.rel_path / REPORT_NAME) << " | " << e.ap_mac << " | "
 			   << e.sta_mac << " | " << e.real_ssid << " | " << e.confused_ssid << " | " << e.strip_rsn << " | "
 			   << e.mitm_achieved << " |\n";
 	}
 }
-
 }

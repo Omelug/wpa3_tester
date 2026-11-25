@@ -5,23 +5,20 @@
 #include <vector>
 #include "config/RunSuiteStatus.h"
 #include "overview/described.h"
-
 namespace wpa3_tester::overview {
 struct HtmlGuard;
 }
-
 namespace wpa3_tester::visual::bl0ck_test_suites {
 struct Bl0ckTestEntry {
 	std::string name;
-	std::string ap_mac;
+	std::optional<std::string> ap_mac;
 	std::string ap_source;
-	std::string client_mac;
+	std::optional<std::string> client_mac;
 	std::string client_source;
-	std::string attacker_mac;
-	std::string attacker_driver;
+	std::optional<std::string> attacker_mac;
+	std::optional<std::string> attacker_driver;
 	std::string attack_variant;
 	std::optional<bool> random_MAC;
-
 	//result params
 	int disconnect_count = 0;
 	std::vector<double> reconnection;
@@ -29,12 +26,10 @@ struct Bl0ckTestEntry {
 	described_bool ADDBA_seen;
 	described_bool ap_PBAC;
 	described_bool client_PBAC;
-
 	static Bl0ckTestEntry parse(const std::filesystem::path &test_folder);
 	static std::vector<Bl0ckTestEntry> collect_results(const std::filesystem::path &run_dir);
 	static void render_table(overview::HtmlGuard &f, const std::string &title,
 		const std::filesystem::path &suite_data_dir, const std::filesystem::path &page_dir, const std::string &t_name);
 	static void generate_report(RunSuiteStatus &rss);
 };
-
 }

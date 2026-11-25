@@ -10,36 +10,28 @@
 #include "visual/suite_helper.h"
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
-
 namespace wpa3_tester::visual::channel_switch_rogueAP{
 using namespace std;
 using namespace filesystem;
-
 CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 	auto e = helper::load_result_default<CsaTestEntry>(test_folder);
 	e.name = test_folder.filename().string();
-
 	const auto rs = helper::load_test_rs(test_folder);
 	if(!rs) return e;
-
 	const auto ap = rs->get_actor("ap");
 	e.ap_mac = ap->get_or(SK::permanent_mac, ap->get(SK::mac));
 	e.ap_source = ap->get(SK::source);
-
 	const auto client = rs->get_actor("client");
 	e.client_mac = client->get_or(SK::permanent_mac, client->get(SK::mac));
 	e.client_source = client->get(SK::source);
 	e.client_driver = client[SK::driver_name];
-
 	const auto att = rs->get_actor("attacker");
 	e.attacker_mac = att->get_or(SK::permanent_mac, att->get(SK::mac));
-	e.attacker_driver = att->get(SK::driver_name);
-
+	e.attacker_driver = att[SK::driver_name];
 	if(const auto rogue = rs->actor("rogue_ap")){ //optional
 		e.rogue_ap_mac = rogue->get()->get_or(SK::permanent_mac, rogue->get(SK::mac));
-		e.rogue_ap_driver = rogue->get(SK::driver_name);
+		e.rogue_ap_driver = (*rogue)[SK::driver_name];
 	}
-
 	const auto window = helper::get_run_window(*rs);
 	e.ap_disconnected = !get_time_logs(*rs, "ap", "AP-STA-DISCONNECTED", window).empty();
 	e.client_disconnected = helper::get_client_disconnected(*rs, window);
@@ -48,45 +40,35 @@ CsaTestEntry CsaTestEntry::parse(const path &test_folder){
 	e.client_mfp = helper::get_client_mfp(*rs, window);
 	e.ap_WPA_support = helper::get_ap_WPA_support(*rs);
 	e.client_WPA_support = helper::get_client_WPA_support(*rs, window);
-
 	const TimeWindow window_START{ LogTimePoint{}, get_tag_time(rs->combined_log(), START_tag) };
 	e.conn_WPA_version = helper::get_conn_WPA_version(*rs, window_START);
 	e.client_scanning = helper::get_client_scanning(*rs, window);
-
 	if(const auto cfg_path = test_folder / TEST_CONFIG_NAME; exists(cfg_path)) {
 		const auto cfg = YAML::LoadFile(cfg_path.string());
 		e.new_channel = to_string(cfg["attack_config"]["new_channel"].as<int>());
 	}
-
 	return e;
 }
-
 vector<CsaTestEntry> CsaTestEntry::collect_results(const path &test_data_dir) {
 	auto collect = [&test_data_dir](const path &p) {
 		auto e = parse(p);
 		e.rel_path = relative(p, test_data_dir);
 		return e;
 	};
-
 	//TODO ome name conflicts edge cases?
 	auto entries = helper::has_test_runs(test_data_dir)
 		? helper::collect_entries_flat(test_data_dir, collect)
 		: helper::collect_entries_nested(test_data_dir, collect);
-
 	ranges::sort(entries, [](const CsaTestEntry& a, const CsaTestEntry& b) {
 		return tie(a.client_mac, a.ap_ocv, a.client_disconnected, a.client_mfp, a.conn_WPA_version, a.attacker_driver, a.rogue_ap_driver, a.name) <
 		   tie(b.client_mac, b.ap_ocv, b.client_disconnected, b.client_mfp, b.conn_WPA_version, b.attacker_driver, b.rogue_ap_driver, b.name);
 	});
-
 	return entries;
 }
-
 void CsaTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 	const path &suite_data_dir, const path &page_dir,  const string &t_name){
-
 	helper::div_card<CsaTestEntry>(f, title, suite_data_dir, [&](overview::HtmlGuard& hg,
 		const std::vector<CsaTestEntry>& entries) {
-
 		HtmlPathTable t(hg, entries, t_name);
 		#define COL(name, body) col(name, [&]([[maybe_unused]] const auto& e) { f << body; })
 		t.build([&](auto col) {
@@ -109,7 +91,6 @@ void CsaTestEntry::render_table(overview::HtmlGuard &f, const string &title,
 		#undef COL
 	});
 }
-
 void CsaTestEntry::generate_report(RunSuiteStatus &rss){
 	const auto run_dir = rss.run_folder();
 	const auto entries = helper::collect_entries_nested(run_dir, [&run_dir](const path &p){
@@ -117,31 +98,24 @@ void CsaTestEntry::generate_report(RunSuiteStatus &rss){
 		e.rel_path = relative(p, run_dir);
 		return e;
 	});
-
 	report::ReportGuard report(run_dir);
 	if(!report) return;
-
 	report << "# CSA Rogue AP Test Suite Report\n\n";
 	report << "Summary of Channel Switch + Rogue AP downgrade attack tests.\n\n";
-
 	if(entries.empty()){
 		report << "No test results found.\n";
 		return;
 	}
-
 	report << "## Test Results\n\n";
 	report <<
 			"| Test | AP MAC (source) | Client MAC (source) | Attacker MAC (driver) | New ch | Disconnected? (from_AP_view) ? | Rogue AP? | AP OCV / Client OCV | Client MFP | Result |\n";
 	report <<
 			"|------|-----------------|---------------------|-----------------------|--------|--------------------------------|-----------|---------------------|------------|--------|\n";
-
 	for(const auto &e: entries){
-		string attacker_cell = e.attacker_mac + " (" + e.attacker_driver + ")";
-		if(!e.rogue_ap_mac.empty() || !e.rogue_ap_driver.empty())
-			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.
-					rogue_ap_driver + ")";
+		string attacker_cell = e.attacker_mac + " (" + e.attacker_driver.value_or("") + ")";
+		if(!e.rogue_ap_mac.empty() || e.rogue_ap_driver.has_value())
+			attacker_cell += "<br>" + e.rogue_ap_mac + " (" + e.rogue_ap_driver.value_or("") + ")";
 		const string result_text = e.rogue_ap_connected ? (*e.rogue_ap_connected ? "PASSED" : "FAILED") : "-";
-
 		report << "| " << report::link(e.name, e.rel_path / REPORT_NAME) << " | "
 				<< e.ap_mac << " (" << e.ap_source << ") | "
 				<< e.client_mac << " (" << e.client_source << ") | "

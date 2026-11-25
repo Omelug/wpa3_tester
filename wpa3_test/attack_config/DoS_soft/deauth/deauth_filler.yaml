@@ -20,5 +20,11 @@ tests:
   wpa3_2_10:
     type: actor_filler
     config: ./deauth_wpa3_2_10.yaml
+  wpa3_mixed_2_9_WPA2_MFPo:
+    type: actor_filler
+    config: ./deauth_wpa3_mixed_2_9_WPA2_MFPo.yaml
+  wpa3_mixed_2_9_WPA2_MFPd:
+    type: actor_filler
+    config: ./deauth_wpa3_mixed_2_9_WPA2_MFPd.yaml
 delete_old: true
 rewrite: "errors"

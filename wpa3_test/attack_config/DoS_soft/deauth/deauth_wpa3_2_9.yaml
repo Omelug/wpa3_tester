@@ -8,13 +8,12 @@ $extends: [
 ]
 actors:
   ap:
+    selection:
+      permanent_mac: "90:de:80:de:ff:7b"
     setup:
       program_config:
         other_options: "-d"
         version: 2_9
-  client:
-    selection:
-      permanent_mac: "90:de:80:de:ff:7b"
   attacker:
     source: internal
     selection:

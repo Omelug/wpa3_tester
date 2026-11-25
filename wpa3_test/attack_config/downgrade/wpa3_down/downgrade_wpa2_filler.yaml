@@ -1,0 +1,9 @@
+name: wpa3_downgrade_wpa2_filler
+suite_functions: wpa3_downgrade_filler
+config_type: test_suite
+tests:
+  wpa3_mixed_wpa2_client:
+    type: actor_filler
+    config: ./downgrade_wpa3_mixed_wpa2_client.yaml
+delete_old: true
+rewrite: "errors"

@@ -176,7 +176,7 @@ void run_hostapd(RunStatus &rs, const string &actor_name){
 
 // --------- WPA_SUPPLICANT ---------------
 
-static const set<string> wpa_global_keys = {"sae_pwe", "okc", "pmf", "ctrl_interface", "eapol_version"};
+static const set<string> wpa_global_keys = {"sae_pwe", "okc", "pmf", "ctrl_interface", "eapol_version", "update_config"};
 static const set<string> wpa_quoted_keys = {"ssid", "sae_password", "psk", "identity", "password"};
 static const set<string> wpa_skip_keys = {"wpa_supplicant_path", "version", "other_options"};
 

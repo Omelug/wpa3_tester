@@ -7,6 +7,7 @@
 #include "interrupt.h"
 #include "logger/log_util.h"
 #include "logger/report.h"
+#include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
 #include "visual/result_helper.h"
 
@@ -25,6 +26,20 @@ void setup_attack(RunStatus &rs){
 void run_attack(RunStatus &rs){
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int wait_after_stop = att_cfg.value("wait_after_stop", 30);
+
+	if(att_cfg.value("restart_client_for_persistence", false)) {
+		log(LogLevel::INFO, "Restarting wpa_supplicant to test persistence of transition_disable");
+		rs.process_manager.stop("client");
+		const auto cfg = rs.run_folder() / "client_wpa_supplicant.conf";
+		const json &pc = rs.config().at("actors").at("client").at("setup").at("program_config");
+		vector<string> cmd;
+		observer::add_nets_header(rs, cmd, "client");
+		cmd.insert(cmd.end(), {hostapd::get_wpa_supplicant(pc.value("version", "")),
+			"-i", rs.get_actor("client").get(SK::iface), "-c", cfg.string()});
+		rs.process_manager.run("client", cmd, rs.run_folder());
+		rs.process_manager.wait_for("client", "EVENT-CONNECTED", seconds(40));
+		log(LogLevel::INFO, "Client reconnected after restart");
+	}
 
 	log(LogLevel::INFO, "Stopping WPA3-Transition AP - watching if client downgrades to WPA2-PSK rogue AP");
 	components::stop_AP(rs, "ap");

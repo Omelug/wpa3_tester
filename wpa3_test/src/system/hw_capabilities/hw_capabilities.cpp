@@ -302,8 +302,10 @@ string get_iface_type(const string &iface, const optional<string> &netns){
 }
 
 void hw_capabilities::set_iface_down(const string &iface, const optional<string> &netns){
-	if(run_cmd({"ip", "link", "set", iface, "down"}, netns) != 0)
+	if(run_cmd({"ip", "link", "set", iface, "down"}, netns) != 0){
+		if(run_cmd({"ip", "link", "show", iface}, netns, false) != 0) return; // interface gone (e.g. USB driver race)
 		throw run_err("Failed to set '{}' down", iface);
+	}
 	if(const auto res = netlink_helper::wait_for_link_flags(iface, netns, false); res)
 		throw timeout_err("Timeout waiting for '" + iface + "' to go DOWN:" + res.message());
 }

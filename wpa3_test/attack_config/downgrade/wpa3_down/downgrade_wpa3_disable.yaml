@@ -22,6 +22,7 @@ actors:
       program: wpa_supplicant
       program_config:
         other_options: -d
+        update_config: 1
         ieee80211w: 1 #Needed for WPA3 disable ?
         key_mgmt: SAE WPA-PSK
         sae_password: password123
@@ -38,4 +39,5 @@ actors:
       channel: 6
 attack_config:
   wait_after_stop: 60
+  restart_client_for_persistence: true
 

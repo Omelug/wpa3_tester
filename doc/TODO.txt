@@ -7,17 +7,20 @@ Version  v 0.0.0.0:
 +: add DNS on channel switch attack for external attacks
 +: add mixed mode to deauth_filler (client - WPA2 only, AP - SAE WPA)
 +: Vendor-specific attack from Dos today
-+: 2024 – A Security Analysis of WPA3-PK -
-+: iface_ scane - skusit jaký radiotap pou6ívá ifcace - může být neúplný jako u 00:c0:ca:b5:e1:58
++: 2024 – A Security Analysis of WPA3-PK
++: iface_info scanner - try what "version" uof radiohat is used (00:c0:ca:b5:e1:58 dont fill all flags i think)
 +: for better CPU issues  checgo to hashing-and-pesking (fixes add more CPU usage on AP side)
 TODO - pcap soubory jsou strašně velké (hlavně bl0ck)
 #TODO  Kde se nastavuje hash-to-element bit? (na jedom AKM je nastaveno jako poviné, myslím 24)
 # nejde pomocí mc_mitm odstranit a províést timming atack
 %TODO zkusit SSID vut.cz nevbo jak se to jmenuje / eduraom na VUT?
 +: TODO zkusit s tím SAE , stejný commit?
+
 +: PMK gobbler - proč jsou rozdělena get_commit a attacker, nejspíš to bude nějakou chybou v \ref[Sec. 3.6]{2023_testing_and_imroving}.
+
 +: function called in stats to catch https://www.kernel.org/doc/html/latest/driver-api/usb/error-codes.html
 (USB timeout při -ubytku napájení apod)
+
 f: iperf3 shut donw after mc_mitm (expected (need to be restarted in test) - or fail ?)
 +:  invalid curve from AP to client (rogue AP)
 r: znovuspustiti expected_vht_beacon_ex_Dlink_filler a expected_vht_beacon_rogueAP_filler

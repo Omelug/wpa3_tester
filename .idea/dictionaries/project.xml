@@ -92,6 +92,7 @@
       <w>depmod</w>
       <w>destmac</w>
       <w>dfata</w>
+      <w>dhclient</w>
       <w>dirent</w>
       <w>disas</w>
       <w>disassoc</w>

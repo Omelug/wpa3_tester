@@ -253,4 +253,11 @@ inline std::string_view ie_to_string(const IE tag) {
 	return it != ie_names.end() ? it->second : "<unknown IE>";
 }
 inline std::string_view ie_to_string(uint8_t tag) { return ie_to_string(static_cast<IE>(tag)); }
+// Append a complete IE (tag + length + data) to a raw frame buffer.
+template<typename Dst, typename Src>
+void push_ie(Dst &raw, const IE tag, const Src &data) {
+	raw.push_back(static_cast<uint8_t>(tag));
+	raw.push_back(static_cast<uint8_t>(data.size()));
+	raw.insert(raw.end(), data.begin(), data.end());
+}
 }

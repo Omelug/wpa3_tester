@@ -21,6 +21,8 @@ struct Dot11Addrs {
 Dot11Addrs get_addrs(const Tins::PDU &pdu, const frame_raw_t &raw);
 Tins::Dot11ProbeResponse beacon_to_probe_resp(const Tins::Dot11Beacon &beacon, const Channel &rogue_channel);
 void patch_ht_operation_in_frame(frame_raw_t &raw, uint8_t channel);
+void patch_ds_param_in_frame(frame_raw_t &raw, uint8_t channel);
+void patch_vht_center_in_frame(frame_raw_t &raw, uint8_t center_ch);
 bool is_eapol(const Tins::PDU &pdu);
 EapolMsg get_eapol_msg_num(const frame_raw_t &raw, bool print = false);
 std::string eap_description(const Tins::PDU &pdu);

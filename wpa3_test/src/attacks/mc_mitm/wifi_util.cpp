@@ -3,6 +3,7 @@
 #include "net_parser/eap_defs.h"
 #include "net_parser/radiotap_defs.h"
 #include <fstream>
+#include <span>
 #include <iomanip>
 #include <linux/nl80211.h>
 #include <net/if.h>
@@ -296,17 +297,31 @@ static size_t mgmt_ie_start(const frame_raw_t &raw) {
 			dot11::ASSOC_REQ_FIXED;
 	return hdr + dot11::MGMT_HDR_SIZE + fixed;
 }
-void patch_ht_operation_in_frame(frame_raw_t &raw, const uint8_t channel) {
+// return mutable span over the data bytes of the first IE matching tag
+// return empty span if not found
+static std::span<uint8_t> find_ie_data(frame_raw_t &raw, const dot11::IE tag) {
 	const size_t ie_start = mgmt_ie_start(raw);
 	for(size_t i = ie_start; i + 1 < raw.size();) {
 		const uint8_t ie_len = raw[i + 1];
 		if(i + dot11::IE_HDR_SIZE + ie_len > raw.size()) break;
-		if(raw[i] == dot11::IE_HT_OPERATION && ie_len >= 1) {
-			raw[i + dot11::IE_HDR_SIZE] = channel;
-			return;
-		}
+		if(raw[i] == static_cast<uint8_t>(tag))
+			return { raw.data() + i + dot11::IE_HDR_SIZE, ie_len };
 		i += dot11::IE_HDR_SIZE + ie_len;
 	}
+	return {};
+}
+void patch_ht_operation_in_frame(frame_raw_t &raw, const uint8_t channel) {
+	const auto data = find_ie_data(raw, dot11::IE_HT_OPERATION);
+	if(!data.empty()) data[0] = channel;
+}
+void patch_ds_param_in_frame(frame_raw_t &raw, const uint8_t channel) {
+	const auto data = find_ie_data(raw, dot11::IE_DS_PARAM_SET);
+	if(!data.empty()) data[0] = channel;
+}
+void patch_vht_center_in_frame(frame_raw_t &raw, const uint8_t center_ch) {
+	const auto data = find_ie_data(raw, dot11::IE_VHT_OPERATION);
+	if(data.size() >= dot11::VHT_OP_MIN_SIZE && data[0] == dot11::VHT_OP_WIDTH_80MHZ)
+		data[dot11::VHT_OP_CENTER_CH0_OFF] = center_ch;
 }
 void rewrite_ssid_in_frame(frame_raw_t &raw, const string &new_ssid) {
 	const size_t ie_start = mgmt_ie_start(raw);

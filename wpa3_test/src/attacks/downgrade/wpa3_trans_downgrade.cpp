@@ -19,11 +19,12 @@ using namespace chrono;
 using nlohmann::json;
 
 void setup_attack(RunStatus &rs){
-	rs.start_observers(); // here, because I want check WPA3 diable bit before start
+	//rs.start_observers(); // here, because I want check WPA3 diable bit before start //FIXME some tshark becon (external clients need have mac for filter when tshark starts)
 	components::client_ap_setup_t(rs);
 }
 
 void run_attack(RunStatus &rs){
+	rs.start_observers();
 	const auto &att_cfg = rs.config().at("attack_config");
 	const int wait_after_stop = att_cfg.value("wait_after_stop", 30);
 

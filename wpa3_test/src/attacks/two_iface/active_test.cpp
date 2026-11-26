@@ -69,10 +69,10 @@ void run_attack(RunStatus &rs){
 		});
 	});
 
-	// Build a null data frame: transceiver -> receiver
+	// null data frame
 	RadioTap rt{};
 	Dot11Data frame(rx_mac, tx_mac);
-	frame.addr3(tx_mac); // BSSID
+	frame.addr3(tx_mac);
 	frame.subtype(dot11::DATA_NULL);
 	rt.inner_pdu(frame);
 

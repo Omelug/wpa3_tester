@@ -176,7 +176,7 @@ void run_attack(RunStatus &rs) {
 		acm_pause_millisec,
 		trigger_count,
 		sae_params.value(),
-		static_cast<int>(burst_size));
+		1); //not use burst
 	rs.process_manager.write_log_all("@AKM_trigger");
 
 	CookieStore store;

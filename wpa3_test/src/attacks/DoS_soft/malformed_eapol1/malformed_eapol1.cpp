@@ -25,8 +25,7 @@ RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta
 	// 802.11 Data/QoS frame
 	Dot11Data dot11(sta_mac, ap_mac);
 	dot11.addr3(ap_mac);
-	dot11.addr4(sta_mac);
-
+	//dot11.addr4(sta_mac);
 	string eapol_hex = "02"    // Version: 802.1X-2004 (2)
 			"03"               // Type: Key (3)
 			"0075"             // Length: 117
@@ -71,8 +70,7 @@ RadioTap get_malformed_eapol(const HWAddress<6> &ap_mac, const HWAddress<6> &sta
 	dot11.from_ds(1); // From DS bit
 
 	RadioTap radiotap;
-	auto my_flags = static_cast<RadioTap::FrameFlags>(RadioTap::CFP | RadioTap::WEP);
-	radiotap.flags(my_flags);
+	radiotap.flags(RadioTap::CFP);
 	radiotap.rate(2); // Rate in Mbps
 	radiotap.channel(hw_capabilities::channel_to_freq(ap_channel), RadioTap::CCK);
 
